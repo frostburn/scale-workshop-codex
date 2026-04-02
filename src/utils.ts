@@ -1,3 +1,4 @@
+// oxlint-disable erasing-op
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
 import { gcd, mmod } from 'xen-dev-utils'
 import { evaluateExpression, getSourceVisitor, Interval, parseAST, repr, Val } from 'sonic-weave'

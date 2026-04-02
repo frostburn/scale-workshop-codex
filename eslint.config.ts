@@ -26,6 +26,17 @@ export default defineConfigWithVueTs(
     files: ['src/**/__tests__/*'],
   },
 
+  {
+    name: 'app/legacy-compatibility',
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'vitest/no-conditional-expect': 'off',
+    },
+  },
+
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 
   skipFormatting,

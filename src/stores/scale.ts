@@ -450,7 +450,6 @@ export const useScaleStore = defineStore('scale', () => {
       }
       if (ratios.length) {
         const evLstr = lstr.bind(ev)
-        // eslint-disable-next-line no-inner-declarations
         function autoLabel(interval: Interval) {
           if (interval.label.length) {
             return convertAccidentals(interval.label, accidentalPreference.value)
