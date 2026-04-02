@@ -1,4 +1,4 @@
-import { Interval, TimeMonzo, TimeReal, getSourceVisitor, parseAST, relative } from 'sonic-weave'
+import { Interval, TimeMonzo, TimeReal, getSourceVisitor, parseAST } from 'sonic-weave'
 import type { ExporterParams } from '../base'
 import { UNIX_NEWLINE, WINDOWS_NEWLINE } from '../../constants'
 import { Scale } from '../../scale'
@@ -22,15 +22,15 @@ export function getTestData(appTitle: string, raw = false) {
   const visitor = getSourceVisitor()
   // Prefix
   visitor.executeProgram(parseAST('A4 = 440 Hz'))
+  // Body
+  visitor.executeProgram(parseAST(sourceText))
   let rawIntervals: Interval[] | undefined
   let unisonFrequency: TimeMonzo | undefined
   if (raw) {
-    // Body
-    visitor.executeProgram(parseAST(sourceText))
     rawIntervals = visitor.currentScale
     unisonFrequency = visitor.rootContext!.unisonFrequency
   }
-  const relativeC5 = relative.bind(visitor.rootContext)(absoluteC5)
+  const relativeC5 = visitor.currentScale[1]
 
   const relativeIntervals = [
     new Interval(TimeMonzo.fromEqualTemperament('100/1200', 2, 3), 'logarithmic', 0, {
