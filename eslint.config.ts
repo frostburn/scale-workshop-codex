@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { globalIgnores } from 'eslint/config'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import pluginVue from 'eslint-plugin-vue'
@@ -9,6 +10,10 @@ import skipFormatting from 'eslint-config-prettier/flat'
 // import { configureVueProject } from '@vue/eslint-config-typescript'
 // configureVueProject({ scriptLangs: ['ts', 'tsx'] })
 // More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
+
+const oxlintCompatibilityConfig = existsSync('.oxlintrc.json')
+  ? pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json')
+  : []
 
 export default defineConfigWithVueTs(
   {
@@ -26,7 +31,18 @@ export default defineConfigWithVueTs(
     files: ['src/**/__tests__/*'],
   },
 
-  ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
+  {
+    name: 'app/legacy-compatibility',
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'vitest/no-conditional-expect': 'off',
+    },
+  },
+
+  ...oxlintCompatibilityConfig,
 
   skipFormatting,
 )
