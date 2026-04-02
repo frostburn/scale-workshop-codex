@@ -23,8 +23,7 @@ describe('White key to white color mapper', () => {
     for (let index = 69; index < 69 + 12; index++) {
       const info = midiKeyInfo(index)
       if (info.whiteNumber === undefined) {
-        expect(info.sharpOf).not.toBeUndefined()
-        expect(map[info.sharpOf!] + 1).toBe(index)
+        expect(map[info.sharpOf] + 1).toBe(index)
       } else {
         expect(map[info.whiteNumber]).toBe(index)
       }
@@ -50,8 +49,7 @@ describe('White key to white color mapper', () => {
     for (let index = 60; index < 60 + 12; index++) {
       const info = midiKeyInfo(index)
       if (info.whiteNumber === undefined) {
-        expect(info.sharpOf).not.toBeUndefined()
-        expect(map[info.sharpOf!] + 1).toBe(index)
+        expect(map[info.sharpOf] + 1).toBe(index)
       } else {
         expect(map[info.whiteNumber]).toBe(index)
       }
