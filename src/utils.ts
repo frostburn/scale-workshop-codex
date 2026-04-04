@@ -111,7 +111,7 @@ export function arrayToString(values: Interval[] | number[] | string[]) {
     return `[${values.map((v) => JSON.stringify(v)).join(', ')}]`
   }
   const visitor = getSourceVisitor().createExpressionVisitor()
-  return repr.bind(visitor)(values as Interval[])
+  return repr.bind(visitor.rootContext)(values as Interval[])
 }
 
 export function debounce(func: (...args: any[]) => void, timeout = 300) {
