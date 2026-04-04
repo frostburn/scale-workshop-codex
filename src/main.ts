@@ -26,12 +26,7 @@ if (import.meta.env.DEV) {
 }
 
 if (!localStorage.getItem('uuid')) {
-  // Make it possible to run the app inside Docker through HTTP
-  let uuid = '123456789'
-  if (crypto.randomUUID) {
-    uuid = crypto.randomUUID()
-  }
-  localStorage.setItem('uuid', uuid)
+  localStorage.setItem('uuid', crypto.randomUUID())
 }
 
 const app = createApp(App)
