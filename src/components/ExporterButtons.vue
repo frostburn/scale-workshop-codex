@@ -204,6 +204,8 @@ function doExport(exporter: ExporterKey) {
       :scale="scale.scale"
       :labels="scale.labels"
       :scaleUrl="uploadedScaleUrl"
+      :sourceText="scale.sourceText"
+      :appTitle="APP_TITLE"
     />
   </Teleport>
   <h2>Export current settings</h2>

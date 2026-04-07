@@ -15,6 +15,8 @@ const props = defineProps<{
   scale: Scale
   labels: string[]
   scaleUrl: string
+  sourceText: string
+  appTitle: string
 }>()
 
 const store = useExportStore()
@@ -30,6 +32,8 @@ function doExport() {
     relativeIntervals: props.relativeIntervals,
     labels: props.labels,
     scaleUrl: props.scaleUrl,
+    sourceText: props.sourceText,
+    appTitle: props.appTitle,
     remapKontaktSamples: store.remapKontaktSamples
   }
 
