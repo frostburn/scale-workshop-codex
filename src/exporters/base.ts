@@ -25,6 +25,7 @@ export type ExporterParams = {
   centsFractionDigits?: number
   rawIntervals?: Interval[]
   unisonFrequency?: TimeMonzo
+  remapKontaktSamples?: boolean
 }
 
 export class BaseExporter {
