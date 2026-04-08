@@ -28,6 +28,7 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
   const N = ref(10000)
   const a = ref(1)
   const s = ref(0.01)
+  const isFetching = ref(false)
 
   const minY = computed(() => Math.min(...table.map((xy) => xy[1])))
   const maxY = computed(() => Math.max(...table.map((xy) => xy[1])))
@@ -36,15 +37,20 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
     if (table.length && !force) {
       return
     }
-    const response = await fetch(HE_DATA_URL)
-    const buffer = await response.arrayBuffer()
-    const tableY = Array.from(new Float32Array(buffer))
+    isFetching.value = true
+    try {
+      const response = await fetch(HE_DATA_URL)
+      const buffer = await response.arrayBuffer()
+      const tableY = Array.from(new Float32Array(buffer))
 
-    table.length = 0
+      table.length = 0
 
-    let i = 0
-    for (let x = 0; x <= MAX_CENTS; x += RES) {
-      table.push([x, tableY[i++]])
+      let i = 0
+      for (let x = 0; x <= MAX_CENTS; x += RES) {
+        table.push([x, tableY[i++]])
+      }
+    } finally {
+      isFetching.value = false
     }
   }
 
@@ -115,5 +121,5 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
     series: SERIES,
     normalize: NORMALIZE
   }))
-  return { table, N, a, s, minY, maxY, options, fetchTable, entropyPercentage }
+  return { table, N, a, s, isFetching, minY, maxY, options, fetchTable, entropyPercentage }
 })
