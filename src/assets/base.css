@@ -15,11 +15,11 @@
 
   --color-accent: #804080;
   --color-accent-text: #fff;
-  --color-accent-text-btn: #54205c;
+  --color-accent-text-btn: #5b2d63;
   --color-accent-mute: #a870a8;
   --color-accent-deeper: #582858;
   --color-accent-deepest: #402040;
-  --color-accent-background: #ffffff;
+  --color-accent-background: #fffefe;
   --color-accent-dimmed: rgba(0, 20, 20, 0.7);
 
   --color-error: red;
@@ -57,11 +57,11 @@
 
   --color-accent: #703070;
   --color-accent-text: #fff;
-  --color-accent-text-btn: #f3b4ea;
+  --color-accent-text-btn: #bf74b7;
   --color-accent-mute: #646;
   --color-accent-deeper: #502050;
   --color-accent-deepest: #401040;
-  --color-accent-background: #1d0d25;
+  --color-accent-background: #120818;
   --color-accent-dimmed: rgba(0, 20, 20, 0.7);
 
   --color-error: red;
