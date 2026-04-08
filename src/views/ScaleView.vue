@@ -15,7 +15,7 @@ const controls = ref<typeof ScaleControls | null>(null)
 const newScale = ref<{ blur?: () => void } | null>(null)
 const modifyScale = ref<{ blur?: () => void } | null>(null)
 const exporterButtons = ref<{ uploadScale?: () => void } | null>(null)
-const isAuxiliaryPanelsLoaded = ref(false)
+const isAuxiliaryPanelsRequested = ref(false)
 
 const NewScaleAsync = shallowRef()
 const ModifyScaleAsync = shallowRef()
@@ -31,7 +31,7 @@ onMounted(() => {
   const loadAuxiliaryPanels = () => {
     NewScaleAsync.value = defineAsyncComponent(() => import('@/components/NewScale.vue'))
     ModifyScaleAsync.value = defineAsyncComponent(() => import('@/components/ModifyScale.vue'))
-    isAuxiliaryPanelsLoaded.value = true
+    isAuxiliaryPanelsRequested.value = true
   }
 
   if ('requestIdleCallback' in window) {
@@ -60,7 +60,7 @@ onUnmounted(() => {
           @input="updateScale()"
         ></textarea>
         <ul class="btn-group">
-          <template v-if="isAuxiliaryPanelsLoaded">
+          <Suspense v-if="isAuxiliaryPanelsRequested">
             <component
               :is="NewScaleAsync"
               ref="newScale"
@@ -73,7 +73,11 @@ onUnmounted(() => {
               @done="controls!.focus()"
               @mouseenter="newScale?.blur?.()"
             />
-          </template>
+            <template #fallback>
+              <li class="skeleton-btn" aria-hidden="true"></li>
+              <li class="skeleton-btn" aria-hidden="true"></li>
+            </template>
+          </Suspense>
           <template v-else>
             <li class="skeleton-btn" aria-hidden="true"></li>
             <li class="skeleton-btn" aria-hidden="true"></li>
