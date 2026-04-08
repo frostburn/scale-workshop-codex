@@ -1,20 +1,38 @@
-import type * as SonicWeave from 'sonic-weave'
+import type { parseScaleWorkshop2Line } from '../node_modules/sonic-weave/dist/scale-workshop-2-parser.js'
+import type { setNumberOfComponents } from '../node_modules/sonic-weave/dist/monzo.js'
 
-let sonicWeavePromise: Promise<typeof SonicWeave> | undefined
+let parserPromise:
+  | Promise<{
+      parseScaleWorkshop2Line: typeof parseScaleWorkshop2Line
+    }>
+  | undefined
 
-export function loadSonicWeave() {
-  if (sonicWeavePromise === undefined) {
-    sonicWeavePromise = import('sonic-weave')
+let monzoPromise:
+  | Promise<{
+      setNumberOfComponents: typeof setNumberOfComponents
+    }>
+  | undefined
+
+function loadScaleWorkshop2Parser() {
+  if (parserPromise === undefined) {
+    parserPromise = import('../node_modules/sonic-weave/dist/scale-workshop-2-parser.js')
   }
-  return sonicWeavePromise
+  return parserPromise
+}
+
+function loadMonzoRuntime() {
+  if (monzoPromise === undefined) {
+    monzoPromise = import('../node_modules/sonic-weave/dist/monzo.js')
+  }
+  return monzoPromise
 }
 
 export async function parseScaleWorkshop2LineLazy(input: string, numberOfComponents: number) {
-  const { parseScaleWorkshop2Line } = await loadSonicWeave()
-  return parseScaleWorkshop2Line(input, numberOfComponents)
+  const parser = await loadScaleWorkshop2Parser()
+  return parser.parseScaleWorkshop2Line(input, numberOfComponents)
 }
 
 export async function setNumberOfComponentsLazy(numberOfComponents: number) {
-  const { setNumberOfComponents } = await loadSonicWeave()
-  setNumberOfComponents(numberOfComponents)
+  const monzo = await loadMonzoRuntime()
+  monzo.setNumberOfComponents(numberOfComponents)
 }

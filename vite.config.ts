@@ -15,18 +15,6 @@ export default defineConfig({
             return
           }
 
-          if (id.includes('node_modules/sonic-weave/dist/parser')) {
-            return 'sonic-weave-parser'
-          }
-
-          if (id.includes('node_modules/sonic-weave/dist/stdlib')) {
-            return 'sonic-weave-stdlib'
-          }
-
-          if (id.includes('node_modules/sonic-weave/dist/expression')) {
-            return 'sonic-weave-expression'
-          }
-
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
