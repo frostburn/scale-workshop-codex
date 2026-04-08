@@ -15,7 +15,7 @@ import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
 import { useHarmonicEntropyStore } from '@/stores/harmonic-entropy'
 import { clamp, mmod } from 'xen-dev-utils'
-import { parseScaleWorkshop2Line, setNumberOfComponents } from 'sonic-weave'
+import { parseScaleWorkshop2LineLazy, setNumberOfComponentsLazy } from '@/sonic-weave-lazy'
 
 // === Pinia-managed state ===
 const state = useStateStore()
@@ -376,7 +376,7 @@ onMounted(async () => {
   const query = url.searchParams
 
   // This is overridden when scale data is evaluated, but some corner cases need to be covered.
-  setNumberOfComponents(DEFAULT_NUMBER_OF_COMPONENTS)
+  await setNumberOfComponentsLazy(DEFAULT_NUMBER_OF_COMPONENTS)
 
   // Special handling for the empty app state so that
   // the browser's back button can undo to the clean state.
@@ -454,7 +454,9 @@ onMounted(async () => {
       for (let i = 0; i < decodedState.scaleLines.length; ++i) {
         const line = decodedState.scaleLines[i]
         try {
-          const sourceLine = parseScaleWorkshop2Line(line, DEFAULT_NUMBER_OF_COMPONENTS).toString()
+          const sourceLine = (
+            await parseScaleWorkshop2LineLazy(line, DEFAULT_NUMBER_OF_COMPONENTS)
+          ).toString()
           sourceLines.push(sourceLine)
         } catch {
           invalidLines.push([line, i])
