@@ -3,7 +3,7 @@ import EntropyWorker from '@/harmonic-entropy-worker?worker'
 import { computed, reactive, ref, watch } from 'vue'
 import { debounce } from '@/utils'
 import { defineStore } from 'pinia'
-import { type HarmonicEntropyOptions } from 'harmonic-entropy'
+import { EntropyCalculator, type HarmonicEntropyOptions } from 'harmonic-entropy'
 
 // The app freezes if we try to recalculate entropy in the main thread.
 let worker: Worker | undefined
@@ -32,6 +32,9 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
 
   const minY = computed(() => Math.min(...table.map((xy) => xy[1])))
   const maxY = computed(() => Math.max(...table.map((xy) => xy[1])))
+  let fallbackEntropy: EntropyCalculator | undefined
+  let fallbackMinY = 0
+  let fallbackMaxY = 1
 
   async function fetchTable(force = false) {
     if (table.length && !force) {
@@ -69,7 +72,17 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
   // Pinia fails to serialize EntropyCalculator so we recreate its functionality here.
   function entropyPercentage(cents: number) {
     if (!table.length) {
-      return 0
+      if (!isFetching.value) {
+        void fetchTable()
+      }
+      if (fallbackEntropy === undefined) {
+        fallbackEntropy = new EntropyCalculator(options.value)
+        fallbackMinY = Math.min(...fallbackEntropy.table.map((xy) => xy[1]))
+        fallbackMaxY = Math.max(...fallbackEntropy.table.map((xy) => xy[1]))
+      }
+      cents = Math.min(MAX_CENTS, Math.abs(cents))
+      const y = fallbackEntropy.ofCents(cents)
+      return (y - fallbackMinY) / (fallbackMaxY - fallbackMinY)
     }
     cents = Math.abs(cents)
     if (cents >= MAX_CENTS) {
