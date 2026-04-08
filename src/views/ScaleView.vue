@@ -6,7 +6,7 @@ import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
 import { debounce } from '@/utils'
 import { getSourceVisitor, setNumberOfComponents } from 'sonic-weave'
-import { defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef } from 'vue'
+import { defineAsyncComponent, defineComponent, h, onMounted, onUnmounted, ref } from 'vue'
 
 const scale = useScaleStore()
 const state = useStateStore()
@@ -17,9 +17,43 @@ const modifyScale = ref<{ blur?: () => void } | null>(null)
 const exporterButtons = ref<{ uploadScale?: () => void } | null>(null)
 const isAuxiliaryPanelsRequested = ref(false)
 
-const NewScaleAsync = shallowRef()
-const ModifyScaleAsync = shallowRef()
-const ExporterButtonsAsync = defineAsyncComponent(() => import('@/components/ExporterButtons.vue'))
+const AuxiliaryButtonSkeleton = defineComponent({
+  setup() {
+    return () => h('li', { class: 'skeleton-btn', 'aria-hidden': 'true' })
+  },
+})
+
+const ExporterSkeleton = defineComponent({
+  setup() {
+    return () =>
+      h('div', { class: 'exporter-skeleton', 'aria-hidden': 'true' }, [
+        h('div', { class: 'skeleton-row' }),
+        h('div', { class: 'skeleton-row' }),
+        h('div', { class: 'skeleton-row' }),
+      ])
+  },
+})
+
+const NewScaleAsync = defineAsyncComponent({
+  loader: () => import('@/components/NewScale.vue'),
+  loadingComponent: AuxiliaryButtonSkeleton,
+  delay: 0,
+  suspensible: false,
+})
+
+const ModifyScaleAsync = defineAsyncComponent({
+  loader: () => import('@/components/ModifyScale.vue'),
+  loadingComponent: AuxiliaryButtonSkeleton,
+  delay: 0,
+  suspensible: false,
+})
+
+const ExporterButtonsAsync = defineAsyncComponent({
+  loader: () => import('@/components/ExporterButtons.vue'),
+  loadingComponent: ExporterSkeleton,
+  delay: 0,
+  suspensible: false,
+})
 
 const updateScale = debounce(scale.computeScale)
 
@@ -29,8 +63,6 @@ onMounted(() => {
   setTimeout(() => getSourceVisitor(), 1)
 
   const loadAuxiliaryPanels = () => {
-    NewScaleAsync.value = defineAsyncComponent(() => import('@/components/NewScale.vue'))
-    ModifyScaleAsync.value = defineAsyncComponent(() => import('@/components/ModifyScale.vue'))
     isAuxiliaryPanelsRequested.value = true
   }
 
@@ -60,24 +92,10 @@ onUnmounted(() => {
           @input="updateScale()"
         ></textarea>
         <ul class="btn-group">
-          <Suspense v-if="isAuxiliaryPanelsRequested">
-            <component
-              :is="NewScaleAsync"
-              ref="newScale"
-              @done="controls!.focus()"
-              @mouseenter="modifyScale?.blur?.()"
-            />
-            <component
-              :is="ModifyScaleAsync"
-              ref="modifyScale"
-              @done="controls!.focus()"
-              @mouseenter="newScale?.blur?.()"
-            />
-            <template #fallback>
-              <li class="skeleton-btn" aria-hidden="true"></li>
-              <li class="skeleton-btn" aria-hidden="true"></li>
-            </template>
-          </Suspense>
+          <template v-if="isAuxiliaryPanelsRequested">
+            <NewScaleAsync ref="newScale" @done="controls!.focus()" @mouseenter="modifyScale?.blur?.()" />
+            <ModifyScaleAsync ref="modifyScale" @done="controls!.focus()" @mouseenter="newScale?.blur?.()" />
+          </template>
           <template v-else>
             <li class="skeleton-btn" aria-hidden="true"></li>
             <li class="skeleton-btn" aria-hidden="true"></li>
@@ -97,16 +115,7 @@ onUnmounted(() => {
         />
       </div>
       <div class="column exporters" @mouseenter="exporterButtons?.uploadScale?.()">
-        <Suspense>
-          <component :is="ExporterButtonsAsync" ref="exporterButtons" />
-          <template #fallback>
-            <div class="exporter-skeleton" aria-hidden="true">
-              <div class="skeleton-row"></div>
-              <div class="skeleton-row"></div>
-              <div class="skeleton-row"></div>
-            </div>
-          </template>
-        </Suspense>
+        <ExporterButtonsAsync ref="exporterButtons" />
       </div>
     </div>
   </main>
