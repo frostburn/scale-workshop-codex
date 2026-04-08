@@ -1,23 +1,25 @@
 <script setup lang="ts">
-import NewScale from '@/components/NewScale.vue'
-import ModifyScale from '@/components/ModifyScale.vue'
 import ScaleControls from '@/components/ScaleControls.vue'
 import TuningTable from '@/components/TuningTable.vue'
-import ExporterButtons from '@/components/ExporterButtons.vue'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
 import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
 import { debounce } from '@/utils'
 import { getSourceVisitor, setNumberOfComponents } from 'sonic-weave'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 
 const scale = useScaleStore()
 const state = useStateStore()
 
 const controls = ref<typeof ScaleControls | null>(null)
-const newScale = ref<typeof NewScale | null>(null)
-const modifyScale = ref<typeof ModifyScale | null>(null)
-const exporterButtons = ref<typeof ExporterButtons | null>(null)
+const newScale = ref<{ blur?: () => void } | null>(null)
+const modifyScale = ref<{ blur?: () => void } | null>(null)
+const exporterButtons = ref<{ uploadScale?: () => void } | null>(null)
+const isAuxiliaryPanelsLoaded = ref(false)
+
+const NewScaleAsync = shallowRef()
+const ModifyScaleAsync = shallowRef()
+const ExporterButtonsAsync = defineAsyncComponent(() => import('@/components/ExporterButtons.vue'))
 
 const updateScale = debounce(scale.computeScale)
 
@@ -25,6 +27,18 @@ onMounted(() => {
   // Initialize SonicWeave stdlib
   setNumberOfComponents(DEFAULT_NUMBER_OF_COMPONENTS)
   setTimeout(() => getSourceVisitor(), 1)
+
+  const loadAuxiliaryPanels = () => {
+    NewScaleAsync.value = defineAsyncComponent(() => import('@/components/NewScale.vue'))
+    ModifyScaleAsync.value = defineAsyncComponent(() => import('@/components/ModifyScale.vue'))
+    isAuxiliaryPanelsLoaded.value = true
+  }
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(loadAuxiliaryPanels, { timeout: 400 })
+  } else {
+    setTimeout(loadAuxiliaryPanels, 100)
+  }
 })
 
 onUnmounted(() => {
@@ -46,8 +60,24 @@ onUnmounted(() => {
           @input="updateScale()"
         ></textarea>
         <ul class="btn-group">
-          <NewScale ref="newScale" @done="controls!.focus()" @mouseenter="modifyScale!.blur()" />
-          <ModifyScale ref="modifyScale" @done="controls!.focus()" @mouseenter="newScale!.blur()" />
+          <template v-if="isAuxiliaryPanelsLoaded">
+            <component
+              :is="NewScaleAsync"
+              ref="newScale"
+              @done="controls!.focus()"
+              @mouseenter="modifyScale?.blur?.()"
+            />
+            <component
+              :is="ModifyScaleAsync"
+              ref="modifyScale"
+              @done="controls!.focus()"
+              @mouseenter="newScale?.blur?.()"
+            />
+          </template>
+          <template v-else>
+            <li class="skeleton-btn" aria-hidden="true"></li>
+            <li class="skeleton-btn" aria-hidden="true"></li>
+          </template>
         </ul>
         <ScaleControls ref="controls" />
       </div>
@@ -62,8 +92,17 @@ onUnmounted(() => {
           :labels="scale.labels"
         />
       </div>
-      <div class="column exporters" @mouseenter="exporterButtons!.uploadScale()">
-        <ExporterButtons ref="exporterButtons" />
+      <div class="column exporters" @mouseenter="exporterButtons?.uploadScale?.()">
+        <Suspense>
+          <component :is="ExporterButtonsAsync" ref="exporterButtons" />
+          <template #fallback>
+            <div class="exporter-skeleton" aria-hidden="true">
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+            </div>
+          </template>
+        </Suspense>
       </div>
     </div>
   </main>
@@ -144,5 +183,24 @@ select optgroup + optgroup {
 
 .real-valued:invalid {
   background-color: var(--color-background);
+}
+
+.skeleton-btn {
+  height: 2.2rem;
+  border-radius: 4px;
+  background-color: var(--color-border);
+  margin-bottom: 0.5rem;
+  list-style: none;
+}
+
+.exporter-skeleton {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.skeleton-row {
+  height: 2rem;
+  border-radius: 4px;
+  background-color: var(--color-border);
 }
 </style>
