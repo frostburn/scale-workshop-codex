@@ -15,6 +15,14 @@ export default defineConfig({
             return
           }
 
+          if (
+            id.includes('node_modules/sonic-weave/dist/parser') ||
+            id.includes('node_modules/sonic-weave/dist/scale-workshop-2-parser') ||
+            id.includes('node_modules/sonic-weave/dist/scale-workshop-2-ast')
+          ) {
+            return 'sonic-weave-parser'
+          }
+
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
