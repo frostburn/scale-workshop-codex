@@ -31,6 +31,7 @@ export const useExportStore = defineStore('export', () => {
   const centsRoot = ref(0)
   const integratePeriod = ref(false)
   const displayPeriod = ref(true)
+  const remapKontaktSamples = ref(true)
 
   // Scala .scl
   const centsFractionDigits = ref(6)
@@ -48,6 +49,7 @@ export const useExportStore = defineStore('export', () => {
     centsRoot,
     integratePeriod,
     displayPeriod,
+    remapKontaktSamples,
     centsFractionDigits,
     includeLabels,
     commentLabels,

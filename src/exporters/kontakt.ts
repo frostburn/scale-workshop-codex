@@ -20,6 +20,7 @@ export default class KontaktExporter extends BaseExporter {
   getFileContents() {
     const newline = this.params.newline
     const baseMidiNote = this.params.scale.baseMidiNote
+    const remapSamples = this.params.remapKontaktSamples ?? true
 
     // assemble the kontakt script contents
     let file = '{**************************************' + newline
@@ -44,7 +45,11 @@ export default class KontaktExporter extends BaseExporter {
     file += 'declare $key' + newline + newline
 
     for (let i = 0; i < KontaktExporter.tuningMaxSize; i++) {
-      const [noteNumber, cents] = ftom(this.params.scale.getFrequency(i))
+      let [noteNumber, cents] = ftom(this.params.scale.getFrequency(i))
+      if (!remapSamples) {
+        cents += (noteNumber - i) * 100
+        noteNumber = i
+      }
 
       // if we're out of range of the default Kontakt tuning, leave note as default tuning
       if (noteNumber < 0 || noteNumber >= KontaktExporter.tuningMaxSize) {
