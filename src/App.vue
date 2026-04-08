@@ -2,7 +2,6 @@
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
-import { ScaleWorkshopOneData } from '@/scale-workshop-one'
 import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
@@ -15,7 +14,7 @@ import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
 import { useHarmonicEntropyStore } from '@/stores/harmonic-entropy'
 import { clamp, mmod } from 'xen-dev-utils'
-import { parseScaleWorkshop2Line, setNumberOfComponents } from 'sonic-weave'
+import { setNumberOfComponents } from 'sonic-weave'
 
 // === Pinia-managed state ===
 const state = useStateStore()
@@ -362,6 +361,16 @@ function typingKeydown(event: CoordinateKeyboardEvent) {
   return keyboardNoteOn(index)
 }
 
+async function loadSw1FromQuery() {
+  const { ScaleWorkshopOneData } = await import('@/scale-workshop-one')
+  return new ScaleWorkshopOneData()
+}
+
+async function loadSw2FromQuery(line: string) {
+  const { parseScaleWorkshop2Line } = await import('sonic-weave')
+  return parseScaleWorkshop2Line(line, DEFAULT_NUMBER_OF_COMPONENTS).toString()
+}
+
 // === Lifecycle ===
 onMounted(async () => {
   window.addEventListener('keyup', windowKeyup)
@@ -385,7 +394,7 @@ onMounted(async () => {
   } else if (!query.has('version')) {
     // Scale Workshop 1 compatibility
     try {
-      const scaleWorkshopOneData = new ScaleWorkshopOneData()
+      const scaleWorkshopOneData = await loadSw1FromQuery()
       audio.initialize()
 
       scale.name = scaleWorkshopOneData.name
@@ -454,7 +463,7 @@ onMounted(async () => {
       for (let i = 0; i < decodedState.scaleLines.length; ++i) {
         const line = decodedState.scaleLines[i]
         try {
-          const sourceLine = parseScaleWorkshop2Line(line, DEFAULT_NUMBER_OF_COMPONENTS).toString()
+          const sourceLine = await loadSw2FromQuery(line)
           sourceLines.push(sourceLine)
         } catch {
           invalidLines.push([line, i])
