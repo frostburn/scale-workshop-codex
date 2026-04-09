@@ -24,6 +24,20 @@ describe('component smoke tests', () => {
     expect(wrapper.emitted('cancel')).toHaveLength(1)
   })
 
+  it('emits confirm when the default OK button is clicked', async () => {
+    const wrapper = mount(ModalDialog, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Transition: false
+        }
+      }
+    })
+
+    await wrapper.get('button').trigger('click')
+    expect(wrapper.emitted('confirm')).toHaveLength(1)
+  })
+
   it('mounts dropdown group and emits mouseenter', async () => {
     const wrapper = shallowMount(DropdownGroup, {
       props: {
@@ -34,6 +48,7 @@ describe('component smoke tests', () => {
     await wrapper.trigger('mouseenter')
     expect(wrapper.emitted('mouseenter')).toHaveLength(1)
     expect(wrapper.text()).toContain('Testing')
+    expect(typeof (wrapper.vm as { blur: () => void }).blur).toBe('function')
   })
 
   it('mounts scale rule in both orientations', () => {
@@ -58,5 +73,23 @@ describe('component smoke tests', () => {
       }
     })
     expect(vertical.find('svg').attributes('width')).toBe('10')
+  })
+
+  it('skips invalid scale values when computing ticks', () => {
+    const scale = {
+      size: 4,
+      equaveRatio: 2,
+      intervalRatios: [1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]
+    } as unknown as Scale
+
+    const wrapper = shallowMount(ScaleRule, {
+      props: {
+        scale,
+        orientation: 'horizontal'
+      }
+    })
+
+    // 1 baseline line + valid ticks (1, 1.5, 2/equave tick)
+    expect(wrapper.findAll('line').length).toBe(4)
   })
 })

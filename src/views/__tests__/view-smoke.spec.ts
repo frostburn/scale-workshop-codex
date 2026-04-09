@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { shallowMount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 
 import AboutView from '@/views/AboutView.vue'
 import MosView from '@/views/MosView.vue'
@@ -70,6 +71,7 @@ describe('view smoke tests', () => {
   it('mounts static content views', async () => {
     const about = await mountView(AboutView)
     expect(about.text()).toContain('Scale Workshop 3')
+    expect(about.findAll('a').length).toBeGreaterThan(1)
 
     const privacy = await mountView(PrivacyPolicy)
     expect(privacy.text()).toContain('Privacy Policy')
@@ -105,6 +107,22 @@ describe('view smoke tests', () => {
     expect(wrapper.text()).toContain('Not found')
 
     await wrapper.get('#octaplex').trigger('click')
-    expect(wrapper.findComponent({ name: 'OctaplexPortal' }).exists()).toBe(true)
+    const portal = wrapper.findComponent({ name: 'OctaplexPortal' })
+    expect(portal.exists()).toBe(true)
+    expect(portal.props('show')).toBe(true)
+
+    portal.vm.$emit('cancel')
+    await nextTick()
+    expect(wrapper.findComponent({ name: 'OctaplexPortal' }).props('show')).toBe(false)
+  })
+
+  it('provides router links in legal-policy views', async () => {
+    const privacy = await mountView(PrivacyPolicy)
+    const privacyLink = privacy.findComponent({ name: 'RouterLink' })
+    expect(privacyLink.exists()).toBe(true)
+
+    const terms = await mountView(TermsOfService)
+    const termsLink = terms.findComponent({ name: 'RouterLink' })
+    expect(termsLink.exists()).toBe(true)
   })
 })
