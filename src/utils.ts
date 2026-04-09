@@ -77,7 +77,7 @@ export function parseVal(input: string) {
  *
  * @param amount Decimal value.
  * @param fractionDigits Optional fixed precision.
- * @param real Whether to emit real-domain notation.
+ * @param real Whether to emit real-flavored notation.
  */
 export function decimalString(amount: number, fractionDigits?: number, real = false) {
   const result = fractionDigits === undefined ? amount.toString() : amount.toFixed(fractionDigits)
@@ -95,7 +95,7 @@ export function decimalString(amount: number, fractionDigits?: number, real = fa
  *
  * @param cents Cent value.
  * @param fractionDigits Optional fixed precision.
- * @param real Whether to emit real-domain notation.
+ * @param real Whether to emit real-flavored notation.
  */
 export function centString(cents: number, fractionDigits?: number, real = false) {
   const result = fractionDigits === undefined ? cents.toString() : cents.toFixed(fractionDigits)

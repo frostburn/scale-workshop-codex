@@ -2,7 +2,7 @@ import { NEWLINE_TEST } from '@/constants'
 import { TextImporter, type ImportResult } from '@/importers/base'
 
 /**
- * Importer for AnaMark/VAZ `.tun` files.
+ * Importer for AnaMark softsynth / VAZ Plus `.tun` files.
  */
 export class AnaMarkImporter extends TextImporter {
   parseText(input: string, filename: string): ImportResult {

@@ -3,6 +3,8 @@ import { RootContext, getSourceVisitor, parseAST } from 'sonic-weave'
 
 /**
  * Importer for the SonicWeave interchange format (`.swi`).
+ *
+ * Specs: https://github.com/xenharmonic-devs/sonic-weave/blob/main/documentation/interchange.md
  */
 export class SonicWeaveInterchangeImporter extends TextImporter {
   parseText(input: string): ImportResult {

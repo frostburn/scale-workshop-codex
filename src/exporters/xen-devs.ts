@@ -4,6 +4,8 @@ import { literalToString } from 'sonic-weave'
 
 /**
  * Exporter for the SonicWeave interchange format (`.swi`).
+ *
+ * Specs: https://github.com/xenharmonic-devs/sonic-weave/blob/main/documentation/interchange.md
  */
 export default class SonicWeaveInterchangeExporter extends BaseExporter {
   constructor(params: ExporterParams) {

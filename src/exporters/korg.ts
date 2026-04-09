@@ -4,12 +4,16 @@ import { Fraction, mtof } from 'xen-dev-utils'
 import { frequencyTableToBinaryData } from './mts-sysex'
 import { Interval, TimeMonzo } from 'sonic-weave'
 
-/**
- * Korg Sound Librarian exporter for the 'logue series.
- *
- * The generated ZIP contains XML metadata and a binary tuning table encoded as
- * an MTS Bulk Tuning Dump payload.
- */
+// This exporter converts tuning data into a zip-compressed file for use with
+// Korg's Sound Librarian software, supporting their 'logue series of synthesizers.
+// The zip contains a small amount of metadata and a binary file containing a
+// tuning table that follows the MTS Bulk Tuning Dump specification.
+// The Sound Librarian software falls a bit short of being suitable for
+// advanced tuning specifications by ignoring KBM files and truncating to
+// 1 cent precision. Since the MTS tuning specifications support 0.0061 cent
+// precision with arbitrary mapping, this exporter intends to fully utilize the
+// capabilities of the 'logue tuning implementation. However it has not been
+// strictly tested if the additional precision is employed in the synthesis.
 export enum KorgModels {
   MONOLOGUE = 'monologue',
   MINILOGUE = 'minilogue',
