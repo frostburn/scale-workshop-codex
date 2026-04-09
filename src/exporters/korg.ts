@@ -4,17 +4,12 @@ import { Fraction, mtof } from 'xen-dev-utils'
 import { frequencyTableToBinaryData } from './mts-sysex'
 import { Interval, TimeMonzo } from 'sonic-weave'
 
-// This exporter converts tuning data into a zip-compressed file for use with
-// Korg's Sound Librarian software, supporting their 'logue series of synthesizers.
-// The zip contains a small amount of metadata and a binary file containing a
-// tuning table that follows the MTS Bulk Tuning Dump specification.
-// The Sound Librarian software falls a bit short of being suitable for
-// advanced tuning specifications by ignoring KBM files and truncating to
-// 1 cent precision. Since the MTS tuning specifications support 0.0061 cent
-// precision with arbitrary mapping, this exporter intends to fully utilize the
-// capabilities of the 'logue tuning implementation. However it has not been
-// strictly tested if the additional precision is employed in the synthesis.
-
+/**
+ * Korg Sound Librarian exporter for the 'logue series.
+ *
+ * The generated ZIP contains XML metadata and a binary tuning table encoded as
+ * an MTS Bulk Tuning Dump payload.
+ */
 export enum KorgModels {
   MONOLOGUE = 'monologue',
   MINILOGUE = 'minilogue',
@@ -58,6 +53,12 @@ export enum KorgExporterError {
 const OCTAVE_FORMAT_SIZE = 12
 const SCALE_FORMAT_SIZE = 128
 
+/**
+ * Maps a user-facing model key to the Korg metadata used in archive generation.
+ *
+ * @param modelName Normalized model id from UI state.
+ * @returns Model metadata needed for file naming and XML payloads.
+ */
 export function getKorgModelInfo(modelName: string) {
   switch (modelName) {
     case 'minilogue':
@@ -73,6 +74,9 @@ export function getKorgModelInfo(modelName: string) {
   }
 }
 
+/**
+ * Exporter that produces ZIP archives compatible with Korg Sound Librarian.
+ */
 export class KorgExporter extends BaseExporter {
   model: KorgModels
   useOctaveFormat: boolean
@@ -88,6 +92,12 @@ export class KorgExporter extends BaseExporter {
     }
   }
 
+  /**
+   * Validates whether the provided intervals can be exported in Korg's 12-note octave format.
+   *
+   * @param intervals Relative scale intervals.
+   * @returns Empty string when valid, otherwise a human-readable error message.
+   */
   static getOctaveFormatErrorMessage(intervals: Interval[]): string {
     const octave = new Interval(TimeMonzo.fromFraction(new Fraction(2, 1), 3), 'linear')
 
@@ -110,6 +120,14 @@ export class KorgExporter extends BaseExporter {
     return ''
   }
 
+  /**
+   * Builds the `Tun[SO]_*.info` XML payload for a Korg model.
+   *
+   * @param model Target Korg model key.
+   * @param programmer Exporter metadata shown by Sound Librarian.
+   * @param comment User-visible scale comment.
+   * @returns XML string payload for tuning info.
+   */
   getTuningInfoXml(model: string, programmer = 'Scale Workshop', comment = '') {
     const format = getKorgModelInfo(model)
     const name = format.name
@@ -130,6 +148,12 @@ export class KorgExporter extends BaseExporter {
     return xml
   }
 
+  /**
+   * Builds `FileInformation.xml` describing the contents of the Korg archive.
+   *
+   * @param model Target Korg model key.
+   * @returns XML string payload describing binary/info entries.
+   */
   getFileInfoXml(model: string) {
     const format = getKorgModelInfo(model)
 
@@ -156,6 +180,11 @@ export class KorgExporter extends BaseExporter {
     return xml
   }
 
+  /**
+   * Generates ZIP payload and extension for the selected Korg export format.
+   *
+   * @returns Tuple containing zip object and target file extension.
+   */
   getFileContents(): [JSZip, string] {
     const scale = this.params.scale
     const baseMidiNote = scale.baseMidiNote
@@ -173,7 +202,7 @@ export class KorgExporter extends BaseExporter {
 
     const binaryData = frequencyTableToBinaryData(frequencies)
 
-    // prepare files for zipping
+    // Prepare files for zipping.
     const format = KORG_MODEL_INFO[this.model]
     const tuningInfo = this.getTuningInfoXml(this.model.toString(), 'ScaleWorkshop', scale.title)
     const fileInfo = this.getFileInfoXml(this.model.toString())
@@ -188,6 +217,9 @@ export class KorgExporter extends BaseExporter {
     return [zip, fileType]
   }
 
+  /**
+   * Persists the generated Korg tuning archive to disk.
+   */
   async saveFile() {
     const [zip, fileType] = this.getFileContents()
     const base64 = await zip.generateAsync({ type: 'base64' })
