@@ -274,26 +274,26 @@ const colors = computed(() =>
 
 // These really should be direct v-models, but there's
 // something wrong with how input ranges are handled.
+function parseNumberish(value: number | string) {
+  return typeof value === 'number' ? value : parseFloat(value)
+}
+
 const renyiOrderSlider = computed({
   get: () => entropy.a,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      entropy.a = newValue
+  set(newValue: number | string) {
+    const parsed = parseNumberish(newValue)
+    if (!Number.isNaN(parsed)) {
+      entropy.a = parsed
     }
   }
 })
 
 const frequencyDeviationSlider = computed({
   get: () => entropy.s,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      entropy.s = newValue
+  set(newValue: number | string) {
+    const parsed = parseNumberish(newValue)
+    if (!Number.isNaN(parsed)) {
+      entropy.s = parsed
     }
   }
 })

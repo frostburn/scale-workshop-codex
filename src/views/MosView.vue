@@ -25,15 +25,17 @@ const hardnessRange = computed(() =>
   getHardness(rationalHardness.value.n, rationalHardness.value.d)
 )
 
+function parseNumberish(value: number | string) {
+  return typeof value === 'number' ? value : parseFloat(value)
+}
+
 const hardnessSlider = computed({
   get: () => 1 - 1 / hardness.value,
-  set(newValue: number) {
+  set(newValue: number | string) {
     // There's something wrong with how input ranges are handled.
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      hardness.value = 1 / (1 - newValue)
+    const parsed = parseNumberish(newValue)
+    if (!Number.isNaN(parsed)) {
+      hardness.value = 1 / (1 - parsed)
       message.value = 'Loading...'
       updateScale()
     }
