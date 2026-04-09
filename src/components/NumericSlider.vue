@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 
-// Pass through native input attributes like min/max/step/id/class.
-const props = defineProps<Record<string, unknown>>()
+const attrs = useAttrs()
 
 const model = defineModel<number>()
 
@@ -18,5 +17,5 @@ const wrapper = computed({
 </script>
 
 <template>
-  <input v-bind="props" type="range" v-model="wrapper" />
+  <input v-bind="attrs" type="range" v-model="wrapper" />
 </template>
