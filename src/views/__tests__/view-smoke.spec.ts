@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { shallowMount } from '@vue/test-utils'
@@ -11,6 +11,9 @@ import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
 import TermsOfService from '@/views/TermsOfService.vue'
 import VirtualKeyboardView from '@/views/VirtualKeyboardView.vue'
 import VirtualQwerty from '@/views/VirtualQwerty.vue'
+
+const originalMatchMedia = window.matchMedia
+const originalRequestIdleCallback = (window as any).requestIdleCallback
 
 function createTestRouter() {
   return createRouter({
@@ -64,6 +67,20 @@ beforeAll(() => {
       } as IdleDeadline)
       return 1
     }
+  }
+})
+
+afterAll(() => {
+  if (originalMatchMedia) {
+    window.matchMedia = originalMatchMedia
+  } else {
+    delete (window as any).matchMedia
+  }
+
+  if (originalRequestIdleCallback) {
+    ;(window as any).requestIdleCallback = originalRequestIdleCallback
+  } else {
+    delete (window as any).requestIdleCallback
   }
 })
 
