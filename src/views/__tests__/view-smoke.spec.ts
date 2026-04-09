@@ -39,7 +39,7 @@ async function mountView(component: object, options: any = {}) {
       stubs: {
         Teleport: true,
         Transition: false,
-        ...(options.global?.stubs ?? {})
+        ...options.global?.stubs
       }
     }
   })
