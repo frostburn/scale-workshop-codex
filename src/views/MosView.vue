@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MosPyramid from '@/components/MosPyramid.vue'
+import NumericSlider from '@/components/NumericSlider.vue'
 import ScaleRule from '@/components/ScaleRule.vue'
 import { useScaleStore } from '@/stores/scale'
 import { debounce } from '@/utils'
@@ -25,20 +26,12 @@ const hardnessRange = computed(() =>
   getHardness(rationalHardness.value.n, rationalHardness.value.d)
 )
 
-function parseNumberish(value: number | string) {
-  return typeof value === 'number' ? value : parseFloat(value)
-}
-
-const hardnessSlider = computed({
+const hardnessSlider = computed<number>({
   get: () => 1 - 1 / hardness.value,
-  set(newValue: number | string) {
-    // There's something wrong with how input ranges are handled.
-    const parsed = parseNumberish(newValue)
-    if (!Number.isNaN(parsed)) {
-      hardness.value = 1 / (1 - parsed)
-      message.value = 'Loading...'
-      updateScale()
-    }
+  set(newValue) {
+    hardness.value = 1 / (1 - newValue)
+    message.value = 'Loading...'
+    updateScale()
   }
 })
 
@@ -124,10 +117,9 @@ async function easterEgg() {
     </div>
     <div class="controls control-group">
       <label for="hardness">Hardness ({{ hardnessRange }})</label>
-      <input
+      <NumericSlider
         id="hardness"
         class="control"
-        type="range"
         min="0"
         max="1"
         step="any"
