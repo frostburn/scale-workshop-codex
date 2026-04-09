@@ -273,20 +273,6 @@ const colors = computed(() =>
   centsValues.value.map((_, i) => scale.colorForIndex(scale.baseMidiNote + entropyMode.value + i))
 )
 
-const renyiOrderSlider = computed({
-  get: () => entropy.a,
-  set(newValue: number) {
-    entropy.a = newValue
-  }
-})
-
-const frequencyDeviationSlider = computed({
-  get: () => entropy.s,
-  set(newValue: number) {
-    entropy.s = newValue
-  }
-})
-
 watch(subtab, (newValue) => {
   if (newValue === 'entropy') {
     void entropy.fetchTable()
@@ -604,7 +590,7 @@ watch(subtab, (newValue) => {
           min="0.02"
           max="7"
           step="any"
-          v-model="renyiOrderSlider"
+          v-model="entropy.a"
         />
         <label for="s">Frequency deviation: {{ (entropy.s * 100).toFixed(2) }}%</label>
         <NumericSlider
@@ -613,7 +599,7 @@ watch(subtab, (newValue) => {
           min="0.003"
           max="0.02"
           step="any"
-          v-model="frequencyDeviationSlider"
+          v-model="entropy.s"
         />
       </div>
       <div class="entropy-intervals">
