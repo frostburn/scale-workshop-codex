@@ -17,145 +17,115 @@ const scale = useScaleStore()
 
 const audio = useAudioStore()
 
-const remappedKey = ref('')
+const remappableKeys = [
+  'deactivationCode',
+  'equaveDownCode',
+  'equaveUpCode',
+  'degreeDownCode',
+  'degreeUpCode'
+] as const
+type RemappableKey = (typeof remappableKeys)[number]
 
-const timeDomainVisualizer = ref<any>(null)
+const remappedKey = ref<RemappableKey | ''>('')
+
+type TimeDomainVisualizerHandle = {
+  initialize: (analyser: AnalyserNode) => void
+}
+
+const timeDomainVisualizer = ref<TimeDomainVisualizerHandle | null>(null)
 
 const analyser = ref<AnalyserNode | null>(null)
 
 // These really should be direct v-models, but there's
 // something wrong with how input ranges are handled.
-const audioDelay = computed({
-  get: () => audio.audioDelay,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
+function numericModel(getter: () => number, setter: (value: number) => void) {
+  return computed({
+    get: getter,
+    set(newValue: number | string) {
+      const parsed = typeof newValue === 'number' ? newValue : parseFloat(newValue)
+      if (!Number.isNaN(parsed)) {
+        setter(parsed)
+      }
     }
-    if (!isNaN(newValue)) {
-      audio.audioDelay = newValue
-    }
-  }
-})
+  })
+}
 
-const mainVolume = computed({
-  get: () => audio.mainVolume,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.mainVolume = newValue
-    }
+const audioDelay = numericModel(
+  () => audio.audioDelay,
+  (value) => {
+    audio.audioDelay = value
   }
-})
+)
 
-const attackTime = computed({
-  get: () => audio.attackTime,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.attackTime = newValue
-    }
+const mainVolume = numericModel(
+  () => audio.mainVolume,
+  (value) => {
+    audio.mainVolume = value
   }
-})
+)
 
-const decayTime = computed({
-  get: () => audio.decayTime,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.decayTime = newValue
-    }
+const attackTime = numericModel(
+  () => audio.attackTime,
+  (value) => {
+    audio.attackTime = value
   }
-})
+)
 
-const sustainLevel = computed({
-  get: () => audio.sustainLevel,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.sustainLevel = newValue
-    }
+const decayTime = numericModel(
+  () => audio.decayTime,
+  (value) => {
+    audio.decayTime = value
   }
-})
+)
 
-const releaseTime = computed({
-  get: () => audio.releaseTime,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.releaseTime = newValue
-    }
+const sustainLevel = numericModel(
+  () => audio.sustainLevel,
+  (value) => {
+    audio.sustainLevel = value
   }
-})
+)
 
-const unisonSpread = computed({
-  get: () => audio.spread,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.spread = newValue
-    }
+const releaseTime = numericModel(
+  () => audio.releaseTime,
+  (value) => {
+    audio.releaseTime = value
   }
-})
+)
 
-const pingPongDelayTime = computed({
-  get: () => audio.pingPongDelayTime,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.pingPongDelayTime = newValue
-    }
+const unisonSpread = numericModel(
+  () => audio.spread,
+  (value) => {
+    audio.spread = value
   }
-})
+)
 
-const pingPongFeedback = computed({
-  get: () => audio.pingPongFeedback,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.pingPongFeedback = newValue
-    }
+const pingPongDelayTime = numericModel(
+  () => audio.pingPongDelayTime,
+  (value) => {
+    audio.pingPongDelayTime = value
   }
-})
+)
 
-const pingPongSeparation = computed({
-  get: () => audio.pingPongSeparation,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.pingPongSeparation = newValue
-    }
+const pingPongFeedback = numericModel(
+  () => audio.pingPongFeedback,
+  (value) => {
+    audio.pingPongFeedback = value
   }
-})
+)
 
-const pingPongGain = computed({
-  get: () => audio.pingPongGain,
-  set(newValue: number) {
-    if (typeof newValue !== 'number') {
-      newValue = parseFloat(newValue)
-    }
-    if (!isNaN(newValue)) {
-      audio.pingPongGain = newValue
-    }
+const pingPongSeparation = numericModel(
+  () => audio.pingPongSeparation,
+  (value) => {
+    audio.pingPongSeparation = value
   }
-})
+)
+
+const pingPongGain = numericModel(
+  () => audio.pingPongGain,
+  (value) => {
+    audio.pingPongGain = value
+  }
+)
 
 const strokeStyle = computed(() => {
   // Add dependency.
@@ -201,7 +171,7 @@ function presetLong() {
 
 function assignCode(event: KeyboardEvent) {
   if (remappedKey.value.length && event.code.length) {
-    ;(state as any)[remappedKey.value] = event.code
+    state[remappedKey.value] = event.code
     remappedKey.value = ''
   }
 }
