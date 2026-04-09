@@ -3,7 +3,7 @@ import { useGridStore } from '@/stores/grid'
 import { debounce, labelX, labelY } from '@/utils'
 import { spanGrid } from 'ji-lattice'
 import { type Interval } from 'sonic-weave'
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 const store = useGridStore()
 
@@ -60,13 +60,29 @@ function computeGridExtent() {
 
 const computeExtent = debounce(computeGridExtent)
 
-watch(svgElement, (element) => {
+function edgeKey(edge: { type: string; x1: number; y1: number; x2: number; y2: number }) {
+  return `${edge.type}-${edge.x1}-${edge.y1}-${edge.x2}-${edge.y2}`
+}
+
+function vertexKey(vertex: { x: number; y: number }) {
+  return `${vertex.x}-${vertex.y}`
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+watch(svgElement, (element, _, onCleanup) => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   if (!element) {
     return
   }
   computeGridExtent()
-  const observer = new ResizeObserver(computeExtent)
-  observer.observe(element)
+  resizeObserver = new ResizeObserver(computeExtent)
+  resizeObserver.observe(element)
+  onCleanup(() => {
+    resizeObserver?.disconnect()
+    resizeObserver = null
+  })
 })
 
 watch(
@@ -81,6 +97,11 @@ watch(
   ],
   computeExtent
 )
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+})
 </script>
 
 <template>
@@ -92,22 +113,22 @@ watch(
     preserveAspectRatio="xMidYMid meet"
   >
     <line
-      v-for="(e, i) of gridLines"
-      :key="i"
+      v-for="e of gridLines"
+      :key="edgeKey(e)"
       v-bind="e"
       :class="`edge ${e.type}`"
       :stroke-width="store.size * 0.1"
     />
     <line
-      v-for="(e, i) of edges"
-      :key="i"
+      v-for="e of edges"
+      :key="edgeKey(e)"
       v-bind="e"
       :class="`edge ${e.type}`"
       :stroke-width="store.size * 0.2"
     />
     <circle
-      v-for="(v, i) of grid.vertices"
-      :key="i"
+      v-for="v of grid.vertices"
+      :key="vertexKey(v)"
       :class="{ node: true, held: v.indices.some((idx) => heldNotes.has(idx)) }"
       :cx="v.x"
       :cy="v.y"
@@ -117,7 +138,7 @@ watch(
       :stroke-width="store.size * 0.1"
     />
     <template v-if="store.showLabels">
-      <template v-for="(v, i) of grid.vertices" :key="i">
+      <template v-for="v of grid.vertices" :key="vertexKey(v)">
         <text
           v-for="(idx, j) of v.indices"
           :key="idx"
