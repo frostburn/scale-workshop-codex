@@ -1,7 +1,9 @@
 import { TextImporter, type ImportResult } from '@/importers/base'
 import { RootContext, getSourceVisitor, parseAST } from 'sonic-weave'
 
-// Specs: https://github.com/xenharmonic-devs/sonic-weave/blob/main/documentation/interchange.md
+/**
+ * Importer for the SonicWeave interchange format (`.swi`).
+ */
 export class SonicWeaveInterchangeImporter extends TextImporter {
   parseText(input: string): ImportResult {
     const ast = parseAST(input)
