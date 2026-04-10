@@ -556,13 +556,14 @@ function panic() {
       </ul>
     </div>
   </nav>
+  <div id="scale-data-teleport-parking" aria-hidden="true"></div>
   <RouterView
     :noteOn="keyboardNoteOn"
     :midiInputChannels="midiInputChannels"
     :typingKeyboard="typingKeyboard"
     @panic="panic"
   />
-  <Teleport :to="scaleDataTeleportTarget">
+  <Teleport :to="scaleDataTeleportTarget" :key="scaleDataTeleportTarget" defer>
     <textarea
       id="scale-data"
       aria-label="Scale data editor"
@@ -571,7 +572,6 @@ function panic() {
       @input="updateScaleData()"
     ></textarea>
   </Teleport>
-  <div id="scale-data-teleport-parking" aria-hidden="true"></div>
   <footer id="app-footer">
     <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
     <RouterLink to="/terms-of-service">Terms of service</RouterLink>
