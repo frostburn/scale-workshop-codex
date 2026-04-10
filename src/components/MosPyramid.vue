@@ -89,10 +89,10 @@ const generators = computed(() => {
       </ellipse>
     </a>
 
-    <template v-for="(row, rowIndex) of basics" :key="row[0]?.pattern ?? `row-${rowIndex}`">
+    <template v-for="(row, i) of basics" :key="i">
       <a
         v-for="(info, j) of row"
-        :key="info.pattern"
+        :key="j"
         @click="emit('mos', info.name, info.pattern, info.udp)"
         :class="{ selected: selected === info.pattern }"
         xlink:href="#"
@@ -102,7 +102,7 @@ const generators = computed(() => {
           {{ info.pattern }}
         </text>
         <text :x="info.x + 0.4" :y="info.y - 0.3" font-size="0.11" text-anchor="end">
-          {{ generators[rowIndex][j] }}
+          {{ generators[i][j] }}
         </text>
         <text :x="info.x" :y="info.y" font-size="0.25" text-anchor="middle">
           {{ info.abbreviation }}
