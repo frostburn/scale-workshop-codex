@@ -40,12 +40,8 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
   let fallbackMaxY = 1
 
   function tableFromY(tableY: number[]) {
-    const result: [number, number][] = []
-    let i = 0
-    for (let x = 0; x <= MAX_CENTS; x += RES) {
-      result.push([x, tableY[i++]])
-    }
-    return result
+    const numEntries = Math.floor(MAX_CENTS / RES) + 1
+    return tableY.slice(0, numEntries).map((y, i) => [i * RES, y] as [number, number])
   }
 
   async function fetchTable(force = false) {
