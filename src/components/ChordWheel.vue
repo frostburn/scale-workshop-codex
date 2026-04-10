@@ -1,4 +1,3 @@
-otonalFundamental
 <script setup lang="ts">
 import { otonalFundamental, utonalFundamental } from '@/analysis'
 import type { VirtualSynth } from '@/virtual-synth'
@@ -35,6 +34,13 @@ const buffers = [
 const thetas = Array(buffers.length).fill(0)
 
 let animationFrame: number | undefined
+
+function signedString(magnitude: number, sign: number) {
+  if (!magnitude) {
+    return '0'
+  }
+  return sign < 0 ? `-${magnitude}` : magnitude.toString()
+}
 
 function draw(time: DOMHighResTimeStamp) {
   let start = previousTime / 1000
@@ -121,7 +127,10 @@ function draw(time: DOMHighResTimeStamp) {
 
     theta += deltaTheta
 
-    chord = frequencies.map((frequency) => Math.round(frequency / fundamental).toString())
+    chord = frequencies.map((frequency) => {
+      const magnitude = Math.round(Math.abs(frequency) / fundamental)
+      return signedString(magnitude, Math.sign(frequency))
+    })
   } else {
     const fundamental = utonalFundamental(frequencies, props.maxChordRoot)
     for (let i = 0; i < numActive; ++i) {
@@ -141,7 +150,10 @@ function draw(time: DOMHighResTimeStamp) {
       ctx.stroke()
       thetas[i] += deltaTheta
     }
-    chord = frequencies.map((frequency) => Math.round(fundamental / frequency).toString())
+    chord = frequencies.map((frequency) => {
+      const magnitude = Math.round(fundamental / Math.abs(frequency))
+      return signedString(magnitude, Math.sign(frequency))
+    })
   }
   if (props.shadowBlur) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)'
