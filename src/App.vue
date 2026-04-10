@@ -32,9 +32,6 @@ function getPath(url: URL) {
 
 const router = useRouter()
 const route = useRoute()
-const scaleDataTeleportTarget = computed(() =>
-  route.name === 'scale' ? '#scale-data-teleport-target' : '#scale-data-teleport-parking'
-)
 
 // === Tuning table highlighting ===
 function tuningTableKeyOn(index: number) {
@@ -556,22 +553,23 @@ function panic() {
       </ul>
     </div>
   </nav>
-  <div id="scale-data-teleport-parking" aria-hidden="true"></div>
+  <div id="scale-data-teleport-parking" aria-hidden="true">
+    <Teleport to="#scale-data-teleport-target" :disabled="route.name !== 'scale'" defer>
+      <textarea
+        id="scale-data"
+        aria-label="Scale data editor"
+        rows="20"
+        v-model="scale.sourceText"
+        @input="updateScaleData()"
+      ></textarea>
+    </Teleport>
+  </div>
   <RouterView
     :noteOn="keyboardNoteOn"
     :midiInputChannels="midiInputChannels"
     :typingKeyboard="typingKeyboard"
     @panic="panic"
   />
-  <Teleport :to="scaleDataTeleportTarget" :key="scaleDataTeleportTarget" defer>
-    <textarea
-      id="scale-data"
-      aria-label="Scale data editor"
-      rows="20"
-      v-model="scale.sourceText"
-      @input="updateScaleData()"
-    ></textarea>
-  </Teleport>
   <footer id="app-footer">
     <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
     <RouterLink to="/terms-of-service">Terms of service</RouterLink>
