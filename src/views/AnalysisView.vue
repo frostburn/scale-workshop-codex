@@ -136,9 +136,18 @@ function formatMatrixCell(interval: Interval) {
 
 const highlights = reactive<boolean[][]>([])
 
-const matrix = computed(() =>
-  intervalMatrix(scale.relativeIntervals.slice(0, state.maxMatrixWidth))
-)
+const matrixError = ref('')
+
+const matrix = computed(() => {
+  matrixError.value = ''
+  try {
+    return intervalMatrix(scale.relativeIntervals.slice(0, state.maxMatrixWidth))
+  } catch (error) {
+    matrixError.value =
+      error instanceof Error ? error.message : 'Unable to calculate interval matrix for this scale.'
+    return []
+  }
+})
 
 const centsMatrix = computed(() => matrix.value.map((row) => row.map((i) => i.totalCents(true))))
 
@@ -304,7 +313,8 @@ watch(subtab, (newValue) => {
     <main v-if="subtab === 'matrix'">
       <h2>Interval matrix (modes)</h2>
       <div class="control-group interval-matrix">
-        <table @mouseleave="highlight()">
+        <p v-if="matrixError" class="matrix-error">{{ matrixError }}</p>
+        <table v-else @mouseleave="highlight()">
           <thead>
             <tr>
               <th></th>
@@ -673,6 +683,10 @@ main {
 .interval-matrix {
   overflow-x: auto;
   display: block;
+}
+.matrix-error {
+  color: #b00020;
+  font-weight: 600;
 }
 .interval-matrix th {
   font-weight: bold;
