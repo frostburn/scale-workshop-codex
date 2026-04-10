@@ -324,6 +324,23 @@ function windowKeyup(event: KeyboardEvent) {
   typingKeyboard.keyup(event)
 }
 
+function releaseActiveNotes() {
+  typingKeyboard.deactivate()
+  midiIn.deactivate()
+}
+
+function windowBlur() {
+  if (state.releaseOnBlur) {
+    releaseActiveNotes()
+  }
+}
+
+function documentVisibilitychange() {
+  if (state.releaseOnBlur && document.visibilityState !== 'visible') {
+    releaseActiveNotes()
+  }
+}
+
 // === Typing keyboard input ===
 const typingKeyboard = new Keyboard()
 
@@ -371,6 +388,8 @@ onMounted(async () => {
   window.addEventListener('keyup', windowKeydownOrUp)
   window.addEventListener('mousedown', windowKeydownOrUp)
   window.addEventListener('keydown', windowKeydown)
+  window.addEventListener('blur', windowBlur)
+  document.addEventListener('visibilitychange', documentVisibilitychange)
   window.addEventListener('touchstart', audio.initialize)
   typingKeyboard.addKeydownListener(typingKeydown)
 
@@ -493,6 +512,8 @@ onUnmounted(() => {
   window.removeEventListener('keydown', windowKeydownOrUp)
   window.removeEventListener('keyup', windowKeydownOrUp)
   window.removeEventListener('mousedown', windowKeydownOrUp)
+  window.removeEventListener('blur', windowBlur)
+  document.removeEventListener('visibilitychange', documentVisibilitychange)
   window.removeEventListener('touchstart', audio.initialize)
   typingKeyboard.removeEventListener(typingKeydown)
   if (midi.input !== null) {
