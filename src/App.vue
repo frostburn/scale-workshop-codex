@@ -552,7 +552,7 @@ function panic() {
     </div>
   </nav>
   <RouterView v-slot="{ Component, route }">
-    <KeepAlive include="scale">
+    <KeepAlive include="ScaleView">
       <component
         :is="Component"
         :key="route.name === 'scale' ? String(route.name) : route.fullPath"
