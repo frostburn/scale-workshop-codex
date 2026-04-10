@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
 import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
@@ -31,6 +31,10 @@ function getPath(url: URL) {
 }
 
 const router = useRouter()
+const route = useRoute()
+const scaleDataTeleportTarget = computed(() =>
+  route.name === 'scale' ? '#scale-data-teleport-target' : '#scale-data-teleport-parking'
+)
 
 // === Tuning table highlighting ===
 function tuningTableKeyOn(index: number) {
@@ -558,7 +562,7 @@ function panic() {
     :typingKeyboard="typingKeyboard"
     @panic="panic"
   />
-  <Teleport to="#scale-data-teleport-target">
+  <Teleport :to="scaleDataTeleportTarget">
     <textarea
       id="scale-data"
       aria-label="Scale data editor"
@@ -567,6 +571,7 @@ function panic() {
       @input="updateScaleData()"
     ></textarea>
   </Teleport>
+  <div id="scale-data-teleport-parking" aria-hidden="true"></div>
   <footer id="app-footer">
     <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
     <RouterLink to="/terms-of-service">Terms of service</RouterLink>
@@ -680,5 +685,9 @@ nav a:first-of-type {
 }
 #app-footer a {
   color: var(--color-text-mute);
+}
+
+#scale-data-teleport-parking {
+  display: none;
 }
 </style>
