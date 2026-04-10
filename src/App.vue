@@ -6,7 +6,7 @@ import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
 import { decodeQuery } from '@/url-encode'
-import { annotateColors } from '@/utils'
+import { annotateColors, debounce } from '@/utils'
 import { version } from '../package.json'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from './stores/state'
@@ -20,6 +20,7 @@ const state = useStateStore()
 const scale = useScaleStore()
 const midi = useMidiStore()
 const audio = useAudioStore()
+const updateScaleData = debounce(scale.computeScale)
 
 // == URL path handling ==
 /**
@@ -557,6 +558,15 @@ function panic() {
     :typingKeyboard="typingKeyboard"
     @panic="panic"
   />
+  <Teleport to="#scale-data-teleport-target">
+    <textarea
+      id="scale-data"
+      aria-label="Scale data editor"
+      rows="20"
+      v-model="scale.sourceText"
+      @input="updateScaleData()"
+    ></textarea>
+  </Teleport>
   <footer id="app-footer">
     <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
     <RouterLink to="/terms-of-service">Terms of service</RouterLink>

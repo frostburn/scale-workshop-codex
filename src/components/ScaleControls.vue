@@ -9,8 +9,6 @@ const scale = useScaleStore()
 
 const updateScale = debounce(scale.computeScale)
 
-const sourceEditor = ref<HTMLTextAreaElement | null>(null)
-
 const paletteInfo = ref('')
 
 function updatePaletteInfo(event: Event) {
@@ -23,12 +21,13 @@ function clearPaletteInfo() {
 }
 
 function insertFromPalette(event: Event) {
-  if (!sourceEditor.value) {
+  const sourceEditor = document.getElementById('scale-data') as HTMLTextAreaElement | null
+  if (!sourceEditor) {
     return
   }
   const character = (event.target as HTMLButtonElement).textContent
-  const start = sourceEditor.value.selectionStart
-  const end = sourceEditor.value.selectionEnd
+  const start = sourceEditor.selectionStart
+  const end = sourceEditor.selectionEnd
   scale.sourceText =
     scale.sourceText.substring(0, start) +
     character +
@@ -37,10 +36,11 @@ function insertFromPalette(event: Event) {
 }
 
 function focus() {
-  if (!sourceEditor.value) {
+  const sourceEditor = document.getElementById('scale-data') as HTMLTextAreaElement | null
+  if (!sourceEditor) {
     return
   }
-  sourceEditor.value.focus()
+  sourceEditor.focus()
 }
 
 defineExpose({ focus, clearPaletteInfo })
@@ -101,15 +101,7 @@ defineExpose({ focus, clearPaletteInfo })
     </h2>
     <div class="control">
       <label class="sr-only" for="scale-data">Scale data editor</label>
-      <textarea
-        id="scale-data"
-        aria-label="Scale data editor"
-        ref="sourceEditor"
-        rows="20"
-        v-model="scale.sourceText"
-        @input="updateScale()"
-        @focus="clearPaletteInfo"
-      ></textarea>
+      <div id="scale-data-teleport-target" @focusin="clearPaletteInfo"></div>
     </div>
     <ScaleRule :scale="scale.scale" orientation="horizontal" />
     <p v-if="scale.error" class="error">{{ scale.error }}</p>
