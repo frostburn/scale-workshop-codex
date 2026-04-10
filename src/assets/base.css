@@ -34,7 +34,7 @@
   --color-alert-danger-background: rgba(243, 216, 218, 1);
   --color-alert-danger-border: rgba(239, 199, 204, 1);
 
-  --section-gap: 160px;
+  --section-gap: 10rem;
   --base-font-size: 15px;
   --base-line-height: 1.5;
 }
