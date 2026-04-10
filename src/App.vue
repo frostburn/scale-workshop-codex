@@ -552,16 +552,26 @@ function panic() {
     </div>
   </nav>
   <RouterView v-slot="{ Component, route }">
-    <KeepAlive include="ScaleView">
+    <KeepAlive>
       <component
+        v-if="route.name === 'scale'"
         :is="Component"
-        :key="route.name === 'scale' ? String(route.name) : route.fullPath"
+        key="scale"
         :noteOn="keyboardNoteOn"
         :midiInputChannels="midiInputChannels"
         :typingKeyboard="typingKeyboard"
         @panic="panic"
       />
     </KeepAlive>
+    <component
+      v-if="route.name !== 'scale'"
+      :is="Component"
+      :key="route.fullPath"
+      :noteOn="keyboardNoteOn"
+      :midiInputChannels="midiInputChannels"
+      :typingKeyboard="typingKeyboard"
+      @panic="panic"
+    />
   </RouterView>
   <footer id="app-footer">
     <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
