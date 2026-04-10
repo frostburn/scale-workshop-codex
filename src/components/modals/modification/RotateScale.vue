@@ -34,7 +34,7 @@ function modify(expand = true) {
           <p>Rotate the mode of your scale.</p>
           <label for="new-unison">New 1/1</label>
           <select id="new-unison" class="control" v-model="modal.newUnison">
-            <option v-for="(label, i) of scale.labels" :key="i" :value="i">
+            <option v-for="(label, i) of scale.labels" :key="`rotate-${label}-${i}`" :value="i">
               {{ label }}
             </option>
           </select>

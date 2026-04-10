@@ -125,7 +125,7 @@ function generate(shell = true, expand = true) {
         <div class="control">
           <label for="vao">Vertically aligned object</label>
           <select id="vao" v-model="modal.vaoIndex">
-            <option v-for="(vao, i) of modal.vaos" :key="i" :value="i">
+            <option v-for="(vao, i) of modal.vaos" :key="`vao-${vao.harmonics.join(':')}-${i}`" :value="i">
               {{ vao.harmonics.join(':') }}
             </option>
           </select>
