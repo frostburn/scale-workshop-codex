@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
 import type { Input, Output } from 'webmidi'
@@ -32,6 +32,20 @@ function getPath(url: URL) {
 
 const router = useRouter()
 const route = useRoute()
+const isScaleEditorTeleported = ref(false)
+
+watch(
+  () => route.name,
+  async (name) => {
+    if (name === 'scale') {
+      await nextTick()
+      isScaleEditorTeleported.value = true
+    } else {
+      isScaleEditorTeleported.value = false
+    }
+  },
+  { immediate: true }
+)
 
 // === Tuning table highlighting ===
 function tuningTableKeyOn(index: number) {
@@ -554,7 +568,7 @@ function panic() {
     </div>
   </nav>
   <div id="scale-data-teleport-parking" aria-hidden="true">
-    <Teleport to="#scale-data-teleport-target" :disabled="route.name !== 'scale'" defer>
+    <Teleport to="#scale-data-teleport-target" :disabled="!isScaleEditorTeleported">
       <textarea
         id="scale-data"
         aria-label="Scale data editor"
