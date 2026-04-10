@@ -327,6 +327,16 @@ function windowKeyup(event: KeyboardEvent) {
 function releaseActiveNotes() {
   typingKeyboard.deactivate()
   midiIn.deactivate()
+  window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }))
+  state.heldNotes.clear()
+  if (midi.output !== null) {
+    midi.output.sendAllNotesOff({
+      channels: midi.outputMode === 'pitchBend' ? [...midi.outputChannels] : [midi.outputChannel]
+    })
+  }
+  if (audio.synth !== null) {
+    audio.synth.allNotesOff()
+  }
 }
 
 function windowBlur() {
@@ -524,16 +534,7 @@ onUnmounted(() => {
 
 function panic() {
   console.log('Firing global key off.')
-  typingKeyboard.deactivate()
-  midiIn.deactivate()
-  if (midi.output !== null) {
-    midi.output.sendAllNotesOff({
-      channels: midi.outputMode === 'pitchBend' ? [...midi.outputChannels] : [midi.outputChannel]
-    })
-  }
-  if (audio.synth !== null) {
-    audio.synth.allNotesOff()
-  }
+  releaseActiveNotes()
 }
 </script>
 

@@ -97,6 +97,7 @@ describe('App lifecycle listeners', () => {
     setActivePinia(createPinia())
     const state = useStateStore()
     expect(state.releaseOnBlur).toBe(false)
+    state.heldNotes.set(12, 1)
     const router = createTestRouter()
     await router.push('/')
     await router.isReady()
@@ -121,6 +122,7 @@ describe('App lifecycle listeners', () => {
     window.dispatchEvent(new Event('blur'))
     expect(keyboardDeactivateSpy).not.toHaveBeenCalled()
     expect(midiDeactivateSpy).not.toHaveBeenCalled()
+    expect(state.heldNotes.get(12)).toBe(1)
 
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
@@ -130,6 +132,7 @@ describe('App lifecycle listeners', () => {
 
     expect(keyboardDeactivateSpy).not.toHaveBeenCalled()
     expect(midiDeactivateSpy).not.toHaveBeenCalled()
+    expect(state.heldNotes.get(12)).toBe(1)
 
     await wrapper.unmount()
     vi.useRealTimers()
@@ -145,6 +148,7 @@ describe('App lifecycle listeners', () => {
     setActivePinia(createPinia())
     const state = useStateStore()
     state.releaseOnBlur = true
+    state.heldNotes.set(12, 1)
     const router = createTestRouter()
     await router.push('/')
     await router.isReady()
@@ -169,6 +173,7 @@ describe('App lifecycle listeners', () => {
     window.dispatchEvent(new Event('blur'))
     expect(keyboardDeactivateSpy).toHaveBeenCalledTimes(1)
     expect(midiDeactivateSpy).toHaveBeenCalledTimes(1)
+    expect(state.heldNotes.size).toBe(0)
 
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
