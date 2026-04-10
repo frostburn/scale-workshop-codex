@@ -16,7 +16,7 @@ import ChordWheel from '@/components/ChordWheel.vue'
 import HarmonicEntropyPlot from '@/components/HarmonicEntropyPlot.vue'
 import NumericSlider from '@/components/NumericSlider.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from '@/stores/state'
 import { literalToString, type Interval } from 'sonic-weave'
@@ -137,15 +137,16 @@ function formatMatrixCell(interval: Interval) {
 const highlights = reactive<boolean[][]>([])
 
 const matrixError = ref('')
+const matrix = ref<Interval[][]>([])
 
-const matrix = computed(() => {
-  matrixError.value = ''
+watchEffect(() => {
   try {
-    return intervalMatrix(scale.relativeIntervals.slice(0, state.maxMatrixWidth))
+    matrix.value = intervalMatrix(scale.relativeIntervals.slice(0, state.maxMatrixWidth))
+    matrixError.value = ''
   } catch (error) {
+    matrix.value = []
     matrixError.value =
       error instanceof Error ? error.message : 'Unable to calculate interval matrix for this scale.'
-    return []
   }
 })
 
