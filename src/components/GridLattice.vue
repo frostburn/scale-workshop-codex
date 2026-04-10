@@ -50,7 +50,8 @@ const keyedEdges = computed(() =>
 const keyedVertices = computed(() =>
   grid.value.vertices.map((vertex) => ({
     key: `${vertex.x}-${vertex.y}`,
-    vertex
+    vertex,
+    color: props.colors[vertex.indices[0]] ?? 'none'
   }))
 )
 
@@ -147,8 +148,8 @@ onUnmounted(() => {
       :cx="item.vertex.x"
       :cy="item.vertex.y"
       :r="store.size"
-      :fill="colors[item.vertex.indices[0]] ?? 'none'"
-      :stroke="colors[item.vertex.indices[0]] ?? 'none'"
+      :fill="item.color"
+      :stroke="item.color"
       :stroke-width="store.size * 0.1"
     />
     <template v-if="store.showLabels">
