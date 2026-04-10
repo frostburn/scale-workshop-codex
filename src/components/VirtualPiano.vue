@@ -332,8 +332,8 @@ onUnmounted(() => {
 <template>
   <svg width="100%" height="100%">
     <rect
-      v-for="(key, i) of whiteKeys"
-      :key="i"
+      v-for="key of whiteKeys"
+      :key="key.index"
       @touchstart="onTouchStart($event, key.index)"
       @touchend="onTouchEnd($event, key.index)"
       @touchcancel="onTouchEnd($event, key.index)"
@@ -350,8 +350,8 @@ onUnmounted(() => {
     />
     <template v-if="splitAccidentals">
       <rect
-        v-for="(key, i) of splitKeys"
-        :key="i"
+        v-for="key of splitKeys"
+        :key="key.index"
         @touchstart="onTouchStart($event, key.index)"
         @touchend="onTouchEnd($event, key.index)"
         @touchcancel="onTouchEnd($event, key.index)"
@@ -369,8 +369,8 @@ onUnmounted(() => {
     </template>
     <template v-else>
       <rect
-        v-for="(key, i) of blackKeys"
-        :key="i"
+        v-for="key of blackKeys"
+        :key="key.index"
         @touchstart="onTouchStart($event, key.index)"
         @touchend="onTouchEnd($event, key.index)"
         @touchcancel="onTouchEnd($event, key.index)"

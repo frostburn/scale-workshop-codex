@@ -277,9 +277,9 @@ function edoClick(info: MosScaleInfo) {
           <input id="edo" type="number" min="2" v-model="modal.edo" />
         </div>
         <span
-          v-for="(info, i) of modal.edoList"
+          v-for="info of modal.edoList"
           @mouseenter="edoMouseEnter(info)"
-          :key="`edo-${info.mosPattern}-${i}`"
+          :key="info.mosPattern"
         >
           <button @click="edoClick(info)">
             {{ info.mosPattern }}
