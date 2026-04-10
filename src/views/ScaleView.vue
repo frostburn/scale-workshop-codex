@@ -9,7 +9,16 @@ import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
 import { debounce } from '@/utils'
 import { getSourceVisitor, setNumberOfComponents } from 'sonic-weave'
-import { defineAsyncComponent, defineComponent, h, onMounted, onUnmounted, ref } from 'vue'
+import {
+  defineAsyncComponent,
+  defineComponent,
+  h,
+  nextTick,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  ref
+} from 'vue'
 
 const scale = useScaleStore()
 const state = useStateStore()
@@ -88,7 +97,14 @@ onMounted(() => {
   }
 })
 
-onUnmounted(() => {
+onActivated(async () => {
+  await nextTick()
+  if (document.activeElement === document.body) {
+    controls.value?.focus?.()
+  }
+})
+
+onDeactivated(() => {
   // Prepare to include other state in the server payload
   scale.rerollId()
 })
