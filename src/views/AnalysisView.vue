@@ -686,7 +686,7 @@ main {
   display: block;
 }
 .matrix-error {
-  color: #b00020;
+  color: var(--color-error);
   font-weight: 600;
 }
 .interval-matrix th {
