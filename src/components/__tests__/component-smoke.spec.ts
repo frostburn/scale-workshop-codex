@@ -125,10 +125,11 @@ describe('component smoke tests', () => {
       }
     })
 
-    await wrapper.setValue('7')
+    const slider = wrapper.get('input[type="range"]')
+    await slider.setValue('7')
 
-    expect(wrapper.attributes('type')).toBe('range')
-    expect(wrapper.emitted('update:modelValue')).toEqual([['7']])
+    expect(slider.attributes('type')).toBe('range')
+    expect(wrapper.emitted('update:modelValue')).toEqual([[7]])
   })
 
   it('keeps emitting updates as slider values change', async () => {
@@ -138,9 +139,10 @@ describe('component smoke tests', () => {
       }
     })
 
-    await wrapper.setValue('6')
-    await wrapper.setValue('4')
+    const slider = wrapper.get('input[type="range"]')
+    await slider.setValue('6')
+    await slider.setValue('4')
 
-    expect(wrapper.emitted('update:modelValue')).toEqual([['6'], ['4']])
+    expect(wrapper.emitted('update:modelValue')).toEqual([[6], [4]])
   })
 })
