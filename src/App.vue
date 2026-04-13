@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
+import { DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
 import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
@@ -327,7 +327,7 @@ function windowKeyup(event: KeyboardEvent) {
 function releaseActiveNotes() {
   typingKeyboard.deactivate()
   midiIn.deactivate()
-  window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }))
+  window.dispatchEvent(new MouseEvent('mouseup', { button: LEFT_MOUSE_BTN }))
   state.heldNotes.clear()
   if (midi.output !== null) {
     midi.output.sendAllNotesOff({
