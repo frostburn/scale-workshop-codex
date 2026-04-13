@@ -123,12 +123,17 @@ function pyramidClick(l: number, key: number) {
   modal.method = 'direct'
 }
 
-function edoMouseEnter(info: MosScaleInfo) {
+type EdoListInfo = Pick<
+  MosScaleInfo,
+  'numberOfLargeSteps' | 'numberOfSmallSteps' | 'sizeOfLargeStep' | 'sizeOfSmallStep'
+>
+
+function edoMouseEnter(info: EdoListInfo) {
   modal.previewL = info.numberOfLargeSteps
   modal.previewS = info.numberOfSmallSteps
 }
 
-function edoClick(info: MosScaleInfo) {
+function edoClick(info: EdoListInfo) {
   modal.numberOfLargeSteps = info.numberOfLargeSteps
   modal.numberOfSmallSteps = info.numberOfSmallSteps
   modal.sizeOfLargeStep = info.sizeOfLargeStep
