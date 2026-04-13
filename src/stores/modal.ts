@@ -9,7 +9,8 @@ import {
   tamnamsInfo,
   modeInfo,
   getHardness,
-  allForEdo
+  allForEdo,
+  type EdoMapEntry
 } from 'moment-of-symmetry'
 import {
   TimeMonzo,
@@ -296,7 +297,6 @@ export const useModalStore = defineStore('modal', () => {
     Math.min(Math.floor(up.value / numberOfPeriods.value) * numberOfPeriods.value, upMax.value)
   )
   // Selections
-  type EdoMapEntry = NonNullable<ReturnType<ReturnType<typeof makeEdoMap>['get']>>[number]
   const edoMap = reactive(makeEdoMap())
   const anyForEdoEntry = (edo: number) => anyForEdo(edo) as EdoMapEntry
   const minSize = ref(5)
