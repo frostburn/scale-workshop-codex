@@ -35,11 +35,12 @@ const thetas = Array(buffers.length).fill(0)
 
 let animationFrame: number | undefined
 
-function signedString(magnitude: number, sign: number) {
-  if (!magnitude) {
+function stringifySignedHarmonic(value: number) {
+  const rounded = Math.round(value)
+  if (!rounded) {
     return '0'
   }
-  return sign < 0 ? `-${magnitude}` : magnitude.toString()
+  return rounded.toString()
 }
 
 function draw(time: DOMHighResTimeStamp) {
@@ -127,10 +128,9 @@ function draw(time: DOMHighResTimeStamp) {
 
     theta += deltaTheta
 
-    chord = frequencies.map((frequency) => {
-      const magnitude = Math.round(Math.abs(frequency) / fundamental)
-      return signedString(magnitude, Math.sign(frequency))
-    })
+    chord = frequencies.map((frequency) =>
+      stringifySignedHarmonic((Math.sign(frequency) * Math.abs(frequency)) / fundamental)
+    )
   } else {
     const fundamental = utonalFundamental(frequencies, props.maxChordRoot)
     for (let i = 0; i < numActive; ++i) {
@@ -150,10 +150,9 @@ function draw(time: DOMHighResTimeStamp) {
       ctx.stroke()
       thetas[i] += deltaTheta
     }
-    chord = frequencies.map((frequency) => {
-      const magnitude = Math.round(fundamental / Math.abs(frequency))
-      return signedString(magnitude, Math.sign(frequency))
-    })
+    chord = frequencies.map((frequency) =>
+      stringifySignedHarmonic((Math.sign(frequency) * fundamental) / Math.abs(frequency))
+    )
   }
   if (props.shadowBlur) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)'
