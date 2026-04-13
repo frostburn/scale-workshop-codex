@@ -120,10 +120,7 @@ function draw(time: DOMHighResTimeStamp) {
 
     theta += deltaTheta
 
-    chord = frequencies.map((frequency) => {
-      const rounded = Math.round((Math.sign(frequency) * Math.abs(frequency)) / fundamental)
-      return rounded ? rounded.toString() : '0'
-    })
+    chord = frequencies.map((frequency) => Math.round(frequency / fundamental).toString())
   } else {
     const fundamental = utonalFundamental(frequencies, props.maxChordRoot)
     for (let i = 0; i < numActive; ++i) {
@@ -143,10 +140,7 @@ function draw(time: DOMHighResTimeStamp) {
       ctx.stroke()
       thetas[i] += deltaTheta
     }
-    chord = frequencies.map((frequency) => {
-      const rounded = Math.round((Math.sign(frequency) * fundamental) / Math.abs(frequency))
-      return rounded ? rounded.toString() : '0'
-    })
+    chord = frequencies.map((frequency) => Math.round(fundamental / frequency).toString())
   }
   if (props.shadowBlur) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)'
