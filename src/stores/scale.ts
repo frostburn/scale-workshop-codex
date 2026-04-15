@@ -583,6 +583,9 @@ export const useScaleStore = defineStore('scale', () => {
     middleAccidentalColor,
     highAccidentalColor
   }
+  type LiveState = typeof LIVE_STATE
+  type LiveStateKey = keyof LiveState
+  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
 
   let skipNextRerollWatch = false
   watch(Object.values(LIVE_STATE), () => {
@@ -662,14 +665,16 @@ export const useScaleStore = defineStore('scale', () => {
    * Apply revived state to current state.
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
-  function fromJSON(data: Record<string, unknown>) {
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
     skipNextRerollWatch = true
-    for (const key in LIVE_STATE) {
-      if (key === 'latticeIntervals' && !data[key]) {
+    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
+      if (stateKey === 'latticeIntervals' && !data[stateKey]) {
         latticeIntervals.value = data['relativeIntervals'] as Interval[]
       } else {
-        const stateKey = key as keyof typeof LIVE_STATE
-        LIVE_STATE[stateKey].value = data[key] as (typeof LIVE_STATE)[typeof stateKey]['value']
+        const value = data[stateKey]
+        if (value !== undefined) {
+          LIVE_STATE[stateKey].value = value
+        }
       }
     }
     id.value = data['id'] as string
