@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 
 import SoniccoutureExporter from '../soniccouture'
 
-// @ts-ignore
 import EXPECTED_CONTENT from './soniccouture.nka?raw'
 import { getTestData } from './test-data'
 

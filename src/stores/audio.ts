@@ -25,8 +25,8 @@ import {
 type AudioStore = {
   initialize: () => void
   uninitialize: () => Promise<void>
-  toJSON: () => any
-  fromJSON: (data: any) => void
+  toJSON: () => Record<string, unknown>
+  fromJSON: (data: Record<string, unknown>) => void
   context: Ref<AudioContext>
   mainVolume: Ref<number>
   waveform: Ref<string>
@@ -294,7 +294,7 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
 
   watch(waveform, (newValue) => {
     if (BASIC_WAVEFORMS.includes(newValue)) {
-      oscillatorVoiceParams.type = unisonVoiceParams.type = newValue as any
+      oscillatorVoiceParams.type = unisonVoiceParams.type = newValue as OscillatorType | 'custom'
       oscillatorVoiceParams.periodicWave = unisonVoiceParams.periodicWave = undefined
     } else if (CUSTOM_WAVEFORMS.includes(newValue)) {
       oscillatorVoiceParams.type = unisonVoiceParams.type = 'custom'
@@ -387,12 +387,15 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
     pingPongGain,
     pingPongSeparation
   }
+  type LiveState = typeof LIVE_STATE
+  type LiveStateKey = keyof LiveState
+  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
 
   /**
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON() {
-    const result: any = {}
+    const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(LIVE_STATE)) {
       result[key] = value.value
     }
@@ -403,9 +406,12 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: any) {
-    for (const key in LIVE_STATE) {
-      LIVE_STATE[key as keyof typeof LIVE_STATE].value = data[key]
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
+    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
+      const value = data[stateKey]
+      if (value !== undefined) {
+        LIVE_STATE[stateKey].value = value
+      }
     }
   }
 

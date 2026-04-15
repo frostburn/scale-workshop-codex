@@ -68,9 +68,29 @@ export class Scale {
    * @param value Property value.
    * @returns Deserialized {@link Scale} instance or other data without modifications.
    */
-  static reviver(key: string, value: any) {
-    if (typeof value === 'object' && value !== null && value.type === 'ScaleWorkshopScale') {
-      return new Scale(value.intervalRatios, value.baseFrequency, value.baseMidiNote, value.title)
+  static reviver(key: string, value: unknown) {
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      'type' in value &&
+      value.type === 'ScaleWorkshopScale' &&
+      'intervalRatios' in value &&
+      'baseFrequency' in value &&
+      'baseMidiNote' in value &&
+      'title' in value
+    ) {
+      const revived = value as {
+        intervalRatios: number[]
+        baseFrequency: number
+        baseMidiNote: number
+        title: string
+      }
+      return new Scale(
+        revived.intervalRatios,
+        revived.baseFrequency,
+        revived.baseMidiNote,
+        revived.title
+      )
     }
     return value
   }

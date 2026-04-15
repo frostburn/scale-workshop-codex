@@ -58,7 +58,12 @@ export class BaseExporter {
   /**
    * Triggers a browser download for exporter output.
    */
-  saveFile(filename: string, contents: any, raw = false, mimeType = 'application/octet-stream,') {
+  saveFile(
+    filename: string,
+    contents: BlobPart,
+    raw = false,
+    mimeType = 'application/octet-stream,'
+  ) {
     const link = document.createElement('a')
     link.download = filename
 
@@ -66,7 +71,7 @@ export class BaseExporter {
       const blob = new Blob([contents], { type: 'application/octet-stream' })
       link.href = window.URL.createObjectURL(blob)
     } else {
-      link.href = 'data:' + mimeType + encodeURIComponent(contents)
+      link.href = 'data:' + mimeType + encodeURIComponent(String(contents))
     }
 
     // Open save dialog

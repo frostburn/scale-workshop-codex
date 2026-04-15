@@ -162,9 +162,9 @@ export function arrayToString(values: Interval[] | number[] | string[]) {
  * @param func Callback to debounce.
  * @param timeout Debounce window in milliseconds.
  */
-export function debounce(func: (...args: any[]) => void, timeout = 300) {
+export function debounce<TArgs extends unknown[]>(func: (...args: TArgs) => void, timeout = 300) {
   let timer: number
-  return (...args: any[]) => {
+  return (...args: TArgs) => {
     window.clearTimeout(timer)
     timer = window.setTimeout(() => {
       func(...args)
