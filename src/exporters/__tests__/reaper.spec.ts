@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 
 import ReaperExporter from '../reaper'
 
-// @ts-expect-error -- test fixture module import has no typings
 import EXPECTED_CONTENT from './reaper.txt?raw'
 import { getTestData } from './test-data'
 

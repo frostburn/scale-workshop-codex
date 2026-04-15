@@ -95,7 +95,7 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
 
   watch(
     N,
-    debounce((newValue) => {
+    debounce((newValue: number) => {
       const opts = { ...options.value }
       opts.N = newValue
       worker!.postMessage({ options: opts, jobId: ++jobId })
@@ -104,7 +104,7 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
 
   watch(
     a,
-    debounce((newValue) => {
+    debounce((newValue: number) => {
       const opts = { ...options.value }
       opts.a = newValue
       worker!.postMessage({ options: opts, jobId: ++jobId })
@@ -113,7 +113,7 @@ export const useHarmonicEntropyStore = defineStore('harmonic-entropy', () => {
 
   watch(
     s,
-    debounce((newValue) => {
+    debounce((newValue: number) => {
       const opts = { ...options.value }
       opts.s = newValue
       worker!.postMessage({ options: opts, jobId: ++jobId })

@@ -72,7 +72,7 @@ beforeAll(() => {
       close() {
         return Promise.resolve()
       }
-    }
+    } as unknown as AudioContextCtor
   }
 })
 
@@ -85,19 +85,19 @@ afterAll(() => {
   if (originalMatchMedia) {
     window.matchMedia = originalMatchMedia
   } else {
-    delete testWindow.matchMedia
+    Reflect.deleteProperty(testWindow, 'matchMedia')
   }
 
   if (originalRequestIdleCallback) {
     testWindow.requestIdleCallback = originalRequestIdleCallback
   } else {
-    delete testWindow.requestIdleCallback
+    Reflect.deleteProperty(testWindow, 'requestIdleCallback')
   }
 
   if (originalAudioContext) {
     testGlobal.AudioContext = originalAudioContext
   } else {
-    delete testGlobal.AudioContext
+    Reflect.deleteProperty(testGlobal, 'AudioContext')
   }
 })
 

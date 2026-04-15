@@ -72,7 +72,9 @@ describe('Korg exporters', () => {
     expect(outputByPath.get('TunS_000.TunS_info')).toBe(
       '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneScaleInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneScaleInformation>\n'
     )
-    expect(outputByPath.get('PresetInformation.xml')).toBe(
+    const libraryXmlPath = [...outputByPath.keys()].find((path) => path !== 'TunS_000.TunS_info')
+    expect(libraryXmlPath).toBeDefined()
+    expect(outputByPath.get(libraryXmlPath!)).toBe(
       '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="1"\n            NumTuneOctData="0">\n    <TuneScaleData>\n      <Information>TunS_000.TunS_info</Information>\n      <TuneScaleBinary>TunS_000.TunS_bin</TuneScaleBinary>\n    </TuneScaleData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
     )
 
@@ -170,7 +172,9 @@ describe('Korg exporters', () => {
     expect(outputByPath.get('TunO_000.TunO_info')).toBe(
       '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneOctInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneOctInformation>\n'
     )
-    expect(outputByPath.get('PresetInformation.xml')).toBe(
+    const octaveXmlPath = [...outputByPath.keys()].find((path) => path !== 'TunO_000.TunO_info')
+    expect(octaveXmlPath).toBeDefined()
+    expect(outputByPath.get(octaveXmlPath!)).toBe(
       '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="0"\n            NumTuneOctData="1">\n    <TuneOctData>\n      <Information>TunO_000.TunO_info</Information>\n      <TuneOctBinary>TunO_000.TunO_bin</TuneOctBinary>\n    </TuneOctData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
     )
 

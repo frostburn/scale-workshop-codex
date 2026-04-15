@@ -83,13 +83,13 @@ afterAll(() => {
   if (originalMatchMedia) {
     window.matchMedia = originalMatchMedia
   } else {
-    delete testWindow.matchMedia
+    Reflect.deleteProperty(testWindow, 'matchMedia')
   }
 
   if (originalRequestIdleCallback) {
     testWindow.requestIdleCallback = originalRequestIdleCallback
   } else {
-    delete testWindow.requestIdleCallback
+    Reflect.deleteProperty(testWindow, 'requestIdleCallback')
   }
 })
 

@@ -71,7 +71,7 @@ export class BaseExporter {
       const blob = new Blob([contents], { type: 'application/octet-stream' })
       link.href = window.URL.createObjectURL(blob)
     } else {
-      link.href = 'data:' + mimeType + encodeURIComponent(contents)
+      link.href = 'data:' + mimeType + encodeURIComponent(String(contents))
     }
 
     // Open save dialog

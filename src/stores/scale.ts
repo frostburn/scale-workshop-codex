@@ -624,7 +624,10 @@ export const useScaleStore = defineStore('scale', () => {
       slicedLabels = slicedLabels.slice(0, MAX_NUMBER_OF_SHARED_INTERVALS - 1)
       slicedLabels.push(equaveLabel)
     }
-    const result: Record<string, unknown> = {
+    const result: Record<string, unknown> & {
+      colors: string[]
+      labels: string[]
+    } = {
       scale: slicedScale.toJSON(),
       relativeIntervals: slicedIntervals.map((i) => i.toJSON()),
       colors: slicedColors,
