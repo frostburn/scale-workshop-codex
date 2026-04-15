@@ -23,7 +23,7 @@ describe('Scale store', () => {
   })
 
   it('deserializes 5edo', () => {
-    const data = JSON.parse(SERIALIZED, (key: string, value: any) =>
+    const data = JSON.parse(SERIALIZED, (key: string, value: unknown) =>
       Scale.reviver(key, Interval.reviver(key, value))
     )
     data.id = '123abcABC'
@@ -48,7 +48,7 @@ describe('Scale store', () => {
     const serialized = JSON.stringify(scale)
     expect(serialized.length).toBeLessThan(80000)
 
-    const data = JSON.parse(serialized, (key: string, value: any) =>
+    const data = JSON.parse(serialized, (key: string, value: unknown) =>
       Scale.reviver(key, Interval.reviver(key, value))
     )
     data.id = 'ABCabc123'

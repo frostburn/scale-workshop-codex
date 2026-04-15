@@ -4,7 +4,7 @@ import PureDataExporter from '../pure-data'
 
 import { getTestData } from './test-data'
 
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import EXPECTED_CONTENT from './pure-data.txt?raw'
 
 describe('PureData exporter', () => {

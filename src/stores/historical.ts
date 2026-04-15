@@ -364,7 +364,7 @@ export const useHistoricalStore = defineStore('historical', () => {
   }
 
   // Record order is supposed to be guaranteed since ES2015, but that doesn't seem to be the case...
-  const presetKeys: string[] = [...Object.keys(presets)]
+  const presetKeys: string[] = Object.keys(presets)
 
   // Sort by wideness of the generator
   presetKeys.sort(
@@ -373,7 +373,7 @@ export const useHistoricalStore = defineStore('historical', () => {
       parseInterval(presets[a].generator).totalCents()
   )
 
-  const wellPresetKeys: string[] = [...Object.keys(wellPresets)]
+  const wellPresetKeys: string[] = Object.keys(wellPresets)
 
   function extractYear(name: string) {
     for (const word of name.split(' ')) {

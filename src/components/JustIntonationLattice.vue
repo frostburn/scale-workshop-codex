@@ -61,7 +61,7 @@ const lattice = computed(() => {
   if (store.grayExtras) {
     for (const edge of result.edges) {
       if (edge.type === 'custom') {
-        ;(edge as any).type = 'border'
+        edge.type = 'border'
       }
     }
   }

@@ -369,7 +369,7 @@ export const useScaleStore = defineStore('scale', () => {
     'Store the current scale to be displayed in the lattice tab. Optionally with an explicit equave.'
   latticeView.__node__ = builtinNode(latticeView)
 
-  function warn(this: ExpressionVisitor, ...args: any[]) {
+  function warn(this: ExpressionVisitor, ...args: SonicWeaveValue[]) {
     const s = repr.bind(this.rootContext)
     const message = args.map((a) => (typeof a === 'string' ? a : s(a))).join(', ')
     warning.value = message.slice(0, MAX_ERROR_LENGTH)
@@ -624,7 +624,7 @@ export const useScaleStore = defineStore('scale', () => {
       slicedLabels = slicedLabels.slice(0, MAX_NUMBER_OF_SHARED_INTERVALS - 1)
       slicedLabels.push(equaveLabel)
     }
-    const result: any = {
+    const result: Record<string, unknown> = {
       scale: slicedScale.toJSON(),
       relativeIntervals: slicedIntervals.map((i) => i.toJSON()),
       colors: slicedColors,
@@ -659,17 +659,18 @@ export const useScaleStore = defineStore('scale', () => {
    * Apply revived state to current state.
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
-  function fromJSON(data: any) {
+  function fromJSON(data: Record<string, unknown>) {
     skipNextRerollWatch = true
     for (const key in LIVE_STATE) {
       if (key === 'latticeIntervals' && !data[key]) {
-        latticeIntervals.value = data['relativeIntervals']
+        latticeIntervals.value = data['relativeIntervals'] as Interval[]
       } else {
-        LIVE_STATE[key as keyof typeof LIVE_STATE].value = data[key]
+        const stateKey = key as keyof typeof LIVE_STATE
+        LIVE_STATE[stateKey].value = data[key] as (typeof LIVE_STATE)[typeof stateKey]['value']
       }
     }
-    id.value = data['id']
-    uploadedId.value = data['id']
+    id.value = data['id'] as string
+    uploadedId.value = data['id'] as string
     history.pushState()
     history.truncate()
   }

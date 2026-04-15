@@ -55,21 +55,21 @@ const intervalMatrixIndexingRadio = computed({
 const fadeAlpha = computed(() => 1 - trailLongevity.value / 100)
 
 const backgroundRBG = computed<[number, number, number]>(() => {
-  // Add dependency.
-  state.colorScheme
-  // Fetch from document.
-  const css = getComputedStyle(document.documentElement)
-    .getPropertyValue('--color-background')
-    .trim()
-    .toLowerCase()
+  const root = document.documentElement
+  if (state.colorScheme) {
+    const css = getComputedStyle(root).getPropertyValue('--color-background').trim().toLowerCase()
+    return new Values(css).rgb
+  }
+  const css = getComputedStyle(root).getPropertyValue('--color-background').trim().toLowerCase()
   return new Values(css).rgb
 })
 
 const strokeStyle = computed(() => {
-  // Add dependency.
-  state.colorScheme
-  // Fetch from document.
-  return getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim()
+  const root = document.documentElement
+  if (state.colorScheme) {
+    return getComputedStyle(root).getPropertyValue('--color-text').trim()
+  }
+  return getComputedStyle(root).getPropertyValue('--color-text').trim()
 })
 
 const scaleEquave = computed(
@@ -220,7 +220,7 @@ function highlight(y?: number, x?: number) {
   }
   // Look at other violators
   if (y !== undefined && x !== undefined && violations.value[y][x]) {
-    const value: any = margin ? centsMatrix.value[y][x] : matrix.value[y][x].value
+    const value = margin ? centsMatrix.value[y][x] : matrix.value[y][x].value
     for (let i = 0; i < matrix.value.length; ++i) {
       for (let j = 0; j < matrix.value[i].length; ++j) {
         if (violations.value[i][j]) {
@@ -248,7 +248,7 @@ function highlight(y?: number, x?: number) {
   }
 
   // Look at own column
-  const value: any = margin ? centsMatrix.value[y][x] : matrix.value[y][x].value
+  const value = margin ? centsMatrix.value[y][x] : matrix.value[y][x].value
   for (let i = 0; i < matrix.value.length; ++i) {
     if (margin) {
       highlights[i][x] = Math.abs(centsMatrix.value[i][x] - value) < margin

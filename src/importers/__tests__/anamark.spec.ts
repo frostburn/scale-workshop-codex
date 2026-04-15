@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import { AnaMarkImporter } from '../anamark'
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import UNIT_TEST_SCALE from './unittestscale.tun?raw'
 
 describe('Anamark importer', () => {

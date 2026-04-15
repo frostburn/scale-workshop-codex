@@ -15,10 +15,6 @@ export const useExportStore = defineStore('export', () => {
   const presetIndex = ref(0)
 
   watch(presetIndex, (newValue) => {
-    newValue = parseInt(newValue as any, 10)
-    if (isNaN(newValue)) {
-      presetIndex.value = 0
-    }
     if (newValue < 0) {
       presetIndex.value = 0
     }

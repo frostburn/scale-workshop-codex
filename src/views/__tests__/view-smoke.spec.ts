@@ -11,9 +11,18 @@ import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
 import TermsOfService from '@/views/TermsOfService.vue'
 import VirtualKeyboardView from '@/views/VirtualKeyboardView.vue'
 import VirtualQwerty from '@/views/VirtualQwerty.vue'
+import type { MountingOptions } from '@vue/test-utils'
+import type { Component } from 'vue'
+
+type TestWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (callback: IdleRequestCallback) => number
+    matchMedia?: (query: string) => MediaQueryList
+  }
+const testWindow = window as TestWindow
 
 const originalMatchMedia = window.matchMedia
-const originalRequestIdleCallback = (window as any).requestIdleCallback
+const originalRequestIdleCallback = testWindow.requestIdleCallback
 
 function createTestRouter() {
   return createRouter({
@@ -26,7 +35,7 @@ function createTestRouter() {
   })
 }
 
-async function mountView(component: object, options: any = {}) {
+async function mountView(component: Component, options: MountingOptions<unknown> = {}) {
   setActivePinia(createPinia())
   const router = createTestRouter()
   await router.push('/')
@@ -47,7 +56,7 @@ async function mountView(component: object, options: any = {}) {
 
 beforeAll(() => {
   if (typeof window.matchMedia !== 'function') {
-    ;(window as any).matchMedia = (query: string) => ({
+    testWindow.matchMedia = (query: string) => ({
       matches: query.includes('dark'),
       media: query,
       onchange: null,
@@ -59,8 +68,8 @@ beforeAll(() => {
     })
   }
 
-  if (typeof (window as any).requestIdleCallback !== 'function') {
-    ;(window as any).requestIdleCallback = (callback: IdleRequestCallback) => {
+  if (typeof testWindow.requestIdleCallback !== 'function') {
+    testWindow.requestIdleCallback = (callback: IdleRequestCallback) => {
       callback({
         didTimeout: false,
         timeRemaining: () => 50
@@ -74,13 +83,13 @@ afterAll(() => {
   if (originalMatchMedia) {
     window.matchMedia = originalMatchMedia
   } else {
-    delete (window as any).matchMedia
+    delete testWindow.matchMedia
   }
 
   if (originalRequestIdleCallback) {
-    ;(window as any).requestIdleCallback = originalRequestIdleCallback
+    testWindow.requestIdleCallback = originalRequestIdleCallback
   } else {
-    delete (window as any).requestIdleCallback
+    delete testWindow.requestIdleCallback
   }
 })
 

@@ -312,7 +312,7 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON() {
-    const result: any = {
+    const result: Record<string, unknown> = {
       horizontalCoordinates,
       verticalCoordinates,
       xCoords,
@@ -329,20 +329,21 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: any) {
+  function fromJSON(data: Record<string, unknown>) {
     for (const key in LIVE_STATE) {
-      LIVE_STATE[key as keyof typeof LIVE_STATE].value = data[key]
+      const stateKey = key as keyof typeof LIVE_STATE
+      LIVE_STATE[stateKey].value = data[key] as (typeof LIVE_STATE)[typeof stateKey]['value']
     }
     horizontalCoordinates.length = 0
-    horizontalCoordinates.push(...data.horizontalCoordinates)
+    horizontalCoordinates.push(...(data.horizontalCoordinates as number[]))
     verticalCoordinates.length = 0
-    verticalCoordinates.push(...data.verticalCoordinates)
+    verticalCoordinates.push(...(data.verticalCoordinates as number[]))
     xCoords.length = 0
-    xCoords.push(...data.xCoords)
+    xCoords.push(...(data.xCoords as number[]))
     yCoords.length = 0
-    yCoords.push(...data.yCoords)
+    yCoords.push(...(data.yCoords as number[]))
     zCoords.length = 0
-    zCoords.push(...data.zCoords)
+    zCoords.push(...(data.zCoords as number[]))
   }
 
   return {

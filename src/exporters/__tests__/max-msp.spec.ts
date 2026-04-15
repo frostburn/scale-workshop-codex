@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import MaxMSPExporter from '../max-msp'
 
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import EXPECTED_CONTENT from './max-msp.txt?raw'
 import { getTestData } from './test-data'
 

@@ -64,7 +64,7 @@ function makeState<T>(defaultMethod: T, rank2 = false) {
         throw new Error(`The given vals and subgroup define a rank ${result.rank} temperament`)
       }
       return result
-    }, CTE_MEANTONE) as any
+    }, CTE_MEANTONE)
     ;[commasTemperament, commasError] = computedAndError(
       () =>
         rank2FromCommas(
@@ -74,7 +74,7 @@ function makeState<T>(defaultMethod: T, rank2 = false) {
           subgroupWeights.value
         ),
       CTE_MEANTONE
-    ) as any
+    )
   } else {
     ;[valsTemperament, valsError] = computedAndError(
       () =>
@@ -85,7 +85,7 @@ function makeState<T>(defaultMethod: T, rank2 = false) {
           subgroupWeights.value
         ),
       CTE_MEANTONE
-    ) as any
+    )
     ;[commasTemperament, commasError] = computedAndError(
       () =>
         temperamentFromCommas(
@@ -95,7 +95,7 @@ function makeState<T>(defaultMethod: T, rank2 = false) {
           subgroupWeights.value
         ),
       CTE_MEANTONE
-    ) as any
+    )
   }
   const temperament = computed(() =>
     method.value === 'vals' ? valsTemperament.value : commasTemperament.value

@@ -157,7 +157,7 @@ function midiNoteOn(index: number, rawAttack?: number, channel?: number) {
   }
 
   if (isNaN(frequency)) {
-    return (_rawRelease?: number) => {}
+    return () => {}
   }
 
   const noteOff = sendNoteOn(index, frequency, rawAttack)

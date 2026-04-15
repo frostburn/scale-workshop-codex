@@ -8,9 +8,19 @@ import { MidiIn } from 'xen-midi'
 import App from '@/App.vue'
 import { useStateStore } from '@/stores/state'
 
+type TestWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (callback: IdleRequestCallback) => number
+    matchMedia?: (query: string) => MediaQueryList
+  }
+type AudioContextCtor = typeof AudioContext
+
+const testWindow = window as TestWindow
+const testGlobal = globalThis as typeof globalThis & { AudioContext?: AudioContextCtor }
+
 const originalMatchMedia = window.matchMedia
-const originalRequestIdleCallback = (window as any).requestIdleCallback
-const originalAudioContext = (globalThis as any).AudioContext
+const originalRequestIdleCallback = testWindow.requestIdleCallback
+const originalAudioContext = testGlobal.AudioContext
 
 function createTestRouter() {
   return createRouter({
@@ -21,7 +31,7 @@ function createTestRouter() {
 
 beforeAll(() => {
   if (typeof window.matchMedia !== 'function') {
-    ;(window as any).matchMedia = (query: string) => ({
+    testWindow.matchMedia = (query: string) => ({
       matches: query.includes('dark'),
       media: query,
       onchange: null,
@@ -33,8 +43,8 @@ beforeAll(() => {
     })
   }
 
-  if (typeof (window as any).requestIdleCallback !== 'function') {
-    ;(window as any).requestIdleCallback = (callback: IdleRequestCallback) => {
+  if (typeof testWindow.requestIdleCallback !== 'function') {
+    testWindow.requestIdleCallback = (callback: IdleRequestCallback) => {
       callback({
         didTimeout: false,
         timeRemaining: () => 50
@@ -43,8 +53,8 @@ beforeAll(() => {
     }
   }
 
-  if (typeof (globalThis as any).AudioContext !== 'function') {
-    ;(globalThis as any).AudioContext = class {
+  if (typeof testGlobal.AudioContext !== 'function') {
+    testGlobal.AudioContext = class {
       currentTime = 0
       destination = {}
       createGain() {
@@ -75,19 +85,19 @@ afterAll(() => {
   if (originalMatchMedia) {
     window.matchMedia = originalMatchMedia
   } else {
-    delete (window as any).matchMedia
+    delete testWindow.matchMedia
   }
 
   if (originalRequestIdleCallback) {
-    ;(window as any).requestIdleCallback = originalRequestIdleCallback
+    testWindow.requestIdleCallback = originalRequestIdleCallback
   } else {
-    delete (window as any).requestIdleCallback
+    delete testWindow.requestIdleCallback
   }
 
   if (originalAudioContext) {
-    ;(globalThis as any).AudioContext = originalAudioContext
+    testGlobal.AudioContext = originalAudioContext
   } else {
-    delete (globalThis as any).AudioContext
+    delete testGlobal.AudioContext
   }
 })
 

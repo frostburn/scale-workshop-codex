@@ -28,10 +28,10 @@ export type PresetGroup = {
  * Normalizes a raw preset fragment from JSON into a fully-populated preset object.
  */
 function normalized(id: string): Preset {
-  const result: any = Object.assign(
+  const result = Object.assign(
     {},
     (PRESETS as unknown as { [key: string]: PresetFragment })[id]
-  )
+  ) as Preset
   result.id = id
   result.title = result.title || result.name
   result.baseFrequency = result.baseFrequency || 440

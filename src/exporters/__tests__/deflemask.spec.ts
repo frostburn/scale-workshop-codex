@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import DeflemaskExporter from '../deflemask'
 
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import EXPECTED_CONTENT from './deflemask.txt?raw'
 import { getTestData } from './test-data'
 

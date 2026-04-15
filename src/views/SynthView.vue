@@ -18,14 +18,12 @@ const scale = useScaleStore()
 
 const audio = useAudioStore()
 
-const remappableKeys = [
-  'deactivationCode',
-  'equaveDownCode',
-  'equaveUpCode',
-  'degreeDownCode',
-  'degreeUpCode'
-] as const
-type RemappableKey = (typeof remappableKeys)[number]
+type RemappableKey =
+  | 'deactivationCode'
+  | 'equaveDownCode'
+  | 'equaveUpCode'
+  | 'degreeDownCode'
+  | 'degreeUpCode'
 
 const remappedKey = ref<RemappableKey | ''>('')
 
@@ -38,10 +36,11 @@ const timeDomainVisualizer = ref<TimeDomainVisualizerHandle | null>(null)
 const analyser = ref<AnalyserNode | null>(null)
 
 const strokeStyle = computed(() => {
-  // Add dependency.
-  state.colorScheme
-  // Fetch from document.
-  return getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim()
+  const root = document.documentElement
+  if (state.colorScheme) {
+    return getComputedStyle(root).getPropertyValue('--color-text').trim()
+  }
+  return getComputedStyle(root).getPropertyValue('--color-text').trim()
 })
 
 function envPresetOrgan() {

@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest'
 
 import { ScalaImporter } from '../scala'
 import { NEWLINE_TEST } from '../../constants'
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import SHANG_TEST_SCALE from './shang_pentatonic.scl?raw'
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import ZHI_TEST_SCALE from './zhi_pentatonic.scl?raw'
-// @ts-ignore
+// @ts-expect-error -- test fixture module import has no typings
 import BRUN_WILSONIC from './brun_wilsonic.scl?raw'
 
 describe('Scala importer', () => {
