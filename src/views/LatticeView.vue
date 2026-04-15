@@ -3,10 +3,9 @@
  * Lattice workspace view for JI, ET, cycle, and 3D lattice visualizations.
  */
 import { isPrime, nthPrime } from 'xen-dev-utils/primes'
-import { mmod } from 'xen-dev-utils/fraction'
+import { Fraction, mmod } from 'xen-dev-utils/fraction'
 import { primeLimit } from 'xen-dev-utils/monzo'
 import { computed, onMounted, ref, watch } from 'vue'
-import { Fraction } from 'xen-dev-utils/fraction'
 import GridLattice from '@/components/GridLattice.vue'
 import EdoCycles from '@/components/EdoCycles.vue'
 import JustIntonationLattice from '@/components/JustIntonationLattice.vue'

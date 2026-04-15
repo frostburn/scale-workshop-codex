@@ -1,7 +1,6 @@
 import { TimeReal } from 'sonic-weave/monzo'
-import { intervalValueAs } from 'sonic-weave/interval'
+import { Interval, intervalValueAs } from 'sonic-weave/interval'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { Interval } from 'sonic-weave/interval'
 import { mmod } from 'xen-dev-utils/fraction'
 import { valueToCents } from 'xen-dev-utils/conversion'
 

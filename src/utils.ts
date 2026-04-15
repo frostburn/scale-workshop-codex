@@ -1,7 +1,6 @@
 // oxlint-disable erasing-op
-import { mmod } from 'xen-dev-utils/fraction'
+import { gcd, mmod } from 'xen-dev-utils/fraction'
 import { computed, watch, type ComputedRef, type Ref } from 'vue'
-import { gcd } from 'xen-dev-utils/fraction'
 import { evaluateExpression, getSourceVisitor, parseAST } from 'sonic-weave/parser'
 import { Interval, Val } from 'sonic-weave/interval'
 import { repr } from 'sonic-weave/stdlib'

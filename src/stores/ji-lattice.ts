@@ -3,7 +3,14 @@ import { mmod } from 'xen-dev-utils/fraction'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import {
-  kraigGrady9, type LatticeOptions, scottDakota24, primeRing72, align, type LatticeOptions3D, WGP9, primeSphere
+  kraigGrady9,
+  type LatticeOptions,
+  scottDakota24,
+  primeRing72,
+  align,
+  type LatticeOptions3D,
+  WGP9,
+  primeSphere
 } from 'ji-lattice'
 import { LOG_PRIMES } from 'xen-dev-utils/primes'
 import { parseChord } from 'sonic-weave/parser'

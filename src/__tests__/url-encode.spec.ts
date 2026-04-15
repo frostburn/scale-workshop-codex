@@ -4,7 +4,17 @@ import { arraysEqual } from 'xen-dev-utils/core'
 import { DIGIT_ROW, mapWhiteAsdfBlackQwerty, mapWhiteQweZxcBlack123Asd } from '../keyboard-mapping'
 
 import {
-  decodeKeyColors, decodeLines, decodeQuery, encodeQuery, encodeKeyColors, encodeLines, parseFloat36, encodeNumber, decodeNumber, encodeKeyMap, decodeKeyMap
+  decodeKeyColors,
+  decodeLines,
+  decodeQuery,
+  encodeQuery,
+  encodeKeyColors,
+  encodeLines,
+  parseFloat36,
+  encodeNumber,
+  decodeNumber,
+  encodeKeyMap,
+  decodeKeyMap
 } from '../url-encode'
 import type { DecodedState } from '../url-encode'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '../constants'

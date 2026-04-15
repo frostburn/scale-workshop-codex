@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { approximatePrimeLimitWithErrors, getConvergents } from 'xen-dev-utils/approximation'
+import {
+  approximateOddLimitWithErrors,
+  approximatePrimeLimitWithErrors,
+  getConvergents
+} from 'xen-dev-utils/approximation'
 import { Fraction } from 'xen-dev-utils/fraction'
 import { PRIMES } from 'xen-dev-utils/primes'
 import { valueToCents } from 'xen-dev-utils/conversion'
 import { computed, ref, watch } from 'vue'
 import Modal from '@/components/ModalDialog.vue'
-import { approximateOddLimitWithErrors } from 'xen-dev-utils/approximation'
 import { useApproximateByRatiosStore } from '@/stores/approximate-by-ratios'
 import { setAndReportValidity } from '@/utils'
 import { useScaleStore } from '@/stores/scale'
