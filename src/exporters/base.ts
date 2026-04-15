@@ -32,6 +32,7 @@ export type ExporterParams = {
   centsFractionDigits?: number
   rawIntervals?: Interval[]
   unisonFrequency?: TimeMonzo
+  remapKontaktSamples?: boolean
 }
 
 /**
