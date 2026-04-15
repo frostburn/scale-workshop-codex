@@ -66,8 +66,10 @@ export const useStateStore = defineStore('state', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: any) {
-    latticeType.value = data.latticeType
+  function fromJSON(data: { latticeType?: 'ji' | 'et' | 'cycles' | '3d' | 'auto' }) {
+    if (data.latticeType) {
+      latticeType.value = data.latticeType
+    }
   }
 
   // Local storage watchers

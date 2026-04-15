@@ -364,6 +364,7 @@ export const useHistoricalStore = defineStore('historical', () => {
   }
 
   // Record order is supposed to be guaranteed since ES2015, but that doesn't seem to be the case...
+  // oxlint-disable-next-line eslint-plugin-unicorn(no-useless-spread)
   const presetKeys: string[] = [...Object.keys(presets)]
 
   // Sort by wideness of the generator
@@ -373,6 +374,7 @@ export const useHistoricalStore = defineStore('historical', () => {
       parseInterval(presets[a].generator).totalCents()
   )
 
+  // oxlint-disable-next-line eslint-plugin-unicorn(no-useless-spread)
   const wellPresetKeys: string[] = [...Object.keys(wellPresets)]
 
   function extractYear(name: string) {

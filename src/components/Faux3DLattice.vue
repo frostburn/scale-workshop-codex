@@ -22,6 +22,12 @@ const props = defineProps<{
 }>()
 
 const svgElement = ref<SVGSVGElement | null>(null)
+type RenderElement = {
+  key: string
+  tag: 'circle' | 'text' | 'polygon'
+  z: number
+  [key: string]: unknown
+}
 
 const viewBox = reactive([-1, -1, 2, 2])
 
@@ -92,7 +98,7 @@ watch(
 )
 
 const elements = computed(() => {
-  const result = []
+  const result: RenderElement[] = []
   for (const vertex of lattice.value.vertices) {
     const z = vertex.z + store.depth
     if (z < NEAR_PLANE) {
@@ -102,7 +108,7 @@ const elements = computed(() => {
     const cx = vertex.x * s
     const cy = vertex.y * s
     const r = store.size * s
-    const node: any = {
+    const node: RenderElement = {
       key: `vertex-${vertex.index ?? 'aux'}-${cx}-${cy}-${z}`,
       tag: 'circle',
       cx,
@@ -162,7 +168,7 @@ const elements = computed(() => {
     }
     const points = `${x1 + v * s1},${y1 - u * s1} ${x1 - v * s1},${y1 + u * s1} ${x2 - v * s2},${y2 + u * s2} ${x2 + v * s2},${y2 - u * s2}`
     if (store.grayExtras && edge.type === 'custom') {
-      ;(edge as any).type = 'border'
+      edge.type = 'border'
     }
     result.push({
       key: `edge-${edge.type}-${x1}-${y1}-${x2}-${y2}`,

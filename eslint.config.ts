@@ -27,13 +27,12 @@ export default defineConfigWithVueTs(
   },
 
   {
-    name: 'app/legacy-compatibility',
+    name: 'app/no-unused-vars-underscore',
     rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'vitest/no-conditional-expect': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 

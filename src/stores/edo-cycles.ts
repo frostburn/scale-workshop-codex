@@ -32,12 +32,15 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
     valString,
     generator
   }
+  type LiveState = typeof LIVE_STATE
+  type LiveStateKey = keyof LiveState
+  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
 
   /**
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON() {
-    const result: any = {}
+    const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(LIVE_STATE)) {
       result[key] = value.value
     }
@@ -48,9 +51,12 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: any) {
-    for (const key in LIVE_STATE) {
-      LIVE_STATE[key as keyof typeof LIVE_STATE].value = data[key]
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
+    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
+      const value = data[stateKey]
+      if (value !== undefined) {
+        LIVE_STATE[stateKey].value = value
+      }
     }
   }
 

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
 import { AnaMarkImporter } from '../anamark'
-// @ts-ignore
 import UNIT_TEST_SCALE from './unittestscale.tun?raw'
 
 describe('Anamark importer', () => {

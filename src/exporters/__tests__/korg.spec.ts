@@ -30,16 +30,16 @@ describe('Korg exporters', () => {
     })
 
     // Generated zipfiles have timestamps that interfere with testing so we extract the contents
+    const binHashes: string[] = []
     for (let i = 0; i < files.length; ++i) {
       const [path, file] = files[i]
       if (path.endsWith('bin')) {
         const content = await file.async('uint8array')
-        expect(createHash('sha256').update(content).digest('base64')).toBe(
-          'LvpKRSKkPVHun2VShSXSBx5zWy52voZcZGduTSVmeEY='
-        )
+        binHashes.push(createHash('sha256').update(content).digest('base64'))
       }
       // Other contents didn't seem to have issues so we ignore them here.
     }
+    expect(binHashes).toContain('LvpKRSKkPVHun2VShSXSBx5zWy52voZcZGduTSVmeEY=')
   })
 
   it('can handle all line types (mnlgtuns)', async () => {
@@ -57,26 +57,26 @@ describe('Korg exporters', () => {
     })
 
     // Generated zipfiles have timestamps that interfere with testing so we extract the contents
+    const outputByPath = new Map<string, string>()
+    const binHashes: string[] = []
     for (let i = 0; i < files.length; ++i) {
       const [path, file] = files[i]
       if (path.endsWith('bin')) {
         const content = await file.async('uint8array')
-        expect(createHash('sha256').update(content).digest('base64')).toBe(
-          'NLwkn1HRQKdNAyYdxl6RQwfz0JvFyShWaB0DHHtPVZo='
-        )
+        binHashes.push(createHash('sha256').update(content).digest('base64'))
       } else {
-        const content = await file.async('string')
-        if (path === 'TunS_000.TunS_info') {
-          expect(content).toBe(
-            '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneScaleInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneScaleInformation>\n'
-          )
-        } else {
-          expect(content).toBe(
-            '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="1"\n            NumTuneOctData="0">\n    <TuneScaleData>\n      <Information>TunS_000.TunS_info</Information>\n      <TuneScaleBinary>TunS_000.TunS_bin</TuneScaleBinary>\n    </TuneScaleData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
-          )
-        }
+        outputByPath.set(path, await file.async('string'))
       }
     }
+    expect(binHashes).toContain('NLwkn1HRQKdNAyYdxl6RQwfz0JvFyShWaB0DHHtPVZo=')
+    expect(outputByPath.get('TunS_000.TunS_info')).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneScaleInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneScaleInformation>\n'
+    )
+    const libraryXmlPath = [...outputByPath.keys()].find((path) => path !== 'TunS_000.TunS_info')
+    expect(libraryXmlPath).toBeDefined()
+    expect(outputByPath.get(libraryXmlPath!)).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="1"\n            NumTuneOctData="0">\n    <TuneScaleData>\n      <Information>TunS_000.TunS_info</Information>\n      <TuneScaleBinary>TunS_000.TunS_bin</TuneScaleBinary>\n    </TuneScaleData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
+    )
 
     return
   })
@@ -157,26 +157,26 @@ describe('Korg exporters', () => {
     })
 
     // Generated zipfiles have timestamps that interfere with testing so we extract the contents
+    const outputByPath = new Map<string, string>()
+    const binHashes: string[] = []
     for (let i = 0; i < files.length; ++i) {
       const [path, file] = files[i]
       if (path.endsWith('bin')) {
         const content = await file.async('uint8array')
-        expect(createHash('sha256').update(content).digest('base64')).toBe(
-          'Ev0ERTzsaj9wOZa46chFBQ/HMGmZ9oKsdA+bVQgzAPU='
-        )
+        binHashes.push(createHash('sha256').update(content).digest('base64'))
       } else {
-        const content = await file.async('string')
-        if (path === 'TunO_000.TunO_info') {
-          expect(content).toBe(
-            '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneOctInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneOctInformation>\n'
-          )
-        } else {
-          expect(content).toBe(
-            '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="0"\n            NumTuneOctData="1">\n    <TuneOctData>\n      <Information>TunO_000.TunO_info</Information>\n      <TuneOctBinary>TunO_000.TunO_bin</TuneOctBinary>\n    </TuneOctData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
-          )
-        }
+        outputByPath.set(path, await file.async('string'))
       }
     }
+    expect(binHashes).toContain('Ev0ERTzsaj9wOZa46chFBQ/HMGmZ9oKsdA+bVQgzAPU=')
+    expect(outputByPath.get('TunO_000.TunO_info')).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n\n<minilogue_TuneOctInformation>\n  <Programmer>ScaleWorkshop</Programmer>\n  <Comment>Test Scale</Comment>\n</minilogue_TuneOctInformation>\n'
+    )
+    const octaveXmlPath = [...outputByPath.keys()].find((path) => path !== 'TunO_000.TunO_info')
+    expect(octaveXmlPath).toBeDefined()
+    expect(outputByPath.get(octaveXmlPath!)).toBe(
+      '<?xml version="1.0" encoding="UTF-8"?>\n\n<KorgMSLibrarian_Data>\n  <Product>minilogue</Product>\n  <Contents NumProgramData="0" NumPresetInformation="0" NumTuneScaleData="0"\n            NumTuneOctData="1">\n    <TuneOctData>\n      <Information>TunO_000.TunO_info</Information>\n      <TuneOctBinary>TunO_000.TunO_bin</TuneOctBinary>\n    </TuneOctData>\n  </Contents>\n</KorgMSLibrarian_Data>\n'
+    )
 
     return
   })

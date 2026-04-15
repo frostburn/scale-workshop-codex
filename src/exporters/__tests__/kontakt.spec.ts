@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 
 import KontaktExporter from '../kontakt'
 
-// @ts-ignore
 import EXPECTED_CONTENT from './kontakt.txt?raw'
 import { getTestData } from './test-data'
 
