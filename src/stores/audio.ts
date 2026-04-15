@@ -294,8 +294,7 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
 
   watch(waveform, (newValue) => {
     if (BASIC_WAVEFORMS.includes(newValue)) {
-      oscillatorVoiceParams.type = unisonVoiceParams.type =
-        newValue as OscillatorType | 'custom'
+      oscillatorVoiceParams.type = unisonVoiceParams.type = newValue as OscillatorType | 'custom'
       oscillatorVoiceParams.periodicWave = unisonVoiceParams.periodicWave = undefined
     } else if (CUSTOM_WAVEFORMS.includes(newValue)) {
       oscillatorVoiceParams.type = unisonVoiceParams.type = 'custom'
