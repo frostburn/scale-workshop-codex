@@ -1,18 +1,14 @@
+import { dot } from 'xen-dev-utils/number-array'
+import { mmod } from 'xen-dev-utils/fraction'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import {
-  kraigGrady9,
-  type LatticeOptions,
-  scottDakota24,
-  primeRing72,
-  align,
-  type LatticeOptions3D,
-  WGP9,
-  primeSphere
+  kraigGrady9, type LatticeOptions, scottDakota24, primeRing72, align, type LatticeOptions3D, WGP9, primeSphere
 } from 'ji-lattice'
-import { LOG_PRIMES, dot, mmod } from 'xen-dev-utils'
+import { LOG_PRIMES } from 'xen-dev-utils/primes'
+import { parseChord } from 'sonic-weave/parser'
 import { computedAndError } from '@/utils'
-import { TimeMonzo, parseChord } from 'sonic-weave'
+import { TimeMonzo } from 'sonic-weave/monzo'
 
 /**
  * Store for just-intonation lattice rendering state (2D/3D) and presets.

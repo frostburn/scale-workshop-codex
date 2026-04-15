@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { type Interval } from 'sonic-weave/interval'
 import { useJiLatticeStore } from '@/stores/ji-lattice'
 import { spanLattice } from 'ji-lattice'
-import { TimeMonzo, type Interval } from 'sonic-weave'
+import { TimeMonzo } from 'sonic-weave/monzo'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
-import { dot } from 'xen-dev-utils'
+import { dot } from 'xen-dev-utils/number-array'
 
 const store = useJiLatticeStore()
 

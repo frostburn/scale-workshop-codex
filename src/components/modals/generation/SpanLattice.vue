@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { intervalValueAs } from 'sonic-weave/interval'
 import { ref, watch } from 'vue'
 import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
@@ -6,8 +7,8 @@ import { OCTAVE } from '@/constants'
 import { useLatticeStore } from '@/stores/tempering'
 import { centString, setAndReportValidity } from '@/utils'
 import { arrayToString, expandCode, parseInterval } from '@/utils'
-import { Interval, intervalValueAs } from 'sonic-weave'
-import { mmod } from 'xen-dev-utils'
+import { Interval } from 'sonic-weave/interval'
+import { mmod } from 'xen-dev-utils/fraction'
 import { useScaleStore } from '@/stores/scale'
 
 defineProps<{

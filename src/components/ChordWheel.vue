@@ -2,7 +2,7 @@
 import { otonalFundamental, utonalFundamental } from '@/analysis'
 import type { VirtualSynth } from '@/virtual-synth'
 import { onMounted, onUnmounted, ref } from 'vue'
-import { clamp } from 'xen-dev-utils'
+import { clamp } from 'xen-dev-utils/core'
 
 const NUM_SAMPLES = 512
 

@@ -1,14 +1,8 @@
-Interval
 <script setup lang="ts">
+import { mos, mosWithDaughter, mosWithParent, parentMos } from 'moment-of-symmetry/core'
+import { type EdoMapEntry } from 'moment-of-symmetry/info'
+import { daughterMos } from 'moment-of-symmetry/core'
 import { OCTAVE } from '@/constants'
-import {
-  daughterMos,
-  mos,
-  mosWithDaughter,
-  mosWithParent,
-  parentMos,
-  type EdoMapEntry
-} from 'moment-of-symmetry'
 import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { useModalStore } from '@/stores/modal'

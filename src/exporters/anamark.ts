@@ -1,6 +1,7 @@
+import { valueToCents } from 'xen-dev-utils/conversion'
 import { APP_TITLE, NEWLINE_TEST } from '@/constants'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { mtof, valueToCents } from 'xen-dev-utils'
+import { mtof } from 'xen-dev-utils/conversion'
 
 function sanitizeQuotedTunValue(value: string | undefined) {
   return (value ?? '').replaceAll('"', '“').replace(/\r?\n|\r/g, ' ')

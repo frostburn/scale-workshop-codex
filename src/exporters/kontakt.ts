@@ -1,7 +1,8 @@
+import { mtof } from 'xen-dev-utils/conversion'
 import { APP_TITLE } from '@/constants'
 import { midiNoteNumberToName } from '@/utils'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { ftom, mtof } from 'xen-dev-utils'
+import { ftom } from 'xen-dev-utils/conversion'
 
 export default class KontaktExporter extends BaseExporter {
   static tuningMaxSize = 128

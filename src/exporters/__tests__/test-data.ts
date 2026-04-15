@@ -1,8 +1,11 @@
-import { Interval, TimeMonzo, TimeReal, getSourceVisitor, parseAST, relative } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
+import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
+import { getSourceVisitor, parseAST } from 'sonic-weave/parser'
+import { relative } from 'sonic-weave/stdlib'
 import type { ExporterParams } from '../base'
 import { UNIX_NEWLINE, WINDOWS_NEWLINE } from '../../constants'
 import { Scale } from '../../scale'
-import { Fraction } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
 
 export function getTestData(appTitle: string, raw = false) {
   const sourceText = '100.\nC5_5\n4\\5\n5/3\n1,3591409142295225r\n3486784401/3276800000\n2/1'

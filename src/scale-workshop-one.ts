@@ -1,5 +1,6 @@
+import { parseScaleWorkshop2Line } from 'sonic-weave/scale-workshop-2-parser'
 import { DEFAULT_NUMBER_OF_COMPONENTS, NEWLINE_TEST, UNIX_NEWLINE } from '@/constants'
-import { Interval, parseScaleWorkshop2Line } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
 
 /**
  * Decodes HTML entities into plain text.

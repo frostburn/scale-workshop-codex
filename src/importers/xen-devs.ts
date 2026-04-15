@@ -1,5 +1,6 @@
+import { getSourceVisitor, parseAST } from 'sonic-weave/parser'
 import { TextImporter, type ImportResult } from '@/importers/base'
-import { RootContext, getSourceVisitor, parseAST } from 'sonic-weave'
+import { RootContext } from 'sonic-weave/context'
 
 /**
  * Importer for the SonicWeave interchange format (`.swi`).

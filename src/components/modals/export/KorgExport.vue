@@ -4,7 +4,7 @@ import { sanitizeFilename } from '@/utils'
 import { computed } from 'vue'
 import Modal from '@/components/ModalDialog.vue'
 import type { ExporterParams } from '@/exporters/base'
-import type { Interval } from 'sonic-weave'
+import type { Interval } from 'sonic-weave/interval'
 import type { Scale } from '@/scale'
 import { useExportStore } from '@/stores/export'
 

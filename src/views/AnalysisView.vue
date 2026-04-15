@@ -2,15 +2,8 @@
 /**
  * Analysis workspace view for interval matrices, chord wheels, and harmonic entropy plots.
  */
-import {
-  brightnessSignature,
-  constantStructureViolations,
-  freeEquallyTemperedChord,
-  intervalMatrix,
-  marginVarietySignature,
-  marginViolations,
-  rootedEquallyTemperedChord,
-  varietySignature
+import { type Interval } from 'sonic-weave/interval'
+import { brightnessSignature, constantStructureViolations, freeEquallyTemperedChord, intervalMatrix, marginVarietySignature, marginViolations, rootedEquallyTemperedChord, varietySignature
 } from '@/analysis'
 import ChordWheel from '@/components/ChordWheel.vue'
 import HarmonicEntropyPlot from '@/components/HarmonicEntropyPlot.vue'
@@ -19,9 +12,10 @@ import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from '@/stores/state'
-import { literalToString, type Interval } from 'sonic-weave'
+import { literalToString } from 'sonic-weave/expression'
+import { lcm, mmod } from 'xen-dev-utils/fraction'
 import { useScaleStore } from '@/stores/scale'
-import { Fraction, lcm, mmod } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
 import { OCTAVE, UNISON } from '@/constants'
 import { useHarmonicEntropyStore } from '@/stores/harmonic-entropy'
 import Values from 'values.js'

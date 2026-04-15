@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Modal from '@/components/ModalDialog.vue'
-import { clamp } from 'xen-dev-utils'
+import { clamp } from 'xen-dev-utils/core'
 import { useModalStore } from '@/stores/modal'
 import { expandCode } from '@/utils'
 

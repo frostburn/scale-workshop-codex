@@ -1,6 +1,7 @@
+import { modInv } from 'xen-dev-utils/core'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { mmod, modInv } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 import { parseVal } from '@/utils'
 
 /**

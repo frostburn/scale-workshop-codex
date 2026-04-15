@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import Modal from '@/components/ModalDialog.vue'
 import { debounce, expandCode } from '@/utils'
-import { evaluateExpression } from 'sonic-weave'
+import { evaluateExpression } from 'sonic-weave/parser'
 
 defineProps<{
   show: boolean

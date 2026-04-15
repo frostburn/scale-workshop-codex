@@ -2,9 +2,9 @@
 import { useCyclesStore } from '@/stores/edo-cycles'
 import { labelX, labelY } from '@/utils'
 import { type MultiVertex } from 'ji-lattice'
-import { type Interval } from 'sonic-weave'
+import { type Interval } from 'sonic-weave/interval'
 import { computed } from 'vue'
-import { mmod } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 
 const RADIUS = 2
 

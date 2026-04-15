@@ -1,6 +1,8 @@
-import { Interval, TimeMonzo } from 'sonic-weave'
+import { PRIME_CENTS } from 'xen-dev-utils/primes'
+import { Interval } from 'sonic-weave/interval'
+import { TimeMonzo } from 'sonic-weave/monzo'
 import { version } from '../package.json'
-import { Fraction, PRIME_CENTS } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
 
 /**
  * Optional API base URL injected from environment configuration.
