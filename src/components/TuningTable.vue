@@ -15,23 +15,6 @@ const props = defineProps<{
 
 const tableElement = ref<HTMLTableElement | null>(null)
 
-function getScrollableAncestor(node: HTMLElement) {
-  let current = node.parentElement
-
-  while (current) {
-    const { overflowY } = window.getComputedStyle(current)
-    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY) && current.scrollHeight > current.clientHeight
-
-    if (isScrollable) {
-      return current
-    }
-
-    current = current.parentElement
-  }
-
-  return null
-}
-
 function centerRootRow(attempt = 0) {
   const isMediumOrLarger = window.matchMedia('screen and (min-width: 600px)').matches
   if (!isMediumOrLarger || !tableElement.value) {
@@ -39,7 +22,7 @@ function centerRootRow(attempt = 0) {
   }
 
   const row = tableElement.value.tBodies.item(0)?.rows.item(props.baseMidiNote)
-  const scrollContainer = getScrollableAncestor(tableElement.value)
+  const scrollContainer = tableElement.value.parentElement
 
   if (!row || !scrollContainer) {
     return
@@ -50,9 +33,7 @@ function centerRootRow(attempt = 0) {
     return
   }
 
-  const rowRect = row.getBoundingClientRect()
-  const containerRect = scrollContainer.getBoundingClientRect()
-  const targetTop = rowRect.top - containerRect.top + scrollContainer.scrollTop - (scrollContainer.clientHeight - rowRect.height) / 2
+  const targetTop = row.offsetTop - (scrollContainer.clientHeight - row.offsetHeight) / 2
   scrollContainer.scrollTo({ top: targetTop, behavior: 'auto' })
 }
 
@@ -66,7 +47,6 @@ onMounted(scheduleRootRowCentering)
 onActivated(scheduleRootRowCentering)
 
 watch(() => props.baseMidiNote, scheduleRootRowCentering)
-watch(() => props.frequencies, scheduleRootRowCentering)
 
 const rows = computed(() => {
   const inverseBaseFrequency = 1 / props.baseFrequency
