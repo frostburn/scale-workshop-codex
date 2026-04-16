@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { formatHertz, formatExponential } from '@/utils'
-import { nextTick, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   index: number
@@ -13,58 +12,10 @@ const props = defineProps<{
   isRoot: boolean
   equave: boolean
 }>()
-
-const element = ref<HTMLTableRowElement | null>(null)
-
-function getScrollableAncestor(node: HTMLElement) {
-  let current = node.parentElement
-
-  while (current) {
-    const { overflowY } = window.getComputedStyle(current)
-    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY) && current.scrollHeight > current.clientHeight
-
-    if (isScrollable) {
-      return current
-    }
-
-    current = current.parentElement
-  }
-
-  return null
-}
-
-function scrollRootRowIntoView() {
-  if (!element.value) {
-    return
-  }
-
-  const scrollContainer = getScrollableAncestor(element.value)
-
-  if (scrollContainer) {
-    const rowRect = element.value.getBoundingClientRect()
-    const containerRect = scrollContainer.getBoundingClientRect()
-    const targetTop = rowRect.top - containerRect.top + scrollContainer.scrollTop - (scrollContainer.clientHeight - rowRect.height) / 2
-
-    scrollContainer.scrollTo({ top: targetTop, behavior: 'auto' })
-    return
-  }
-
-  element.value.scrollIntoView({ block: 'center' })
-}
-
-onMounted(() => {
-  const isMediumOrLarger = window.matchMedia('screen and (min-width: 600px)').matches
-
-  if (props.isRoot && isMediumOrLarger) {
-    nextTick(() => {
-      requestAnimationFrame(scrollRootRowIntoView)
-    })
-  }
-})
 </script>
 
 <template>
-  <tr ref="element" :class="{ active, equave }" :style="'background-color:' + color + ';'">
+  <tr :class="{ active, equave }" :style="'background-color:' + color + ';'">
     <td class="key-color" :style="'background-color:' + color + ' !important;'"></td>
     <td>{{ index }}</td>
     <td>{{ formatHertz(frequency) }}</td>

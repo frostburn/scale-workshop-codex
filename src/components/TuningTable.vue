@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import TuningTableRow from '@/components/TuningTableRow.vue'
 import { mmod } from 'xen-dev-utils/fraction'
 
@@ -12,6 +12,61 @@ const props = defineProps<{
   labels: string[] // Labels from #1 to the equave
   colors: string[] // Colors from #1 to the equave
 }>()
+
+const tableElement = ref<HTMLTableElement | null>(null)
+
+function getScrollableAncestor(node: HTMLElement) {
+  let current = node.parentElement
+
+  while (current) {
+    const { overflowY } = window.getComputedStyle(current)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY) && current.scrollHeight > current.clientHeight
+
+    if (isScrollable) {
+      return current
+    }
+
+    current = current.parentElement
+  }
+
+  return null
+}
+
+function centerRootRow(attempt = 0) {
+  const isMediumOrLarger = window.matchMedia('screen and (min-width: 600px)').matches
+  if (!isMediumOrLarger || !tableElement.value) {
+    return
+  }
+
+  const row = tableElement.value.tBodies.item(0)?.rows.item(props.baseMidiNote)
+  const scrollContainer = getScrollableAncestor(tableElement.value)
+
+  if (!row || !scrollContainer) {
+    return
+  }
+
+  if ((row.offsetHeight === 0 || scrollContainer.clientHeight === 0) && attempt < 10) {
+    requestAnimationFrame(() => centerRootRow(attempt + 1))
+    return
+  }
+
+  const rowRect = row.getBoundingClientRect()
+  const containerRect = scrollContainer.getBoundingClientRect()
+  const targetTop = rowRect.top - containerRect.top + scrollContainer.scrollTop - (scrollContainer.clientHeight - rowRect.height) / 2
+  scrollContainer.scrollTo({ top: targetTop, behavior: 'auto' })
+}
+
+function scheduleRootRowCentering() {
+  nextTick(() => {
+    requestAnimationFrame(() => centerRootRow())
+  })
+}
+
+onMounted(scheduleRootRowCentering)
+onActivated(scheduleRootRowCentering)
+
+watch(() => props.baseMidiNote, scheduleRootRowCentering)
+watch(() => props.frequencies, scheduleRootRowCentering)
 
 const rows = computed(() => {
   const inverseBaseFrequency = 1 / props.baseFrequency
@@ -36,7 +91,7 @@ const rows = computed(() => {
 </script>
 
 <template>
-  <table>
+  <table ref="tableElement">
     <thead>
       <tr>
         <th>&nbsp;</th>
