@@ -22,6 +22,17 @@ export default defineConfig({
             return 'scale-workshop-legacy'
           }
 
+          if (
+            id.includes('node_modules/sonic-weave/dist/parser/chord-parser') ||
+            id.includes('node_modules/sonic-weave/dist/parser/sonic-weave-chord')
+          ) {
+            return 'sonic-weave-chord-parser'
+          }
+
+          if (id.includes('node_modules/sonic-weave/dist/stdlib')) {
+            return 'sonic-weave-stdlib'
+          }
+
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
