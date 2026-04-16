@@ -29,10 +29,6 @@ export default defineConfig({
             return 'sonic-weave-chord-parser'
           }
 
-          if (id.includes('node_modules/sonic-weave/dist/stdlib')) {
-            return 'sonic-weave-stdlib'
-          }
-
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
