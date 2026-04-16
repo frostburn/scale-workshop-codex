@@ -29,6 +29,14 @@ export default defineConfig({
             return 'sonic-weave-chord-parser'
           }
 
+          if (id.includes('node_modules/xen-dev-utils')) {
+            return 'xen-dev-utils'
+          }
+
+          if (id.includes('node_modules/moment-of-symmetry')) {
+            return 'moment-of-symmetry'
+          }
+
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
