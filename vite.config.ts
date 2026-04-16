@@ -15,6 +15,28 @@ export default defineConfig({
             return
           }
 
+          if (
+            id.includes('node_modules/sonic-weave/dist/scale-workshop-2-parser') ||
+            id.includes('node_modules/sonic-weave/scale-workshop-2-parser')
+          ) {
+            return 'scale-workshop-legacy'
+          }
+
+          if (
+            id.includes('node_modules/sonic-weave/dist/parser/chord-parser') ||
+            id.includes('node_modules/sonic-weave/dist/parser/sonic-weave-chord')
+          ) {
+            return 'sonic-weave-chord-parser'
+          }
+
+          if (id.includes('node_modules/xen-dev-utils')) {
+            return 'xen-dev-utils'
+          }
+
+          if (id.includes('node_modules/moment-of-symmetry')) {
+            return 'moment-of-symmetry'
+          }
+
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }

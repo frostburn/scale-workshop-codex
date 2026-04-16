@@ -14,8 +14,6 @@ import { useStateStore } from './stores/state'
 import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
 import { clamp } from 'xen-dev-utils/core'
-import { parseScaleWorkshop2Line } from 'sonic-weave/scale-workshop-2-parser'
-import { setNumberOfComponents } from 'sonic-weave/monzo'
 import ScaleView from '@/views/ScaleView.vue'
 
 // === Pinia-managed state ===
@@ -395,6 +393,16 @@ async function loadSw1FromQuery() {
   return new ScaleWorkshopOneData()
 }
 
+async function ensureDefaultNumberOfComponents() {
+  const { setNumberOfComponents } = await import('sonic-weave/monzo')
+  setNumberOfComponents(DEFAULT_NUMBER_OF_COMPONENTS)
+}
+
+async function parseScaleWorkshop2Line(line: string) {
+  const { parseScaleWorkshop2Line: parseLine } = await import('sonic-weave/scale-workshop-2-parser')
+  return parseLine(line, DEFAULT_NUMBER_OF_COMPONENTS)
+}
+
 // === Lifecycle ===
 onMounted(async () => {
   window.addEventListener('keyup', windowKeyup)
@@ -410,9 +418,6 @@ onMounted(async () => {
   const url = new URL(window.location.href)
   const query = url.searchParams
 
-  // This is overridden when scale data is evaluated, but some corner cases need to be covered.
-  setNumberOfComponents(DEFAULT_NUMBER_OF_COMPONENTS)
-
   // Special handling for the empty app state so that
   // the browser's back button can undo to the clean state.
   if (![...query.keys()].length) {
@@ -420,6 +425,7 @@ onMounted(async () => {
   } else if (!query.has('version')) {
     // Scale Workshop 1 compatibility
     try {
+      await ensureDefaultNumberOfComponents()
       const scaleWorkshopOneData = await loadSw1FromQuery()
       audio.initialize()
 
@@ -455,6 +461,7 @@ onMounted(async () => {
   } else if (query.get('version')!.startsWith('2.')) {
     // Scale Workshop 2 compatibility
     try {
+      await ensureDefaultNumberOfComponents()
       const decodedState = decodeQuery(query)
       audio.initialize()
 
@@ -489,7 +496,7 @@ onMounted(async () => {
       for (let i = 0; i < decodedState.scaleLines.length; ++i) {
         const line = decodedState.scaleLines[i]
         try {
-          const sourceLine = parseScaleWorkshop2Line(line, DEFAULT_NUMBER_OF_COMPONENTS).toString()
+          const sourceLine = (await parseScaleWorkshop2Line(line)).toString()
           sourceLines.push(sourceLine)
         } catch {
           invalidLines.push([line, i])
