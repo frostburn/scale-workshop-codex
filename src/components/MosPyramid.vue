@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { mosScaleInfo } from 'moment-of-symmetry'
+import { mosScaleInfo } from 'moment-of-symmetry/core'
 import { computed } from 'vue'
-import { dot } from 'xen-dev-utils'
+import { dot } from 'xen-dev-utils/number-array'
 
 const props = defineProps<{
   selected: string

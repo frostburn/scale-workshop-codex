@@ -1,3 +1,4 @@
+import { TimeReal } from 'sonic-weave/monzo'
 import { createHash } from 'crypto'
 import type { JSZipObject } from 'jszip'
 import { describe, it, expect } from 'vitest'
@@ -6,7 +7,7 @@ import { KorgExporter, KorgModels, KorgExporterError, KORG_MODEL_INFO } from '..
 
 import { getTestData } from './test-data'
 import { Scale } from '../../scale'
-import { Interval, TimeReal } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
 
 describe('Korg exporters', () => {
   it('can export a scale encountered while debugging issue #393', async () => {

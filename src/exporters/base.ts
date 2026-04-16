@@ -1,5 +1,6 @@
 import type { Scale } from '@/scale'
-import type { Interval, TimeMonzo } from 'sonic-weave'
+import type { Interval } from 'sonic-weave/interval'
+import type { TimeMonzo } from 'sonic-weave/monzo'
 
 /**
  * Reaper label rendering mode.

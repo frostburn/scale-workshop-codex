@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { shallowMount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { shallowMount, type MountingOptions } from '@vue/test-utils'
+import { nextTick, type Component } from 'vue'
 
 import AboutView from '@/views/AboutView.vue'
 import MosView from '@/views/MosView.vue'
@@ -11,8 +11,6 @@ import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
 import TermsOfService from '@/views/TermsOfService.vue'
 import VirtualKeyboardView from '@/views/VirtualKeyboardView.vue'
 import VirtualQwerty from '@/views/VirtualQwerty.vue'
-import type { MountingOptions } from '@vue/test-utils'
-import type { Component } from 'vue'
 
 type TestWindow = Window &
   typeof globalThis & {

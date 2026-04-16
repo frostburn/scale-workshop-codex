@@ -1,4 +1,5 @@
-import { clamp, frequencyToMtsBytes } from 'xen-dev-utils'
+import { clamp } from 'xen-dev-utils/core'
+import { frequencyToMtsBytes } from 'xen-dev-utils/conversion'
 import { BaseExporter } from './base'
 
 /**

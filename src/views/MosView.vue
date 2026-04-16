@@ -4,10 +4,10 @@ import NumericSlider from '@/components/NumericSlider.vue'
 import ScaleRule from '@/components/ScaleRule.vue'
 import { useScaleStore } from '@/stores/scale'
 import { debounce } from '@/utils'
-import { getHardness } from 'moment-of-symmetry'
+import { getHardness } from 'moment-of-symmetry/hardness'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Fraction } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
 
 const scale = useScaleStore()
 const router = useRouter()

@@ -1,4 +1,4 @@
-import { mmod } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 import { midiKeyInfo } from 'xen-midi'
 
 /**

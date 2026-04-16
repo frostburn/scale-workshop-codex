@@ -5,8 +5,8 @@ import { OCTAVE } from '@/constants'
 import { useModalStore } from '@/stores/modal'
 import { useScaleStore } from '@/stores/scale'
 import { computed } from 'vue'
-import { valueToCents } from 'xen-dev-utils'
-import { linear } from 'sonic-weave'
+import { valueToCents } from 'xen-dev-utils/conversion'
+import { linear } from 'sonic-weave/stdlib'
 
 defineProps<{
   show: boolean

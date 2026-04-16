@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computedAndError, parseInterval, setAndReportValidity } from '@/utils'
-import { type Interval } from 'sonic-weave'
+import { type Interval } from 'sonic-weave/interval'
 import { ref, watch } from 'vue'
 
 const props = defineProps<{

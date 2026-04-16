@@ -1,6 +1,8 @@
+import { TimeReal } from 'sonic-weave/monzo'
 import { describe, it, expect } from 'vitest'
-import { Interval, TimeReal } from 'sonic-weave'
-import { arraysEqual, valueToCents } from 'xen-dev-utils'
+import { Interval } from 'sonic-weave/interval'
+import { arraysEqual } from 'xen-dev-utils/core'
+import { valueToCents } from 'xen-dev-utils/conversion'
 
 import {
   alignValues,

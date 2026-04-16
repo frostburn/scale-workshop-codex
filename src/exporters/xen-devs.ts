@@ -1,6 +1,6 @@
 import { APP_TITLE } from '@/constants'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { literalToString } from 'sonic-weave'
+import { literalToString } from 'sonic-weave/expression'
 
 /**
  * Exporter for the SonicWeave interchange format (`.swi`).

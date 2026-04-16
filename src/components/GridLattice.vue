@@ -2,7 +2,7 @@
 import { useGridStore } from '@/stores/grid'
 import { debounce, labelX, labelY } from '@/utils'
 import { spanGrid } from 'ji-lattice'
-import { type Interval } from 'sonic-weave'
+import { type Interval } from 'sonic-weave/interval'
 import { computed, onUnmounted, ref, watch } from 'vue'
 
 const store = useGridStore()

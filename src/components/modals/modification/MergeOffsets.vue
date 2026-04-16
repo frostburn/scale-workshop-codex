@@ -3,7 +3,7 @@ import Modal from '@/components/ModalDialog.vue'
 import { useModalStore } from '@/stores/modal'
 import { useScaleStore } from '@/stores/scale'
 import { arrayToString } from '@/utils'
-import type { Interval } from 'sonic-weave'
+import type { Interval } from 'sonic-weave/interval'
 import { computed, ref, watch } from 'vue'
 
 defineProps<{

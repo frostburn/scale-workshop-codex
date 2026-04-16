@@ -1,5 +1,5 @@
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { ftom } from 'xen-dev-utils'
+import { ftom } from 'xen-dev-utils/conversion'
 
 export default class SoniccoutureExporter extends BaseExporter {
   static tuningMaxSize = 128

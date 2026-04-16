@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { mmod } from 'xen-dev-utils/fraction'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, RouterView, useRouter, useRoute } from 'vue-router'
 import { DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
@@ -12,8 +13,9 @@ import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from './stores/state'
 import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
-import { clamp, mmod } from 'xen-dev-utils'
-import { parseScaleWorkshop2Line, setNumberOfComponents } from 'sonic-weave'
+import { clamp } from 'xen-dev-utils/core'
+import { parseScaleWorkshop2Line } from 'sonic-weave/scale-workshop-2-parser'
+import { setNumberOfComponents } from 'sonic-weave/monzo'
 import ScaleView from '@/views/ScaleView.vue'
 
 // === Pinia-managed state ===

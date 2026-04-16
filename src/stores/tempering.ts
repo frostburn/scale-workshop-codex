@@ -1,20 +1,17 @@
+import { isBright, mosPatterns as getMosPatterns } from 'moment-of-symmetry/generator-ratio'
 import { FIFTH, OCTAVE } from '@/constants'
-// import { mosPatternsRank2FromCommas, mosPatternsRank2FromVals } from '@/tempering'
 import { computedAndError, padEndOrTruncate, splitText } from '@/utils'
-import { isBright, mosPatterns as getMosPatterns } from 'moment-of-symmetry'
-import { defineStore } from 'pinia'
+import { Temperament, Val } from 'sonic-weave/interval'
 import {
-  type OptimizationScheme,
-  Temperament,
   parseChord,
   parseVals,
   rank2FromCommas,
   temperamentFromVals,
   temperamentFromCommas,
   parseBasis,
-  Val
-} from 'sonic-weave'
-// import { Subgroup, resolveMonzo, type TuningOptions } from 'temperaments'
+  type OptimizationScheme
+} from 'sonic-weave/parser'
+import { defineStore } from 'pinia'
 import { computed, ref, watch, reactive, type ComputedRef } from 'vue'
 
 const CTE_MEANTONE = new Temperament(

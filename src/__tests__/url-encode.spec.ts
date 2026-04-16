@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { LocationQuery } from 'vue-router'
-import { arraysEqual } from 'xen-dev-utils'
+import { arraysEqual } from 'xen-dev-utils/core'
 import { DIGIT_ROW, mapWhiteAsdfBlackQwerty, mapWhiteQweZxcBlack123Asd } from '../keyboard-mapping'
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '../url-encode'
 import type { DecodedState } from '../url-encode'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '../constants'
-import { parseScaleWorkshop2Line } from 'sonic-weave'
+import { parseScaleWorkshop2Line } from 'sonic-weave/scale-workshop-2-parser'
 
 describe('URL encoder', () => {
   it('can encode all line types', () => {

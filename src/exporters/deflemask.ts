@@ -1,7 +1,7 @@
+import { frequencyToCentOffset, ftom } from 'xen-dev-utils/conversion'
 import { APP_TITLE } from '@/constants'
 import { midiNoteNumberToName } from '@/utils'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { frequencyToCentOffset, ftom } from 'xen-dev-utils'
 
 // This exporter converts your tuning data into a readable format you can easily input manually into Deflemask.
 // For example if you have a note 50 cents below A4, you would input that into Deflemask as A-4 -- - E5 40

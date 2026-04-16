@@ -4,11 +4,12 @@
  */
 import ScaleControls from '@/components/ScaleControls.vue'
 import TuningTable from '@/components/TuningTable.vue'
+import { setNumberOfComponents } from 'sonic-weave/monzo'
 import { DEFAULT_NUMBER_OF_COMPONENTS } from '@/constants'
 import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
 import { debounce } from '@/utils'
-import { getSourceVisitor, setNumberOfComponents } from 'sonic-weave'
+import { getSourceVisitor } from 'sonic-weave/parser'
 import { defineAsyncComponent, defineComponent, h, onMounted, onUnmounted, ref } from 'vue'
 
 const scale = useScaleStore()

@@ -4,8 +4,7 @@ import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { OCTAVE } from '@/constants'
 import { useModalStore } from '@/stores/modal'
-import { setAndReportValidity } from '@/utils'
-import { arrayToString, expandCode } from '@/utils'
+import { arrayToString, expandCode, setAndReportValidity } from '@/utils'
 
 defineProps<{
   show: boolean
