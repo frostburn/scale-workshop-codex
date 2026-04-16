@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TuningTableRow from '@/components/TuningTableRow.vue'
 import { mmod } from 'xen-dev-utils/fraction'
 
@@ -43,8 +43,24 @@ function scheduleRootRowCentering() {
   })
 }
 
+function scheduleIfVisible() {
+  if (document.visibilityState === 'visible') {
+    scheduleRootRowCentering()
+  }
+}
+
 onMounted(scheduleRootRowCentering)
 onActivated(scheduleRootRowCentering)
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', scheduleIfVisible)
+  window.addEventListener('pageshow', scheduleRootRowCentering)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', scheduleIfVisible)
+  window.removeEventListener('pageshow', scheduleRootRowCentering)
+})
 
 watch(() => props.baseMidiNote, scheduleRootRowCentering)
 
