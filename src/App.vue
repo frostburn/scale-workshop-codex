@@ -585,7 +585,7 @@ function panic() {
     v-slot="{ Component }"
   >
     <KeepAlive v-show="route.name === 'scale'">
-      <Component :is="ScaleView" />
+      <Component :is="ScaleView" :isVisible="route.name === 'scale'" />
     </KeepAlive>
     <Component v-if="route.name !== 'scale'" :is="Component" />
   </RouterView>

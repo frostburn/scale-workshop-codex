@@ -11,11 +11,13 @@ import { useStateStore } from '@/stores/state'
 import { debounce } from '@/utils'
 import { getSourceVisitor } from 'sonic-weave/parser'
 import { defineAsyncComponent, defineComponent, h, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+
+const props = defineProps<{
+  isVisible?: boolean
+}>()
 
 const scale = useScaleStore()
 const state = useStateStore()
-const route = useRoute()
 
 const controls = ref<typeof ScaleControls | null>(null)
 const tuningTable = ref<{ centerRootRow: () => void } | null>(null)
@@ -77,9 +79,9 @@ const ExporterButtonsAsync = defineAsyncComponent({
 const updateScale = debounce(scale.computeScale)
 
 watch(
-  () => route.name,
-  (name) => {
-    if (name === 'scale') {
+  () => props.isVisible,
+  (isVisible) => {
+    if (isVisible) {
       tuningTable.value?.centerRootRow()
     }
   }
