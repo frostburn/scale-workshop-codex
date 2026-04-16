@@ -15,6 +15,10 @@ export default defineConfig({
             return
           }
 
+          if (id.includes('node_modules/sonic-weave/scale-workshop-2-parser')) {
+            return 'scale-workshop-legacy'
+          }
+
           if (id.includes('node_modules/sonic-weave')) {
             return 'sonic-weave'
           }
