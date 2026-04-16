@@ -4,8 +4,8 @@ import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { OCTAVE } from '@/constants'
 import { useModalStore } from '@/stores/modal'
 import { expandCode } from '@/utils'
-import { linear } from 'sonic-weave'
-import { mmod } from 'xen-dev-utils'
+import { linear } from 'sonic-weave/stdlib'
+import { mmod } from 'xen-dev-utils/fraction'
 
 defineProps<{
   show: boolean

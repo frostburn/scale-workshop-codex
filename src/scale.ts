@@ -1,4 +1,5 @@
-import { mmod, valueToCents } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
+import { valueToCents } from 'xen-dev-utils/conversion'
 
 /** Musical scale designed to calculate frequencies repeated at octaves or generic equaves. */
 export class Scale {

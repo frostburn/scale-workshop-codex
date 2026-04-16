@@ -3,7 +3,7 @@ import Modal from '@/components/ModalDialog.vue'
 import { useModalStore } from '@/stores/modal'
 import { computed } from 'vue'
 import { useScaleStore } from '@/stores/scale'
-import { valueToCents } from 'xen-dev-utils'
+import { valueToCents } from 'xen-dev-utils/conversion'
 
 defineProps<{
   show: boolean

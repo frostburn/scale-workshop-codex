@@ -1,3 +1,5 @@
+import { Fraction, mmod } from 'xen-dev-utils/fraction'
+import { mtof } from 'xen-dev-utils/conversion'
 import { Scale } from '@/scale'
 import {
   midiNoteNumberToEnharmonics,
@@ -12,25 +14,20 @@ import {
 } from '@/utils'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { Fraction, mmod, mtof } from 'xen-dev-utils'
+import { parseAST, StatementVisitor, ExpressionVisitor, getGlobalVisitor } from 'sonic-weave/parser'
 import {
-  parseAST,
   relative,
-  Interval,
-  TimeMonzo,
   centsColor,
   factorColor,
   type SonicWeaveValue,
-  StatementVisitor,
-  ExpressionVisitor,
   builtinNode,
   repr,
-  getGlobalVisitor,
-  TimeReal,
   upcastBool,
   unaryBroadcast,
   lstr
-} from 'sonic-weave'
+} from 'sonic-weave/stdlib'
+import { Interval } from 'sonic-weave/interval'
+import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
 import {
   APP_TITLE,
   DEFAULT_NUMBER_OF_COMPONENTS,

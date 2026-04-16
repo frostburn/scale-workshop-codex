@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Scale } from '@/scale'
+import { valueToCents } from 'xen-dev-utils/conversion'
 import { computed } from 'vue'
-import { mmod, valueToCents } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 
 const props = defineProps<{
   scale: Scale

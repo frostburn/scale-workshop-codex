@@ -1,8 +1,10 @@
 import JSZip from 'jszip'
+import { mtof } from 'xen-dev-utils/conversion'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { Fraction, mtof } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
+import { TimeMonzo } from 'sonic-weave/monzo'
 import { frequencyTableToBinaryData } from './mts-sysex'
-import { Interval, TimeMonzo } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
 
 // This exporter converts tuning data into a zip-compressed file for use with
 // Korg's Sound Librarian software, supporting their 'logue series of synthesizers.

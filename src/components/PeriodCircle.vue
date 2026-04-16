@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { CS_EDO, LEFT_MOUSE_BTN } from '@/constants'
-import { generatorRanges } from 'moment-of-symmetry'
+import { generatorRanges } from 'moment-of-symmetry/core'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { mmod } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 import type { Scale } from '@/scale'
-import { valueToCents } from 'xen-dev-utils'
+import { valueToCents } from 'xen-dev-utils/conversion'
 
 const TAU = 2 * Math.PI
 const CIRCLE_RADIUS = 40

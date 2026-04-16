@@ -4,7 +4,7 @@ import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { OCTAVE } from '@/constants'
 import { computedAndError, expandCode, setAndReportValidity } from '@/utils'
-import { parseChord } from 'sonic-weave'
+import { parseChord } from 'sonic-weave/parser'
 
 defineProps<{
   show: boolean

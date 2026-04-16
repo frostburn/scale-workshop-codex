@@ -1,5 +1,8 @@
-import { Interval, TimeMonzo, TimeReal, type IntervalDomain } from 'sonic-weave'
-import { circleDistance, mmod, valueToCents } from 'xen-dev-utils'
+import { Interval, type IntervalDomain } from 'sonic-weave/interval'
+import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
+import { circleDistance } from 'xen-dev-utils/core'
+import { mmod } from 'xen-dev-utils/fraction'
+import { valueToCents } from 'xen-dev-utils/conversion'
 
 const EPSILON = 1e-6
 

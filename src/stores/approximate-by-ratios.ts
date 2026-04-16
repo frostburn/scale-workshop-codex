@@ -1,6 +1,9 @@
+import { PRIMES } from 'xen-dev-utils/primes'
+import { clamp } from 'xen-dev-utils/core'
+import { primeLimit as getPrimeLimit } from 'xen-dev-utils/monzo'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { Fraction, PRIMES, clamp, primeLimit as getPrimeLimit } from 'xen-dev-utils'
+import { Fraction } from 'xen-dev-utils/fraction'
 
 /**
  * State and helpers for the "Approximate by ratios" modal workflow.

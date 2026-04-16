@@ -1,8 +1,11 @@
+import { centsToValue } from 'xen-dev-utils/conversion'
+import { circleDifference } from 'xen-dev-utils/core'
+import { Fraction, lcm } from 'xen-dev-utils/fraction'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { DEFAULT_NUMBER_OF_COMPONENTS, FIFTH, OCTAVE } from '@/constants'
-import { Fraction, centsToValue, circleDifference, lcm } from 'xen-dev-utils'
-import { Interval, TimeMonzo } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
+import { TimeMonzo } from 'sonic-weave/monzo'
 import { parseInterval } from '@/utils'
 
 /**

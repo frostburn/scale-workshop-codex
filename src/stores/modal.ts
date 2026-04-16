@@ -1,24 +1,16 @@
+import { clamp, falsifyConstantStructure } from 'xen-dev-utils/core'
+import { Fraction, gcd, mmod } from 'xen-dev-utils/fraction'
 import { computed, reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { CS_EDO, CS_VAL, FIFTH, FIFTH_12TET, OCTAVE } from '@/constants'
 import { computedAndError, splitText } from '@/utils'
-import { Fraction, clamp, falsifyConstantStructure, gcd, mmod } from 'xen-dev-utils'
-import {
-  anyForEdo,
-  makeEdoMap,
-  tamnamsInfo,
-  modeInfo,
-  getHardness,
-  allForEdo,
-  type EdoMapEntry
-} from 'moment-of-symmetry'
-import {
-  TimeMonzo,
-  TimeReal,
-  evaluateExpression,
-  hasConstantStructure,
-  parseChord
-} from 'sonic-weave'
+import { anyForEdo, makeEdoMap, modeInfo, allForEdo } from 'moment-of-symmetry/core'
+import { tamnamsInfo } from 'moment-of-symmetry/names'
+import { getHardness } from 'moment-of-symmetry/hardness'
+import { type EdoMapEntry } from 'moment-of-symmetry/info'
+import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
+import { evaluateExpression, parseChord } from 'sonic-weave/parser'
+import { hasConstantStructure } from 'sonic-weave/tools'
 import { freeVAOs, vao } from '@/analysis'
 
 function scaleGet(monzos: TimeMonzo[], index: number) {

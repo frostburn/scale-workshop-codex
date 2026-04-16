@@ -1,6 +1,6 @@
 import { APP_TITLE } from '@/constants'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { ftom } from 'xen-dev-utils'
+import { ftom } from 'xen-dev-utils/conversion'
 
 export default class AbletonAsclExporter extends BaseExporter {
   // Make sure .ascl is valid .scl

@@ -1,8 +1,9 @@
+import { mmod } from 'xen-dev-utils/fraction'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { shortestEdge, type GridOptions } from 'ji-lattice'
-import { LOG_PRIMES, mmod } from 'xen-dev-utils'
-import { parseChord } from 'sonic-weave'
+import { LOG_PRIMES } from 'xen-dev-utils/primes'
+import { parseChord } from 'sonic-weave/parser'
 import { computedAndError, parseVal } from '@/utils'
 import { FIFTH, THIRD } from '@/constants'
 

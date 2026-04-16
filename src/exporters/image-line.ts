@@ -1,5 +1,6 @@
+import { frequencyToCentOffset } from 'xen-dev-utils/conversion'
 import { BaseExporter, type ExporterParams } from '@/exporters/base'
-import { clamp, frequencyToCentOffset } from 'xen-dev-utils'
+import { clamp } from 'xen-dev-utils/core'
 
 class ImageLineExporter extends BaseExporter {
   static numberOfNotes = 121 // IL products can only retune from C0 to C10

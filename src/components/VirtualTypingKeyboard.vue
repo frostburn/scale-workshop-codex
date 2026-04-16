@@ -3,8 +3,12 @@
  * Interactive QWERTY-based virtual keyboard component for typing and pointer input.
  */
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import type { Keyboard, CoordinateKeyboardEvent } from 'isomorphic-qwerty'
-import { CODES_LAYER_1, COORDS_BY_CODE } from 'isomorphic-qwerty'
+import {
+  CODES_LAYER_1,
+  COORDS_BY_CODE,
+  type CoordinateKeyboardEvent,
+  type Keyboard
+} from 'isomorphic-qwerty'
 import { LEFT_MOUSE_BTN } from '@/constants'
 
 /**

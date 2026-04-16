@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TuningTableRow from '@/components/TuningTableRow.vue'
-import { mmod } from 'xen-dev-utils'
+import { mmod } from 'xen-dev-utils/fraction'
 
 const props = defineProps<{
   baseFrequency: number

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import Modal from '@/components/ModalDialog.vue'
 import NumericSlider from '@/components/NumericSlider.vue'
+import { mmod } from 'xen-dev-utils/fraction'
 import { computed } from 'vue'
 import { DEFAULT_NUMBER_OF_COMPONENTS, FIFTH, OCTAVE } from '@/constants'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
-import { circleDifference, mmod } from 'xen-dev-utils'
-import { mosSizes } from 'moment-of-symmetry'
+import { circleDifference } from 'xen-dev-utils/core'
+import { TimeMonzo } from 'sonic-weave/monzo'
+import { mosSizes } from 'moment-of-symmetry/generator-ratio'
 import { spineLabel as spineLabel_, parseInterval, expandCode } from '@/utils'
 import { useHistoricalStore } from '@/stores/historical'
-import { Interval, TimeMonzo } from 'sonic-weave'
+import { Interval } from 'sonic-weave/interval'
 import { useScaleStore } from '@/stores/scale'
 
 defineProps<{

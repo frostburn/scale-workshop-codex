@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Interval, intervalValueAs } from 'sonic-weave/interval'
 import { FIFTH, OCTAVE } from '@/constants'
 import { ref, watch } from 'vue'
 import Modal from '@/components/ModalDialog.vue'
@@ -7,10 +8,9 @@ import PeriodCircle from '@/components/PeriodCircle.vue'
 import { expandCode, gapKeyColors, parseCents } from '@/utils'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { useRank2Store } from '@/stores/tempering'
-import { Interval, intervalValueAs } from 'sonic-weave'
 import { useScaleStore } from '@/stores/scale'
-import { mmod } from 'xen-dev-utils'
-import type { MosInfo } from 'moment-of-symmetry'
+import { mmod } from 'xen-dev-utils/fraction'
+import type { MosInfo } from 'moment-of-symmetry/info'
 
 const EPSILON = 1e-12
 
