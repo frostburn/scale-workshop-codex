@@ -39,6 +39,7 @@ const cellFormat = ref<'best' | 'fraction' | 'cents' | 'et' | 'decimal'>('best')
 const simplifyTolerance = ref(3.5)
 const fractionMaxHeight = ref(26)
 const showOptions = ref(false)
+const intervalMatrixArrangement = ref<'modes' | 'symmetric'>('modes')
 const trailLongevity = ref(70)
 const maxOtonalRoot = ref(16)
 const maxUtonalRoot = ref(23)
@@ -53,8 +54,8 @@ const intervalMatrixIndexingRadio = computed({
   set: (newValue: string) => (state.intervalMatrixIndexing = parseInt(newValue, 10))
 })
 const intervalMatrixArrangementRadio = computed({
-  get: () => state.intervalMatrixArrangement,
-  set: (newValue: 'modes' | 'symmetric') => (state.intervalMatrixArrangement = newValue)
+  get: () => intervalMatrixArrangement.value,
+  set: (newValue: 'modes' | 'symmetric') => (intervalMatrixArrangement.value = newValue)
 })
 
 const fadeAlpha = computed(() => 1 - trailLongevity.value / 100)
@@ -165,9 +166,13 @@ const symmetricMatrix = computed(() =>
   )
 )
 const displayedMatrixRows = computed(() =>
-  state.intervalMatrixArrangement === 'symmetric' ? symmetricMatrix.value : matrixRows.value
+  intervalMatrixArrangement.value === 'symmetric' ? symmetricMatrix.value : matrixRows.value
 )
-const displayColumnCount = computed(() => displayedMatrixRows.value[0]?.length ?? 0)
+const displayColumnCount = computed(() =>
+  intervalMatrixArrangement.value === 'symmetric'
+    ? displayedMatrixRows.value[0]?.length ?? 0
+    : matrixCoreWidth.value
+)
 
 function rowHeaderLabel(rowIndex: number) {
   if (cellFormat.value === 'best') {
@@ -177,7 +182,7 @@ function rowHeaderLabel(rowIndex: number) {
 }
 
 function columnHeaderLabel(columnIndex: number) {
-  if (state.intervalMatrixArrangement === 'symmetric') {
+  if (intervalMatrixArrangement.value === 'symmetric') {
     return rowHeaderLabel(columnIndex)
   }
   return columnIndex + state.intervalMatrixIndexing
@@ -353,8 +358,8 @@ watch(subtab, (newValue) => {
     </nav>
     <main v-if="subtab === 'matrix'">
       <h2>
-        Interval matrix:
         <span class="control radio-group">
+          Interval matrix:
           <span>
             <input
               type="radio"
@@ -387,13 +392,13 @@ watch(subtab, (newValue) => {
                 :key="columnIndex"
                 :class="{
                   held:
-                    state.intervalMatrixArrangement === 'symmetric' &&
+                    intervalMatrixArrangement === 'symmetric' &&
                     heldScaleDegrees.has(columnIndex - 1)
                 }"
               >
                 {{ columnHeaderLabel(columnIndex - 1) }}
               </th>
-              <th v-if="state.intervalMatrixArrangement !== 'symmetric'">
+              <th v-if="intervalMatrixArrangement !== 'symmetric'">
                 ({{ scale.scale.size + state.intervalMatrixIndexing }})
               </th>
               <th class="brightness" v-if="state.calculateBrightness">Bright %</th>
@@ -411,18 +416,18 @@ watch(subtab, (newValue) => {
                   violator:
                     state.calculateConstantStructureViolations &&
                     violations[i][
-                      state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                      intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
                     ],
                   highlight:
                     (highlights[i] ?? [])[
-                      state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                      intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
                     ],
-                  held: (heldMatrixCells[i] ?? [])[state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j]
+                  held: (heldMatrixCells[i] ?? [])[intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j]
                 }"
                 @mouseover="
                   highlight(
                     i,
-                    state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                    intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
                   )
                 "
               >

@@ -32,7 +32,6 @@ export const useStateStore = defineStore('state', () => {
 
   // Analysis preferences
   const intervalMatrixIndexing = ref(parseInt(storage.getItem('intervalMatrixIndexing') ?? '0', 10))
-  const intervalMatrixArrangement = ref<'modes' | 'symmetric'>('modes')
   const maxMatrixWidth = ref(parseInt(storage.getItem('maxMatrixWidth') ?? '100', 10))
   const calculateConstantStructureViolations = ref(
     storage.getItem('calculateConstantStructureViolations') === 'true'
@@ -122,7 +121,6 @@ export const useStateStore = defineStore('state', () => {
     showKeyboardRatio,
     showKeyboardFrequency,
     intervalMatrixIndexing,
-    intervalMatrixArrangement,
     maxMatrixWidth,
     calculateConstantStructureViolations,
     calculateVariety,
