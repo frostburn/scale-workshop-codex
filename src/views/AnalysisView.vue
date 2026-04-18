@@ -354,21 +354,27 @@ watch(subtab, (newValue) => {
     <main v-if="subtab === 'matrix'">
       <h2>
         Interval matrix:
-        <input
-          type="radio"
-          id="arrangement-modes-title"
-          value="modes"
-          v-model="intervalMatrixArrangementRadio"
-        />
-        <label for="arrangement-modes-title">modes</label>
-        /
-        <input
-          type="radio"
-          id="arrangement-symmetric-title"
-          value="symmetric"
-          v-model="intervalMatrixArrangementRadio"
-        />
-        <label for="arrangement-symmetric-title">symmetric</label>
+        <span class="control radio-group">
+          <span>
+            <input
+              type="radio"
+              id="arrangement-modes-title"
+              value="modes"
+              v-model="intervalMatrixArrangementRadio"
+            />
+            <label for="arrangement-modes-title">Modes</label>
+          </span>
+          /
+          <span>
+            <input
+              type="radio"
+              id="arrangement-symmetric-title"
+              value="symmetric"
+              v-model="intervalMatrixArrangementRadio"
+            />
+            <label for="arrangement-symmetric-title">Symmetric</label>
+          </span>
+        </span>
       </h2>
       <div class="control-group interval-matrix">
         <p v-if="matrixError" class="matrix-error">{{ matrixError }}</p>
