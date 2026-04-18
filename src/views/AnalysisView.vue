@@ -52,6 +52,10 @@ const intervalMatrixIndexingRadio = computed({
   get: () => state.intervalMatrixIndexing.toString(),
   set: (newValue: string) => (state.intervalMatrixIndexing = parseInt(newValue, 10))
 })
+const intervalMatrixArrangementRadio = computed({
+  get: () => state.intervalMatrixArrangement,
+  set: (newValue: 'modes' | 'symmetric') => (state.intervalMatrixArrangement = newValue)
+})
 
 const fadeAlpha = computed(() => 1 - trailLongevity.value / 100)
 
@@ -154,6 +158,30 @@ watchEffect(() => {
 const centsMatrix = computed(() => matrix.value.map((row) => row.map((i) => i.totalCents(true))))
 
 const matrixRows = computed(() => matrix.value.map((row) => row.map(formatMatrixCell)))
+const matrixCoreWidth = computed(() => Math.max(0, (matrixRows.value[0]?.length ?? 0) - 1))
+const symmetricMatrix = computed(() =>
+  matrixRows.value.map((row, rowIndex) =>
+    Array.from({ length: matrixCoreWidth.value }, (_, columnIndex) => row[mmod(columnIndex - rowIndex, matrixCoreWidth.value)])
+  )
+)
+const displayedMatrixRows = computed(() =>
+  state.intervalMatrixArrangement === 'symmetric' ? symmetricMatrix.value : matrixRows.value
+)
+const displayColumnCount = computed(() => displayedMatrixRows.value[0]?.length ?? 0)
+
+function rowHeaderLabel(rowIndex: number) {
+  if (cellFormat.value === 'best') {
+    return scale.labels[mmod(rowIndex - 1, scale.labels.length)]
+  }
+  return formatMatrixCell(rowIndex ? scale.relativeIntervals[rowIndex - 1] : UNISON)
+}
+
+function columnHeaderLabel(columnIndex: number) {
+  if (state.intervalMatrixArrangement === 'symmetric') {
+    return rowHeaderLabel(columnIndex)
+  }
+  return columnIndex + state.intervalMatrixIndexing
+}
 
 const violations = computed(() => {
   const margin = state.constantStructureMargin
@@ -180,6 +208,28 @@ const heldScaleDegrees = computed(() => {
   for (const midiIndex of state.heldNotes.keys()) {
     if (state.heldNotes.get(midiIndex)! > 0) {
       result.add(mmod(midiIndex - scale.scale.baseMidiNote, scale.scale.size))
+    }
+  }
+  return result
+})
+const heldMatrixCells = computed(() => {
+  const rowCount = matrixRows.value.length
+  const result = Array.from({ length: rowCount }, () => Array(matrixCoreWidth.value).fill(false))
+  const activeDegrees = [...heldScaleDegrees.value].filter((degree) => degree < rowCount)
+  for (const rowDegree of activeDegrees) {
+    for (const noteDegree of activeDegrees) {
+      result[rowDegree][mmod(noteDegree - rowDegree, matrixCoreWidth.value)] = true
+    }
+  }
+  return result
+})
+const heldModeColumns = computed(() => {
+  const rowCount = matrixRows.value.length
+  const result: Set<number> = new Set()
+  const activeDegrees = [...heldScaleDegrees.value].filter((degree) => degree < rowCount)
+  for (const rowDegree of activeDegrees) {
+    for (const noteDegree of activeDegrees) {
+      result.add(mmod(noteDegree - rowDegree, matrixCoreWidth.value))
     }
   }
   return result
@@ -320,31 +370,50 @@ watch(subtab, (newValue) => {
           <thead>
             <tr>
               <th></th>
-              <th v-for="i of Math.min(scale.scale.size, state.maxMatrixWidth)" :key="i">
-                {{ i - 1 + state.intervalMatrixIndexing }}
+              <th
+                v-for="columnIndex of displayColumnCount"
+                :key="columnIndex"
+                :class="{
+                  held:
+                    state.intervalMatrixArrangement === 'symmetric'
+                      ? heldScaleDegrees.has(columnIndex - 1)
+                      : heldModeColumns.has(columnIndex - 1)
+                }"
+              >
+                {{ columnHeaderLabel(columnIndex - 1) }}
               </th>
-              <th>({{ scale.scale.size + state.intervalMatrixIndexing }})</th>
+              <th v-if="state.intervalMatrixArrangement !== 'symmetric'">
+                ({{ scale.scale.size + state.intervalMatrixIndexing }})
+              </th>
               <th class="brightness" v-if="state.calculateBrightness">Bright %</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, i) of matrixRows" :key="i">
+            <tr v-for="(row, i) of displayedMatrixRows" :key="i">
               <th :class="{ held: heldScaleDegrees.has(i) }">
-                <template v-if="cellFormat === 'best'">
-                  {{ scale.labels[mmod(i - 1, scale.labels.length)] }}
-                </template>
-                <template v-else>
-                  {{ formatMatrixCell(i ? scale.relativeIntervals[i - 1] : UNISON) }}
-                </template>
+                {{ rowHeaderLabel(i) }}
               </th>
               <td
                 v-for="(name, j) of row"
                 :key="j"
                 :class="{
-                  violator: state.calculateConstantStructureViolations && violations[i][j],
-                  highlight: (highlights[i] ?? [])[j]
+                  violator:
+                    state.calculateConstantStructureViolations &&
+                    violations[i][
+                      state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                    ],
+                  highlight:
+                    (highlights[i] ?? [])[
+                      state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                    ],
+                  held: (heldMatrixCells[i] ?? [])[state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j]
                 }"
-                @mouseover="highlight(i, j)"
+                @mouseover="
+                  highlight(
+                    i,
+                    state.intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
+                  )
+                "
               >
                 {{ name }}
               </td>
@@ -352,7 +421,7 @@ watch(subtab, (newValue) => {
             </tr>
             <tr class="variety" v-if="state.calculateVariety">
               <th>Var</th>
-              <td v-for="(v, i) of variety" :key="i">{{ v }}</td>
+              <td v-for="i of displayColumnCount" :key="i">{{ variety[i - 1] }}</td>
               <td class="brightness" v-if="state.calculateBrightness"></td>
             </tr>
           </tbody>
@@ -406,6 +475,27 @@ watch(subtab, (newValue) => {
           <span>
             <input type="radio" id="indexing-one" value="1" v-model="intervalMatrixIndexingRadio" />
             <label for="indexing-one">1-indexing</label>
+          </span>
+        </div>
+        <div class="control radio-group">
+          <label>Matrix arrangement</label>
+          <span>
+            <input
+              type="radio"
+              id="arrangement-modes"
+              value="modes"
+              v-model="intervalMatrixArrangementRadio"
+            />
+            <label for="arrangement-modes">Modes (default)</label>
+          </span>
+          <span>
+            <input
+              type="radio"
+              id="arrangement-symmetric"
+              value="symmetric"
+              v-model="intervalMatrixArrangementRadio"
+            />
+            <label for="arrangement-symmetric">Symmetric</label>
           </span>
         </div>
         <div class="control">
