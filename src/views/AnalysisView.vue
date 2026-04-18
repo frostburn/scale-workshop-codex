@@ -223,17 +223,6 @@ const heldMatrixCells = computed(() => {
   }
   return result
 })
-const heldModeColumns = computed(() => {
-  const rowCount = matrixRows.value.length
-  const result: Set<number> = new Set()
-  const activeDegrees = [...heldScaleDegrees.value].filter((degree) => degree < rowCount)
-  for (const rowDegree of activeDegrees) {
-    for (const noteDegree of activeDegrees) {
-      result.add(mmod(noteDegree - rowDegree, matrixCoreWidth.value))
-    }
-  }
-  return result
-})
 
 const equallyTemperedChordData = computed(() => {
   if (!audio.virtualSynth) {
@@ -363,7 +352,24 @@ watch(subtab, (newValue) => {
       </ul>
     </nav>
     <main v-if="subtab === 'matrix'">
-      <h2>Interval matrix (modes)</h2>
+      <h2>
+        Interval matrix:
+        <input
+          type="radio"
+          id="arrangement-modes-title"
+          value="modes"
+          v-model="intervalMatrixArrangementRadio"
+        />
+        <label for="arrangement-modes-title">modes</label>
+        /
+        <input
+          type="radio"
+          id="arrangement-symmetric-title"
+          value="symmetric"
+          v-model="intervalMatrixArrangementRadio"
+        />
+        <label for="arrangement-symmetric-title">symmetric</label>
+      </h2>
       <div class="control-group interval-matrix">
         <p v-if="matrixError" class="matrix-error">{{ matrixError }}</p>
         <table v-else @mouseleave="highlight()">
@@ -375,9 +381,8 @@ watch(subtab, (newValue) => {
                 :key="columnIndex"
                 :class="{
                   held:
-                    state.intervalMatrixArrangement === 'symmetric'
-                      ? heldScaleDegrees.has(columnIndex - 1)
-                      : heldModeColumns.has(columnIndex - 1)
+                    state.intervalMatrixArrangement === 'symmetric' &&
+                    heldScaleDegrees.has(columnIndex - 1)
                 }"
               >
                 {{ columnHeaderLabel(columnIndex - 1) }}
@@ -475,27 +480,6 @@ watch(subtab, (newValue) => {
           <span>
             <input type="radio" id="indexing-one" value="1" v-model="intervalMatrixIndexingRadio" />
             <label for="indexing-one">1-indexing</label>
-          </span>
-        </div>
-        <div class="control radio-group">
-          <label>Matrix arrangement</label>
-          <span>
-            <input
-              type="radio"
-              id="arrangement-modes"
-              value="modes"
-              v-model="intervalMatrixArrangementRadio"
-            />
-            <label for="arrangement-modes">Modes (default)</label>
-          </span>
-          <span>
-            <input
-              type="radio"
-              id="arrangement-symmetric"
-              value="symmetric"
-              v-model="intervalMatrixArrangementRadio"
-            />
-            <label for="arrangement-symmetric">Symmetric</label>
           </span>
         </div>
         <div class="control">
