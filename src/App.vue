@@ -32,10 +32,16 @@ function getPath(url: URL) {
 
 const route = useRoute()
 const router = useRouter()
-const tabTitle = computed(() => scale.scale.title.trim() || APP_TITLE)
+const documentTitle = computed(() => {
+  const scaleTitle = scale.scale.title.trim()
+  if (!scaleTitle) {
+    return APP_TITLE
+  }
+  return `${scaleTitle} | ${APP_TITLE}`
+})
 
 watch(
-  tabTitle,
+  documentTitle,
   (value) => {
     document.title = value
   },

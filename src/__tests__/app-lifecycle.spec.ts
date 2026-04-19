@@ -8,6 +8,7 @@ import { MidiIn } from 'xen-midi'
 import App from '@/App.vue'
 import { useStateStore } from '@/stores/state'
 import { useScaleStore } from '@/stores/scale'
+import { APP_TITLE } from '@/constants'
 
 type TestWindow = Window &
   typeof globalThis & {
@@ -126,7 +127,7 @@ describe('App lifecycle listeners', () => {
     scale.scale.title = 'Meantone test scale'
     await wrapper.vm.$nextTick()
 
-    expect(document.title).toBe('Meantone test scale')
+    expect(document.title).toBe(`Meantone test scale | ${APP_TITLE}`)
 
     await wrapper.unmount()
     document.title = originalTitle
