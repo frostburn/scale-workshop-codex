@@ -651,6 +651,8 @@ circle.node:not(.held) {
 }
 circle.node.held {
   fill: var(--color-accent);
+  filter: drop-shadow(0 0 0.25rem color-mix(in srgb, var(--color-accent) 75%, transparent))
+    drop-shadow(0 0 0.7rem color-mix(in srgb, var(--color-accent) 55%, transparent));
 }
 circle.node.auxiliary {
   stroke: none;
