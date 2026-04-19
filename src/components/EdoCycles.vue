@@ -92,11 +92,11 @@ const viewBox = computed(
   >
     <defs>
       <radialGradient id="held-node-glow-cycles" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.5" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.42" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.25" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.11" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.03" />
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
+        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
+        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
+        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
+        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
         <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
       </radialGradient>
     </defs>
@@ -107,7 +107,7 @@ const viewBox = computed(
       class="node-glow"
       :cx="v.x"
       :cy="v.y"
-      :r="store.size * 1.8"
+      :r="store.size * 2.2"
       fill="url(#held-node-glow-cycles)"
     />
     <circle

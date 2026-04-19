@@ -190,11 +190,11 @@ watch(
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
       <radialGradient id="held-node-glow-ji" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.5" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.42" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.25" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.11" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.03" />
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
+        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
+        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
+        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
+        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
         <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
       </radialGradient>
     </defs>
@@ -222,7 +222,7 @@ watch(
       class="node-glow"
       :cx="item.vertex.x"
       :cy="item.vertex.y"
-      :r="store.size * 2.6"
+      :r="store.size * 3.1"
       fill="url(#held-node-glow-ji)"
     />
 

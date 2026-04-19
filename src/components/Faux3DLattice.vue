@@ -115,7 +115,7 @@ const elements = computed(() => {
         tag: 'circle',
         cx,
         cy,
-        r: 2.6 * r,
+        r: 3.1 * r,
         class: { 'node-glow': true },
         fill: 'url(#held-node-glow-3d)',
         z: z + EPSILON
@@ -206,11 +206,11 @@ const elements = computed(() => {
   >
     <defs>
       <radialGradient id="held-node-glow-3d" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.5" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.42" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.25" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.11" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.03" />
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
+        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
+        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
+        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
+        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
         <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
       </radialGradient>
     </defs>
