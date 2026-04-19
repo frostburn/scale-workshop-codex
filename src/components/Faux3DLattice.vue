@@ -207,7 +207,10 @@ const elements = computed(() => {
     <defs>
       <radialGradient id="held-node-glow-3d" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.5" />
-        <stop offset="70%" stop-color="var(--color-accent)" stop-opacity="0.22" />
+        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.42" />
+        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.25" />
+        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.11" />
+        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.03" />
         <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
       </radialGradient>
     </defs>
