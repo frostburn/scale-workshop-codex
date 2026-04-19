@@ -445,11 +445,8 @@ function generate(expand = true) {
         <span class="error" v-show="rank2.mosPatternsError.length">⚠</span>
         <i>{{ rank2.previewMosPattern }}</i>
         <span class="hint" v-if="rank2.method === 'circle'">
-          <span class="hint-mouse">Drag circle to set generator.</span>
-          <span class="hint-touch">Touch-drag circle to set generator.</span>
-        </span>
-        <span class="hint hint-hover" v-if="rank2.method !== 'circle' && rank2.mosPatterns.length">
-          Hover MOS sizes to preview details.
+          <span class="hint-mouse">Tip: drag circle to set generator.</span>
+          <span class="hint-touch">Tip: touch-drag circle to set generator.</span>
         </span>
       </div>
     </template>
@@ -496,8 +493,7 @@ p.warning {
 }
 
 @media (hover: none), (pointer: coarse) {
-  .hint-mouse,
-  .hint-hover {
+  .hint-mouse {
     display: none;
   }
 
