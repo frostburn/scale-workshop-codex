@@ -39,14 +39,6 @@ const cellFormat = ref<'best' | 'fraction' | 'cents' | 'et' | 'decimal'>('best')
 const simplifyTolerance = ref(3.5)
 const fractionMaxHeight = ref(26)
 const showOptions = ref(false)
-const intervalMatrixArrangement = ref<'modes' | 'symmetric'>('modes')
-const trailLongevity = ref(70)
-const maxOtonalRoot = ref(16)
-const maxUtonalRoot = ref(23)
-
-const maxDivisions = ref(31)
-const equave = ref(OCTAVE)
-const equaveString = ref('2/1')
 const errorModel = ref<'rooted' | 'free'>('rooted')
 
 const intervalMatrixIndexingRadio = computed({
@@ -54,7 +46,7 @@ const intervalMatrixIndexingRadio = computed({
   set: (newValue: string) => (state.intervalMatrixIndexing = parseInt(newValue, 10))
 })
 
-const fadeAlpha = computed(() => 1 - trailLongevity.value / 100)
+const fadeAlpha = computed(() => 1 - state.trailLongevity / 100)
 
 const backgroundRBG = computed<[number, number, number]>(() => {
   const root = document.documentElement
@@ -165,10 +157,10 @@ const symmetricMatrix = computed(() =>
   )
 )
 const displayedMatrixRows = computed(() =>
-  intervalMatrixArrangement.value === 'symmetric' ? symmetricMatrix.value : matrixRows.value
+  state.intervalMatrixArrangement === 'symmetric' ? symmetricMatrix.value : matrixRows.value
 )
 const displayColumnCount = computed(() =>
-  intervalMatrixArrangement.value === 'symmetric'
+  state.intervalMatrixArrangement === 'symmetric'
     ? (displayedMatrixRows.value[0]?.length ?? 0)
     : matrixCoreWidth.value
 )
@@ -181,7 +173,7 @@ function rowHeaderLabel(rowIndex: number) {
 }
 
 function columnHeaderLabel(columnIndex: number) {
-  if (intervalMatrixArrangement.value === 'symmetric') {
+  if (state.intervalMatrixArrangement === 'symmetric') {
     return rowHeaderLabel(columnIndex)
   }
   return columnIndex + state.intervalMatrixIndexing
@@ -226,22 +218,22 @@ const equallyTemperedChordData = computed(() => {
     }
   }
   const frequencies = audio.virtualSynth.voices.map((voice) => Math.abs(voice.frequency))
-  const equaveCents = equave.value.totalCents(true)
+  const equaveCents = state.nedjiEquave.totalCents(true)
   if (errorModel.value === 'rooted') {
-    return rootedEquallyTemperedChord(frequencies, maxDivisions.value, equaveCents)
+    return rootedEquallyTemperedChord(frequencies, state.maxDivisions, equaveCents)
   }
-  return freeEquallyTemperedChord(frequencies, maxDivisions.value, equaveCents)
+  return freeEquallyTemperedChord(frequencies, state.maxDivisions, equaveCents)
 })
 
 const nedjiProjector = computed(() => {
-  if (equave.value.equals(OCTAVE)) {
+  if (state.nedjiEquave.equals(OCTAVE)) {
     return ''
   }
-  return `<${equave.value.toString()}>`
+  return `<${state.nedjiEquave.toString()}>`
 })
 
 function highlight(y?: number, x?: number) {
-  if (!state.calculateConstantStructureViolations || intervalMatrixArrangement.value !== 'modes') {
+  if (!state.calculateConstantStructureViolations || state.intervalMatrixArrangement !== 'modes') {
     return
   }
   const margin = state.constantStructureMargin
@@ -353,7 +345,7 @@ watch(subtab, (newValue) => {
               type="radio"
               id="arrangement-modes-title"
               value="modes"
-              v-model="intervalMatrixArrangement"
+              v-model="state.intervalMatrixArrangement"
             />
             <label for="arrangement-modes-title">Modes</label>
           </span>
@@ -363,7 +355,7 @@ watch(subtab, (newValue) => {
               type="radio"
               id="arrangement-symmetric-title"
               value="symmetric"
-              v-model="intervalMatrixArrangement"
+              v-model="state.intervalMatrixArrangement"
             />
             <label for="arrangement-symmetric-title">Symmetric</label>
           </span>
@@ -380,13 +372,13 @@ watch(subtab, (newValue) => {
                 :key="columnIndex"
                 :class="{
                   held:
-                    intervalMatrixArrangement === 'symmetric' &&
+                    state.intervalMatrixArrangement === 'symmetric' &&
                     heldScaleDegrees.has(columnIndex - 1)
                 }"
               >
                 {{ columnHeaderLabel(columnIndex - 1) }}
               </th>
-              <template v-if="intervalMatrixArrangement !== 'symmetric'">
+              <template v-if="state.intervalMatrixArrangement !== 'symmetric'">
                 <th v-if="scale.scale.size <= state.maxMatrixWidth">
                   ({{ scale.scale.size + state.intervalMatrixIndexing }})
                 </th>
@@ -408,12 +400,13 @@ watch(subtab, (newValue) => {
                 :class="{
                   violator:
                     state.calculateConstantStructureViolations &&
-                    intervalMatrixArrangement === 'modes' &&
+                    state.intervalMatrixArrangement === 'modes' &&
                     violations[i][j],
-                  highlight: intervalMatrixArrangement === 'modes' && (highlights[i] ?? [])[j],
+                  highlight:
+                    state.intervalMatrixArrangement === 'modes' && (highlights[i] ?? [])[j],
                   held:
                     heldScaleDegrees.has(i) &&
-                    (intervalMatrixArrangement === 'symmetric'
+                    (state.intervalMatrixArrangement === 'symmetric'
                       ? heldScaleDegrees.has(j)
                       : heldScaleDegrees.has(mmod(j + i, scale.scale.size)))
                 }"
@@ -425,7 +418,7 @@ watch(subtab, (newValue) => {
             </tr>
             <tr
               class="variety"
-              v-if="state.calculateVariety && intervalMatrixArrangement === 'modes'"
+              v-if="state.calculateVariety && state.intervalMatrixArrangement === 'modes'"
             >
               <th>Var</th>
               <td v-for="(v, i) of variety" :key="i">{{ v }}</td>
@@ -544,7 +537,7 @@ watch(subtab, (newValue) => {
             <ChordWheel
               class="chord-wheel"
               type="otonal"
-              :maxChordRoot="maxOtonalRoot"
+              :maxChordRoot="state.maxOtonalRoot"
               :virtualSynth="audio.virtualSynth"
               :width="500"
               :height="400"
@@ -563,7 +556,7 @@ watch(subtab, (newValue) => {
             <ChordWheel
               class="chord-wheel"
               type="utonal"
-              :maxChordRoot="maxUtonalRoot"
+              :maxChordRoot="state.maxUtonalRoot"
               :virtualSynth="audio.virtualSynth"
               :width="500"
               :height="400"
@@ -587,7 +580,7 @@ watch(subtab, (newValue) => {
                 class="control"
                 min="0"
                 max="100"
-                v-model="trailLongevity"
+                v-model="state.trailLongevity"
               />
             </div>
             <div class="control">
@@ -597,7 +590,7 @@ watch(subtab, (newValue) => {
                 type="number"
                 class="control"
                 min="1"
-                v-model="maxOtonalRoot"
+                v-model="state.maxOtonalRoot"
               />
             </div>
             <div class="control">
@@ -607,7 +600,7 @@ watch(subtab, (newValue) => {
                 type="number"
                 class="control"
                 min="1"
-                v-model="maxUtonalRoot"
+                v-model="state.maxUtonalRoot"
               />
             </div>
           </div>
@@ -626,14 +619,20 @@ watch(subtab, (newValue) => {
           <div class="control-group">
             <div class="control">
               <label for="divisions">Maximum divisions of the equave</label>
-              <input id="divisions" type="number" class="control" min="1" v-model="maxDivisions" />
+              <input
+                id="divisions"
+                type="number"
+                class="control"
+                min="1"
+                v-model="state.maxDivisions"
+              />
             </div>
             <div class="control">
               <label for="equave">Equave</label>
               <ScaleLineInput
                 id="equave"
-                @update:value="equave = $event"
-                v-model="equaveString"
+                @update:value="state.nedjiEquave = $event"
+                v-model="state.nedjiEquaveString"
                 :defaultValue="OCTAVE"
               />
             </div>

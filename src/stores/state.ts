@@ -1,6 +1,6 @@
 import { reactive, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { UNIX_NEWLINE } from '@/constants'
+import { UNIX_NEWLINE, OCTAVE } from '@/constants'
 import { syncValues } from '@/utils'
 
 /**
@@ -12,6 +12,13 @@ export const useStateStore = defineStore('state', () => {
   const typingActive = ref(true)
 
   const latticeType = ref<'ji' | 'et' | 'cycles' | '3d' | 'auto'>('auto')
+  const trailLongevity = ref(70)
+  const maxOtonalRoot = ref(16)
+  const maxUtonalRoot = ref(23)
+  const maxDivisions = ref(31)
+  const nedjiEquave = ref(OCTAVE)
+  const nedjiEquaveString = ref('2/1')
+  const intervalMatrixArrangement = ref<'modes' | 'symmetric'>('modes')
 
   // These user preferences are fetched from local storage.
   const storage = window.localStorage
@@ -41,7 +48,6 @@ export const useStateStore = defineStore('state', () => {
   const constantStructureMargin = ref(
     parseInt(storage.getItem('constantStructureMargin') ?? '0', 10)
   )
-
   // Special keyboard codes also from local storage.
   const deactivationCode = ref(storage.getItem('deactivationCode') ?? 'Backquote')
   const equaveUpCode = ref(storage.getItem('equaveUpCode') ?? 'NumpadMultiply')
@@ -110,6 +116,13 @@ export const useStateStore = defineStore('state', () => {
     heldNotes,
     typingActive,
     latticeType,
+    trailLongevity,
+    maxOtonalRoot,
+    maxUtonalRoot,
+    maxDivisions,
+    nedjiEquave,
+    nedjiEquaveString,
+    intervalMatrixArrangement,
     // Persistent state
     newline,
     colorScheme,
