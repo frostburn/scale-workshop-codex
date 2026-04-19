@@ -632,10 +632,12 @@ div.keyboard-controls {
 
 .spinner-input {
   display: flex;
+  width: 100%;
 }
 
 .spinner-input > input {
   flex: 1;
+  min-width: 12rem;
 }
 
 .spinner-buttons {
