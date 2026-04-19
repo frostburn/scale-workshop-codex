@@ -2,7 +2,7 @@
 import { mmod } from 'xen-dev-utils/fraction'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, RouterView, useRouter, useRoute } from 'vue-router'
-import { DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
+import { APP_TITLE, DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
 import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
@@ -32,6 +32,15 @@ function getPath(url: URL) {
 
 const route = useRoute()
 const router = useRouter()
+const tabTitle = computed(() => scale.scale.title.trim() || APP_TITLE)
+
+watch(
+  tabTitle,
+  (value) => {
+    document.title = value
+  },
+  { immediate: true }
+)
 
 // === Tuning table highlighting ===
 function tuningTableKeyOn(index: number) {
