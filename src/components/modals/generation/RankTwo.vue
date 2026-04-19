@@ -312,9 +312,6 @@ function generate(expand = true) {
               @update:generatorCents="updateCircleGenerator"
             />
           </div>
-          <p class="hint">
-            Tip: click and drag on the circle to set the generator directly (touch-drag works too).
-          </p>
           <div class="control">
             <label for="period-stretch">Period stretch</label>
             <NumericSlider
@@ -416,7 +413,6 @@ function generate(expand = true) {
           <strong>MOS sizes</strong>
           <span v-show="rank2.mosPatternsError.length">⚠</span>
         </div>
-        <p class="hint">Tip: hover a MOS size button to preview pattern, hardness, and chroma.</p>
         <div class="btn-group" v-if="rank2.mosPatterns.length">
           <button
             v-for="(mosInfo, i) of rank2.mosPatterns"
@@ -448,6 +444,13 @@ function generate(expand = true) {
         </button>
         <span class="error" v-show="rank2.mosPatternsError.length">⚠</span>
         <i>{{ rank2.previewMosPattern }}</i>
+        <span class="hint" v-if="rank2.method === 'circle'">
+          <span class="hint-mouse">Drag circle to set generator.</span>
+          <span class="hint-touch">Touch-drag circle to set generator.</span>
+        </span>
+        <span class="hint hint-hover" v-if="rank2.method !== 'circle' && rank2.mosPatterns.length">
+          Hover MOS sizes to preview details.
+        </span>
       </div>
     </template>
   </Modal>
@@ -482,10 +485,25 @@ p.warning {
   overflow-y: hidden;
 }
 
-p.hint {
-  margin: 0.4rem 0 0.6rem;
-  font-size: 0.9rem;
+.hint {
+  font-size: 0.9em;
+  margin-left: 0.5em;
   color: var(--color-text-mute);
+}
+
+.hint-touch {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hint-mouse,
+  .hint-hover {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
 }
 
 /* Content layout (medium) */
