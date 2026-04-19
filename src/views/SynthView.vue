@@ -637,7 +637,7 @@ div.keyboard-controls {
 
 .spinner-input > input {
   flex: 1;
-  min-width: 12rem;
+  min-width: 0;
 }
 
 .spinner-buttons {
