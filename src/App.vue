@@ -2,7 +2,7 @@
 import { mmod } from 'xen-dev-utils/fraction'
 import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { RouterLink, RouterView, useRouter, useRoute } from 'vue-router'
-import { APP_TITLE, DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
+import { DEFAULT_NUMBER_OF_COMPONENTS, LEFT_MOUSE_BTN } from '@/constants'
 import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
@@ -32,12 +32,13 @@ function getPath(url: URL) {
 
 const route = useRoute()
 const router = useRouter()
+const TAB_TITLE = 'Scale Workshop 3'
 const documentTitle = computed(() => {
   const scaleTitle = scale.scale.title.trim()
   if (!scaleTitle) {
-    return APP_TITLE
+    return TAB_TITLE
   }
-  return `${scaleTitle} | ${APP_TITLE}`
+  return `${scaleTitle} | ${TAB_TITLE}`
 })
 
 watch(
