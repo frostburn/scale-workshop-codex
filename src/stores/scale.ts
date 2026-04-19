@@ -132,9 +132,9 @@ export const useScaleStore = defineStore('scale', () => {
   const error = ref('')
   const warning = ref('')
 
-  // Isomorphic offsets don't couple to anything else here, but they're part of the shareable live state.
-  const isomorphicVertical = ref(5)
-  const isomorphicHorizontal = ref(1)
+  // Isomorphic offsets are represented as quasi-isomorphic repeating vectors.
+  const isomorphicVertical = ref([5])
+  const isomorphicHorizontal = ref([1])
   // Keyboard mode affects both physical qwerty and virtual keyboards
   const keyboardMode = ref<'isomorphic' | 'piano'>('isomorphic')
   // QWERTY mapping is coupled to equave and degree shifts
@@ -670,7 +670,12 @@ export const useScaleStore = defineStore('scale', () => {
       } else {
         const value = data[stateKey]
         if (value !== undefined) {
-          LIVE_STATE[stateKey].value = value
+          const liveState = LIVE_STATE as Record<string, { value: unknown }>
+          if (stateKey === 'isomorphicHorizontal' || stateKey === 'isomorphicVertical') {
+            liveState[stateKey].value = Array.isArray(value) ? value : [value as number]
+          } else {
+            liveState[stateKey].value = value
+          }
         }
       }
     }

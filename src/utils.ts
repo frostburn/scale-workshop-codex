@@ -131,6 +131,34 @@ export function splitText(text: string) {
 }
 
 /**
+ * Parses a space-separated list of integers.
+ */
+export function parseIntegerList(text: string, fallback: number[] = []) {
+  const values = text
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((token) => parseInt(token, 10))
+    .filter((value) => !isNaN(value))
+  return values.length ? values : fallback
+}
+
+/**
+ * Converts a number of axis steps into a semitone offset by repeating the given vector.
+ */
+export function axisOffset(steps: number, deltas: number[]) {
+  if (!steps || !deltas.length) {
+    return 0
+  }
+  const direction = steps > 0 ? 1 : -1
+  let offset = 0
+  for (let i = 0; i < Math.abs(steps); ++i) {
+    offset += direction * deltas[i % deltas.length]
+  }
+  return offset
+}
+
+/**
  * Expands SonicWeave source code against default context bindings.
  */
 export function expandCode(source: string) {

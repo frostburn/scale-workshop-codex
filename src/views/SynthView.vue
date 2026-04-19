@@ -10,6 +10,7 @@ import { APERIODIC_WAVEFORMS, WAVEFORMS } from '@/synth'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from '@/stores/state'
 import { useScaleStore } from '@/stores/scale'
+import { parseIntegerList } from '@/utils'
 
 const emit = defineEmits(['panic'])
 
@@ -41,6 +42,20 @@ const strokeStyle = computed(() => {
     return getComputedStyle(root).getPropertyValue('--color-text').trim()
   }
   return getComputedStyle(root).getPropertyValue('--color-text').trim()
+})
+
+const isomorphicVerticalModel = computed({
+  get: () => scale.isomorphicVertical.join(' '),
+  set: (value: string) => {
+    scale.isomorphicVertical = parseIntegerList(value, [5])
+  }
+})
+
+const isomorphicHorizontalModel = computed({
+  get: () => scale.isomorphicHorizontal.join(' '),
+  set: (value: string) => {
+    scale.isomorphicHorizontal = parseIntegerList(value, [1])
+  }
 })
 
 function envPresetOrgan() {
@@ -416,16 +431,17 @@ onUnmounted(() => {
           <h2>Isomorphic key mapping</h2>
           <p>
             Distance between adjacent keys on the horizontal/vertical axes, in scale degrees.
-            Affects virtual keyboard (and also typing keyboard if in isomorphic mode).
+            Affects virtual keyboard (and also typing keyboard if in isomorphic mode). Use
+            space-separated integer lists for quasi-isomorphic repeating patterns.
           </p>
           <div class="control-group isomorphic-axis-group">
             <div class="control half-width-control">
               <label for="vertical">Vertical</label>
-              <input type="number" id="vertical" v-model="scale.isomorphicVertical" />
+              <input type="text" id="vertical" v-model="isomorphicVerticalModel" />
             </div>
             <div class="control half-width-control">
               <label for="horizontal">Horizontal</label>
-              <input type="number" id="horizontal" v-model="scale.isomorphicHorizontal" />
+              <input type="text" id="horizontal" v-model="isomorphicHorizontalModel" />
             </div>
           </div>
         </template>

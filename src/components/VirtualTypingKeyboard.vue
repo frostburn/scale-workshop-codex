@@ -10,6 +10,7 @@ import {
   type Keyboard
 } from 'isomorphic-qwerty'
 import { LEFT_MOUSE_BTN } from '@/constants'
+import { axisOffset } from '@/utils'
 
 /**
  * Unimplemented features:
@@ -29,8 +30,8 @@ const props = defineProps<{
   colorScheme: 'light' | 'dark'
   qwertyMapping: Map<string, number>
   hasLeftOfZ: boolean
-  isomorphicHorizontal: number
-  isomorphicVertical: number
+  isomorphicHorizontal: number[]
+  isomorphicVertical: number[]
   noteOn: NoteOnCallback
   heldNotes: Map<number, number>
   typingKeyboard: Keyboard
@@ -85,7 +86,7 @@ const rows = computed(() => {
       let index: number | undefined = base
       if (props.keyboardMode === 'isomorphic') {
         const [x, y] = COORDS_BY_CODE.get(code)!
-        index += x * horizontal + (2 - y) * vertical
+        index += axisOffset(x, horizontal) + axisOffset(2 - y, vertical)
       } else {
         index = mapping.get(code)
       }
