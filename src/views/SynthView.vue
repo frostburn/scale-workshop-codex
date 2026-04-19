@@ -10,7 +10,6 @@ import { APERIODIC_WAVEFORMS, WAVEFORMS } from '@/synth'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from '@/stores/state'
 import { useScaleStore } from '@/stores/scale'
-import { parseIntegerList } from '@/utils'
 
 const emit = defineEmits(['panic'])
 
@@ -44,17 +43,17 @@ const strokeStyle = computed(() => {
   return getComputedStyle(root).getPropertyValue('--color-text').trim()
 })
 
-const isomorphicVerticalModel = computed({
-  get: () => scale.isomorphicVertical.join(' '),
-  set: (value: string) => {
-    scale.isomorphicVertical = parseIntegerList(value, [5])
+const isomorphicVerticalSpinnerModel = computed({
+  get: () => scale.isomorphicVertical[0] ?? 0,
+  set: (value: number) => {
+    scale.isomorphicVertical = [value]
   }
 })
 
-const isomorphicHorizontalModel = computed({
-  get: () => scale.isomorphicHorizontal.join(' '),
-  set: (value: string) => {
-    scale.isomorphicHorizontal = parseIntegerList(value, [1])
+const isomorphicHorizontalSpinnerModel = computed({
+  get: () => scale.isomorphicHorizontal[0] ?? 0,
+  set: (value: number) => {
+    scale.isomorphicHorizontal = [value]
   }
 })
 
@@ -437,11 +436,25 @@ onUnmounted(() => {
           <div class="control-group isomorphic-axis-group">
             <div class="control half-width-control">
               <label for="vertical">Vertical</label>
-              <input type="text" id="vertical" v-model="isomorphicVerticalModel" />
+              <input
+                type="number"
+                id="vertical"
+                v-model.number="isomorphicVerticalSpinnerModel"
+                :disabled="scale.isomorphicVertical.length > 1"
+              />
+              <label for="vertical-list">Vertical list</label>
+              <input type="text" id="vertical-list" v-model="scale.isomorphicVerticalText" />
             </div>
             <div class="control half-width-control">
               <label for="horizontal">Horizontal</label>
-              <input type="text" id="horizontal" v-model="isomorphicHorizontalModel" />
+              <input
+                type="number"
+                id="horizontal"
+                v-model.number="isomorphicHorizontalSpinnerModel"
+                :disabled="scale.isomorphicHorizontal.length > 1"
+              />
+              <label for="horizontal-list">Horizontal list</label>
+              <input type="text" id="horizontal-list" v-model="scale.isomorphicHorizontalText" />
             </div>
           </div>
         </template>

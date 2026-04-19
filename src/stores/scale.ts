@@ -10,7 +10,8 @@ import {
   randomId,
   centString,
   decimalString,
-  convertAccidentals
+  convertAccidentals,
+  parseIntegerList
 } from '@/utils'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
@@ -133,8 +134,24 @@ export const useScaleStore = defineStore('scale', () => {
   const warning = ref('')
 
   // Isomorphic offsets are represented as quasi-isomorphic repeating vectors.
-  const isomorphicVertical = ref([5])
-  const isomorphicHorizontal = ref([1])
+  const isomorphicVerticalText = ref('5')
+  const isomorphicHorizontalText = ref('1')
+  const isomorphicVertical = computed<number[]>({
+    get() {
+      return parseIntegerList(isomorphicVerticalText.value)
+    },
+    set(value) {
+      isomorphicVerticalText.value = value.join(' ')
+    }
+  })
+  const isomorphicHorizontal = computed<number[]>({
+    get() {
+      return parseIntegerList(isomorphicHorizontalText.value)
+    },
+    set(value) {
+      isomorphicHorizontalText.value = value.join(' ')
+    }
+  })
   // Keyboard mode affects both physical qwerty and virtual keyboards
   const keyboardMode = ref<'isomorphic' | 'piano'>('isomorphic')
   // QWERTY mapping is coupled to equave and degree shifts
@@ -724,6 +741,8 @@ export const useScaleStore = defineStore('scale', () => {
     accidentalPreference,
     hasLeftOfZ,
     gas,
+    isomorphicVerticalText,
+    isomorphicHorizontalText,
     // Computed state
     // With setters
     baseFrequencyDisplay,
