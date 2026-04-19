@@ -101,6 +101,7 @@ onUnmounted(() => {
       <div class="column scale-builder">
         <textarea
           id="scale-name"
+          tabindex="1"
           aria-label="Scale name"
           rows="1"
           placeholder="Untitled scale"
