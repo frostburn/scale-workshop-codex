@@ -43,19 +43,19 @@ const strokeStyle = computed(() => {
   return getComputedStyle(root).getPropertyValue('--color-text').trim()
 })
 
-const isomorphicVerticalSpinnerModel = computed({
-  get: () => scale.isomorphicVertical[0] ?? 0,
-  set: (value: number) => {
-    scale.isomorphicVertical = [value]
+function nudgeIsomorphicVertical(delta: number) {
+  if (scale.isomorphicVertical.length !== 1) {
+    return
   }
-})
+  scale.isomorphicVertical = [scale.isomorphicVertical[0] + delta]
+}
 
-const isomorphicHorizontalSpinnerModel = computed({
-  get: () => scale.isomorphicHorizontal[0] ?? 0,
-  set: (value: number) => {
-    scale.isomorphicHorizontal = [value]
+function nudgeIsomorphicHorizontal(delta: number) {
+  if (scale.isomorphicHorizontal.length !== 1) {
+    return
   }
-})
+  scale.isomorphicHorizontal = [scale.isomorphicHorizontal[0] + delta]
+}
 
 function envPresetOrgan() {
   audio.attackTime = 0.01
@@ -436,25 +436,51 @@ onUnmounted(() => {
           <div class="control-group isomorphic-axis-group">
             <div class="control half-width-control">
               <label for="vertical">Vertical</label>
-              <input
-                type="number"
-                id="vertical"
-                v-model.number="isomorphicVerticalSpinnerModel"
-                :disabled="scale.isomorphicVertical.length > 1"
-              />
-              <label for="vertical-list">Vertical list</label>
-              <input type="text" id="vertical-list" v-model="scale.isomorphicVerticalText" />
+              <div class="spinner-input">
+                <input type="text" id="vertical" v-model="scale.isomorphicVerticalText" />
+                <div class="spinner-buttons">
+                  <button
+                    type="button"
+                    aria-label="Increase vertical"
+                    :disabled="scale.isomorphicVertical.length > 1"
+                    @click="nudgeIsomorphicVertical(1)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Decrease vertical"
+                    :disabled="scale.isomorphicVertical.length > 1"
+                    @click="nudgeIsomorphicVertical(-1)"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="control half-width-control">
               <label for="horizontal">Horizontal</label>
-              <input
-                type="number"
-                id="horizontal"
-                v-model.number="isomorphicHorizontalSpinnerModel"
-                :disabled="scale.isomorphicHorizontal.length > 1"
-              />
-              <label for="horizontal-list">Horizontal list</label>
-              <input type="text" id="horizontal-list" v-model="scale.isomorphicHorizontalText" />
+              <div class="spinner-input">
+                <input type="text" id="horizontal" v-model="scale.isomorphicHorizontalText" />
+                <div class="spinner-buttons">
+                  <button
+                    type="button"
+                    aria-label="Increase horizontal"
+                    :disabled="scale.isomorphicHorizontal.length > 1"
+                    @click="nudgeIsomorphicHorizontal(1)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Decrease horizontal"
+                    :disabled="scale.isomorphicHorizontal.length > 1"
+                    @click="nudgeIsomorphicHorizontal(-1)"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </template>
@@ -602,5 +628,25 @@ div.keyboard-controls {
 
 .half-width-control {
   width: 50%;
+}
+
+.spinner-input {
+  display: flex;
+}
+
+.spinner-input > input {
+  flex: 1;
+}
+
+.spinner-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.25rem;
+}
+
+.spinner-buttons > button {
+  line-height: 1;
+  min-width: 1.75rem;
+  padding: 0.15rem 0.25rem;
 }
 </style>
