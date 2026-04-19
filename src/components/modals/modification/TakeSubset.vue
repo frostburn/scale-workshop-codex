@@ -14,13 +14,24 @@ const emit = defineEmits(['done', 'cancel'])
 const scale = useScaleStore()
 const modal = useModalStore()
 
+const numDeRoots = computed(() => {
+  if (!modal.selected.size) {
+    return 0
+  }
+  return Math.min(...modal.selected.values())
+})
+
+const displayedEquaveDegree = computed(() => {
+  return scale.scale.size + numDeRoots.value
+})
+
 const mode = computed(() => {
   if (!modal.selected.size) {
     return '(nothing selected)'
   }
   const degrees = [...modal.selected.values()]
   degrees.sort((a, b) => a - b)
-  degrees.push(scale.scale.size)
+  degrees.push(displayedEquaveDegree.value)
   const result = []
   for (let i = 1; i < degrees.length; ++i) {
     result.push(degrees[i] - degrees[i - 1])
@@ -34,7 +45,9 @@ const degrees = computed(() => {
   }
   const degrees = [...modal.selected.values()]
   degrees.sort((a, b) => a - b)
-  return degrees.map((degree) => degree.toString()).join(', ') + `, (${scale.scale.size})`
+  return (
+    degrees.map((degree) => degree.toString()).join(', ') + `, (${displayedEquaveDegree.value})`
+  )
 })
 
 function modify(expand = true) {
