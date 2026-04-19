@@ -55,6 +55,10 @@ const keyedVertices = computed(() =>
   }))
 )
 
+const keyedHeldVertices = computed(() =>
+  keyedVertices.value.filter((item) => item.vertex.indices.some((idx) => props.heldNotes.has(idx)))
+)
+
 const viewBox = computed(
   () =>
     `${store.viewCenterX - store.viewScale} ${store.viewCenterY - store.viewScale} ${store.viewScale * 2} ${store.viewScale * 2}`
@@ -127,6 +131,12 @@ onUnmounted(() => {
     :viewBox="viewBox"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <radialGradient id="held-node-glow-grid" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.45" />
+        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
+      </radialGradient>
+    </defs>
     <line
       v-for="edge of keyedGridLines"
       :key="edge.key"
@@ -140,6 +150,15 @@ onUnmounted(() => {
       v-bind="edge.attrs"
       :class="`edge ${edge.attrs.type}`"
       :stroke-width="store.size * 0.2"
+    />
+    <circle
+      v-for="item of keyedHeldVertices"
+      :key="`${item.key}-glow`"
+      class="node-glow"
+      :cx="item.vertex.x"
+      :cy="item.vertex.y"
+      :r="store.size * 2.6"
+      fill="url(#held-node-glow-grid)"
     />
     <circle
       v-for="item of keyedVertices"

@@ -119,6 +119,12 @@ const keyedVertices = computed(() =>
   }))
 )
 
+const keyedHeldVertices = computed(() =>
+  keyedVertices.value.filter(
+    (item) => item.vertex.index !== undefined && props.heldNotes.has(item.vertex.index)
+  )
+)
+
 watch(
   () => [
     svgElement.value,
@@ -183,6 +189,10 @@ watch(
       >
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
+      <radialGradient id="held-node-glow-ji" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.45" />
+        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
+      </radialGradient>
     </defs>
 
     <line
@@ -200,6 +210,16 @@ watch(
       :stroke-width="store.size * 0.2"
       class="arrow"
       marker-end="url(#arrow)"
+    />
+
+    <circle
+      v-for="item of keyedHeldVertices"
+      :key="`${item.key}-glow`"
+      class="node-glow"
+      :cx="item.vertex.x"
+      :cy="item.vertex.y"
+      :r="store.size * 2.6"
+      fill="url(#held-node-glow-ji)"
     />
 
     <circle

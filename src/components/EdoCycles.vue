@@ -49,6 +49,10 @@ const vertices = computed<KeyedVertex[]>(() => {
   return Array.from(result.values())
 })
 
+const heldVertices = computed(() =>
+  vertices.value.filter((v) => v.indices.some((idx) => props.heldNotes.has(idx)))
+)
+
 const cycles = computed(() => {
   const result: { key: number; d: string }[] = []
   const dt = (2 * Math.PI) / store.modulus
@@ -86,7 +90,22 @@ const viewBox = computed(
     :viewBox="viewBox"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <radialGradient id="held-node-glow-cycles" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.45" />
+        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
+      </radialGradient>
+    </defs>
     <path v-for="cycle of cycles" :key="cycle.key" :d="cycle.d" stroke-width="0.03" />
+    <circle
+      v-for="v of heldVertices"
+      :key="`${v.key}-glow`"
+      class="node-glow"
+      :cx="v.x"
+      :cy="v.y"
+      :r="store.size * 1.8"
+      fill="url(#held-node-glow-cycles)"
+    />
     <circle
       v-for="v of vertices"
       :key="v.key"
