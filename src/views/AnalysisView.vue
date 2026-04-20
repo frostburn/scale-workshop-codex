@@ -158,7 +158,10 @@ const matrixRows = computed(() => matrix.value.map((row) => row.map(formatMatrix
 const matrixCoreWidth = computed(() => Math.max(0, (matrixRows.value[0]?.length ?? 0) - 1))
 const symmetricMatrix = computed(() =>
   matrixRows.value.map((row, rowIndex) =>
-    Array.from({ length: matrixCoreWidth.value }, (_, columnIndex) => row[mmod(columnIndex - rowIndex, scale.scale.size)] ?? 'N/A')
+    Array.from(
+      { length: matrixCoreWidth.value },
+      (_, columnIndex) => row[mmod(columnIndex - rowIndex, scale.scale.size)] ?? 'N/A'
+    )
   )
 )
 const displayedMatrixRows = computed(() =>
@@ -166,7 +169,7 @@ const displayedMatrixRows = computed(() =>
 )
 const displayColumnCount = computed(() =>
   intervalMatrixArrangement.value === 'symmetric'
-    ? displayedMatrixRows.value[0]?.length ?? 0
+    ? (displayedMatrixRows.value[0]?.length ?? 0)
     : matrixCoreWidth.value
 )
 
@@ -238,7 +241,7 @@ const nedjiProjector = computed(() => {
 })
 
 function highlight(y?: number, x?: number) {
-  if (!state.calculateConstantStructureViolations) {
+  if (!state.calculateConstantStructureViolations || intervalMatrixArrangement.value !== 'modes') {
     return
   }
   const margin = state.constantStructureMargin
@@ -405,27 +408,25 @@ watch(subtab, (newValue) => {
                 :class="{
                   violator:
                     state.calculateConstantStructureViolations &&
-                    violations[i][
-                      intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
-                    ],
-                  highlight:
-                    (highlights[i] ?? [])[
-                      intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
-                    ],
-                  held: heldScaleDegrees.has(i) && (intervalMatrixArrangement === 'symmetric' ? heldScaleDegrees.has(j) : heldScaleDegrees.has(mmod(j + i, scale.scale.size)))
+                    intervalMatrixArrangement === 'modes' &&
+                    violations[i][j],
+                  highlight: intervalMatrixArrangement === 'modes' && (highlights[i] ?? [])[j],
+                  held:
+                    heldScaleDegrees.has(i) &&
+                    (intervalMatrixArrangement === 'symmetric'
+                      ? heldScaleDegrees.has(j)
+                      : heldScaleDegrees.has(mmod(j + i, scale.scale.size)))
                 }"
-                @mouseover="
-                  highlight(
-                    i,
-                    intervalMatrixArrangement === 'symmetric' ? mmod(j - i, matrixCoreWidth) : j
-                  )
-                "
+                @mouseover="highlight(i, j)"
               >
                 {{ name }}
               </td>
               <td class="brightness" v-if="state.calculateBrightness">{{ brightness[i] }}</td>
             </tr>
-            <tr class="variety" v-if="state.calculateVariety && intervalMatrixArrangement === 'modes'">
+            <tr
+              class="variety"
+              v-if="state.calculateVariety && intervalMatrixArrangement === 'modes'"
+            >
               <th>Var</th>
               <td v-for="(v, i) of variety" :key="i">{{ v }}</td>
               <td class="brightness" v-if="state.calculateBrightness"></td>
