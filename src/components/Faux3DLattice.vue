@@ -4,6 +4,7 @@
  * Not as convincing as OpenGL, but much less bloated than three.js.
  */
 import { useJiLatticeStore } from '@/stores/ji-lattice'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { spanLattice3D } from 'ji-lattice'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 
@@ -205,14 +206,7 @@ const elements = computed(() => {
     preserveAspectRatio="xMidYMid meet"
   >
     <defs>
-      <radialGradient id="held-node-glow-3d" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
-        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
-      </radialGradient>
+      <LatticeNodeGlowGradient id="held-node-glow-3d" />
     </defs>
     <template v-for="element of elements" :key="element.key">
       <circle v-if="element.tag === 'circle'" v-bind="element" />
