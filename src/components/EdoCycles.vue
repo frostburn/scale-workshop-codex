@@ -4,6 +4,7 @@ import { labelX, labelY } from '@/utils'
 import { type MultiVertex } from 'ji-lattice'
 import { type Interval } from 'sonic-weave/interval'
 import { computed } from 'vue'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { mmod } from 'xen-dev-utils/fraction'
 
 const RADIUS = 2
@@ -91,14 +92,7 @@ const viewBox = computed(
     preserveAspectRatio="xMidYMid meet"
   >
     <defs>
-      <radialGradient id="held-node-glow-cycles" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
-        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
-      </radialGradient>
+      <LatticeNodeGlowGradient id="held-node-glow-cycles" />
     </defs>
     <path v-for="cycle of cycles" :key="cycle.key" :d="cycle.d" stroke-width="0.03" />
     <circle

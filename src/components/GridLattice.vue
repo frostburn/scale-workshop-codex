@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGridStore } from '@/stores/grid'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { debounce, labelX, labelY } from '@/utils'
 import { spanGrid } from 'ji-lattice'
 import { type Interval } from 'sonic-weave/interval'
@@ -132,14 +133,7 @@ onUnmounted(() => {
     preserveAspectRatio="xMidYMid meet"
   >
     <defs>
-      <radialGradient id="held-node-glow-grid" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.65" />
-        <stop offset="25%" stop-color="var(--color-accent)" stop-opacity="0.55" />
-        <stop offset="50%" stop-color="var(--color-accent)" stop-opacity="0.33" />
-        <stop offset="75%" stop-color="var(--color-accent)" stop-opacity="0.14" />
-        <stop offset="90%" stop-color="var(--color-accent)" stop-opacity="0.04" />
-        <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0" />
-      </radialGradient>
+      <LatticeNodeGlowGradient id="held-node-glow-grid" />
     </defs>
     <line
       v-for="edge of keyedGridLines"
