@@ -1,6 +1,9 @@
 # Change log
 
-## 3.2.0 (unreleased)
+## 3.3.0 (Unreleased)
+  * Improvement: Further reduce initial app size by lazy-loading legacy Scale Workshop 2 support
+
+## 3.2.0
   * Feature: Add configurable delay presets and a clearer dedicated "off" control in the synth [#922](https://github.com/xenharmonic-devs/scale-workshop/issues/922)
   * Feature: Keep the Scale view mounted to preserve state while navigating [#865](https://github.com/xenharmonic-devs/scale-workshop/issues/865)
   * Feature: Display hardness and chroma alongside the MOS pattern in Rank 2 modal [#379](https://github.com/xenharmonic-devs/scale-workshop/issues/379)
