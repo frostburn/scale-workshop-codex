@@ -735,14 +735,14 @@ export const useScaleStore = defineStore('scale', () => {
     ...LIVE_STATE,
     id,
     uploadedId,
+    isomorphicVerticalText,
+    isomorphicHorizontalText,
     // Persistent state
     centsFractionDigits,
     decimalFractionDigits,
     accidentalPreference,
     hasLeftOfZ,
     gas,
-    isomorphicVerticalText,
-    isomorphicHorizontalText,
     // Computed state
     // With setters
     baseFrequencyDisplay,

@@ -442,7 +442,7 @@ onUnmounted(() => {
                   <button
                     type="button"
                     aria-label="Increase vertical"
-                    :disabled="scale.isomorphicVertical.length > 1"
+                    :disabled="scale.isomorphicVertical.length !== 1"
                     @click="nudgeIsomorphicVertical(1)"
                   >
                     ▲
@@ -450,7 +450,7 @@ onUnmounted(() => {
                   <button
                     type="button"
                     aria-label="Decrease vertical"
-                    :disabled="scale.isomorphicVertical.length > 1"
+                    :disabled="scale.isomorphicVertical.length !== 1"
                     @click="nudgeIsomorphicVertical(-1)"
                   >
                     ▼
@@ -466,7 +466,7 @@ onUnmounted(() => {
                   <button
                     type="button"
                     aria-label="Increase horizontal"
-                    :disabled="scale.isomorphicHorizontal.length > 1"
+                    :disabled="scale.isomorphicHorizontal.length !== 1"
                     @click="nudgeIsomorphicHorizontal(1)"
                   >
                     ▲
@@ -474,7 +474,7 @@ onUnmounted(() => {
                   <button
                     type="button"
                     aria-label="Decrease horizontal"
-                    :disabled="scale.isomorphicHorizontal.length > 1"
+                    :disabled="scale.isomorphicHorizontal.length !== 1"
                     @click="nudgeIsomorphicHorizontal(-1)"
                   >
                     ▼

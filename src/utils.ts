@@ -150,11 +150,17 @@ export function axisOffset(steps: number, deltas: number[]) {
   if (!steps || !deltas.length) {
     return 0
   }
-  const direction = steps > 0 ? 1 : -1
+
   let offset = 0
-  for (let i = 0; i < Math.abs(steps); ++i) {
-    offset += direction * deltas[i % deltas.length]
+
+  // Note: Only one of the accumulation directions will apply
+  for (let i = 0; i > steps; --i) {
+    offset -= deltas[mmod(i, deltas.length)]
   }
+  for (let i = 0; i < steps; ++i) {
+    offset += deltas[mmod(i, deltas.length)]
+  }
+
   return offset
 }
 
