@@ -169,6 +169,18 @@ function unselectAllInputChannels() {
   props.midiInputChannels.clear()
 }
 
+function clampRawVelocity(value: number) {
+  if (!Number.isFinite(value)) {
+    return 80
+  }
+  return Math.max(0, Math.min(127, Math.round(value)))
+}
+
+function sanitizeRawVelocityDefaults() {
+  midi.rawAttackDefault = clampRawVelocity(midi.rawAttackDefault)
+  midi.rawReleaseDefault = clampRawVelocity(midi.rawReleaseDefault)
+}
+
 watch(
   () => midi.multichannelToEquave,
   (newValue) => {
@@ -223,6 +235,28 @@ watch(
             <div>
               <input type="checkbox" id="midi-velocity" v-model="midi.velocityOn" />
               <label for="midi-velocity">Use velocity</label>
+            </div>
+            <div>
+              <label for="raw-attack-default">Default attack velocity</label>
+              <input
+                id="raw-attack-default"
+                type="number"
+                min="0"
+                max="127"
+                v-model.number="midi.rawAttackDefault"
+                @change="sanitizeRawVelocityDefaults"
+              />
+            </div>
+            <div>
+              <label for="raw-release-default">Default release velocity</label>
+              <input
+                id="raw-release-default"
+                type="number"
+                min="0"
+                max="127"
+                v-model.number="midi.rawReleaseDefault"
+                @change="sanitizeRawVelocityDefaults"
+              />
             </div>
             <div>
               <input type="checkbox" id="multichannel" v-model="midi.multichannelToEquave" />
