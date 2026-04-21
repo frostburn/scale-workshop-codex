@@ -8,6 +8,7 @@ import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
 import { decodeQuery } from '@/url-encode'
 import { annotateColors } from '@/utils'
+import { getScaleIdFromHash } from '@/session-hash'
 import { version } from '../package.json'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from './stores/state'
@@ -419,6 +420,23 @@ async function parseScaleWorkshop2Line(line: string) {
   return parseLine(line, DEFAULT_NUMBER_OF_COMPONENTS)
 }
 
+
+
+async function initializeResumableSession(url: URL) {
+  if (route.name === 'load-scale') {
+    return
+  }
+
+  const sessionId = getScaleIdFromHash(url)
+  if (sessionId !== null) {
+    await router.push({
+      name: 'load-scale',
+      params: { id: sessionId },
+      query: route.query
+    })
+  }
+}
+
 // === Lifecycle ===
 onMounted(async () => {
   window.addEventListener('keyup', windowKeyup)
@@ -541,6 +559,8 @@ onMounted(async () => {
       console.error(`Error parsing version ${query.get('version')} URL`, error)
     }
   }
+
+  void initializeResumableSession(url)
 })
 
 onUnmounted(() => {

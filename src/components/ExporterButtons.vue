@@ -12,6 +12,7 @@ import { useJiLatticeStore } from '@/stores/ji-lattice'
 import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
 import { makeEnvelope, sanitizeFilename } from '@/utils'
+import { writeScaleIdToHash } from '@/session-hash'
 import { computed, defineAsyncComponent, ref } from 'vue'
 
 const ScalaExportModal = defineAsyncComponent(
@@ -67,6 +68,7 @@ const uploadedScaleUrl = computed(() => `${window.location.origin}/scale/${scale
 function uploadScale(retries = 1): Promise<string> {
   const uploadId = scale.id
   if (scale.uploadedId === uploadId) {
+    writeScaleIdToHash(uploadId)
     return Promise.resolve(`${window.location.origin}/scale/${uploadId}`)
   }
   return new Promise((resolve) => {
@@ -82,6 +84,7 @@ function uploadScale(retries = 1): Promise<string> {
         }
         if (res.ok) {
           scale.uploadedId = uploadId
+          writeScaleIdToHash(uploadId)
           return resolve(`${window.location.origin}/scale/${uploadId}`)
         } else {
           return resolve(window.location.origin)
