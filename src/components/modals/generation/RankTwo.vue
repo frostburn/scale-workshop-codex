@@ -444,6 +444,10 @@ function generate(expand = true) {
         </button>
         <span class="error" v-show="rank2.mosPatternsError.length">⚠</span>
         <i>{{ rank2.previewMosPattern }}</i>
+        <span class="hint" v-if="rank2.method === 'circle'">
+          <span class="hint-mouse">Tip: drag circle to set generator.</span>
+          <span class="hint-touch">Tip: touch-drag circle to set generator.</span>
+        </span>
       </div>
     </template>
   </Modal>
@@ -476,6 +480,26 @@ p.warning {
   height: 3em;
   width: 29em;
   overflow-y: hidden;
+}
+
+.hint {
+  font-size: 0.9em;
+  margin-left: 0.5em;
+  color: var(--color-text-mute);
+}
+
+.hint-touch {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .hint-mouse {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
 }
 
 /* Content layout (medium) */

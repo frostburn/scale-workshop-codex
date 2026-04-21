@@ -298,7 +298,10 @@ onUnmounted(() => {
     @touchstart="onTouchStart"
     @touchmove="onTouchMove"
     ref="container"
+    role="img"
+    aria-label="Period circle. Drag around the circle to change the generator."
   >
+    <title>Drag around the circle to set the generator.</title>
     <path :d="paths.dark" stroke-width="0.5%" class="dark" fill="none" />
     <path :d="paths.bright" stroke-width="0.5%" class="bright" fill="none" />
 
