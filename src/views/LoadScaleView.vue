@@ -18,17 +18,25 @@ const grid = useGridStore()
 const cycles = useCyclesStore()
 
 const router = useRouter()
+const route = useRoute()
 
 const text = ref('Loading scale...')
 
+function getResumePath() {
+  const resume = route.query.resume
+  if (typeof resume === 'string' && resume.startsWith('/')) {
+    return resume
+  }
+  return '/'
+}
+
 onMounted(async () => {
-  const route = useRoute()
   // Tildes are not wiki friendly.
   // Versions < 3.0.0-beta.38 used them. This replacing can be removed at the end of the beta cycle.
   const id = (route.params.id as string).replaceAll('~', '_')
 
   if (id === '000000000') {
-    await router.push('/')
+    await router.push(getResumePath())
     return
   }
 
@@ -63,7 +71,7 @@ onMounted(async () => {
           if ('edo-cycles' in payload) {
             cycles.fromJSON(payload['edo-cycles'])
           }
-          await router.push('/')
+          await router.push(getResumePath())
         } else {
           text.value = 'Received empty response from the server.'
         }

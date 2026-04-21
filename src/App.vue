@@ -432,7 +432,7 @@ async function initializeResumableSession(url: URL) {
     await router.push({
       name: 'load-scale',
       params: { id: sessionId },
-      query: route.query
+      query: { ...route.query, resume: route.fullPath }
     })
   }
 }
