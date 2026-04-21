@@ -22,19 +22,6 @@ const route = useRoute()
 
 const text = ref('Loading scale...')
 
-function getResumePath() {
-  const resume = route.query.resume
-  if (Array.isArray(resume)) {
-    const first = resume[0]
-    if (typeof first === 'string' && first.startsWith('/')) {
-      return first
-    }
-  }
-  if (typeof resume === 'string' && resume.startsWith('/')) {
-    return resume
-  }
-  return '/'
-}
 
 onMounted(async () => {
   // Tildes are not wiki friendly.
@@ -42,7 +29,7 @@ onMounted(async () => {
   const id = (route.params.id as string).replaceAll('~', '_')
 
   if (id === '000000000') {
-    await router.push(getResumePath())
+    await router.push('/')
     return
   }
 
@@ -77,7 +64,7 @@ onMounted(async () => {
           if ('edo-cycles' in payload) {
             cycles.fromJSON(payload['edo-cycles'])
           }
-          await router.push(getResumePath())
+          await router.push('/')
         } else {
           text.value = 'Received empty response from the server.'
         }
