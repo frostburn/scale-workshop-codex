@@ -24,6 +24,12 @@ const text = ref('Loading scale...')
 
 function getResumePath() {
   const resume = route.query.resume
+  if (Array.isArray(resume)) {
+    const first = resume[0]
+    if (typeof first === 'string' && first.startsWith('/')) {
+      return first
+    }
+  }
   if (typeof resume === 'string' && resume.startsWith('/')) {
     return resume
   }
