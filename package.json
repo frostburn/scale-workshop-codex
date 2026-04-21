@@ -27,6 +27,7 @@
     "moment-of-symmetry": "^0.10.0",
     "pinia": "^3.0.4",
     "qs": "^6.15.1",
+    "shiki": "^4.0.2",
     "sonic-weave": "^0.13.1",
     "sw-synth": "^0.3.2",
     "values.js": "^2.1.1",
@@ -60,7 +61,7 @@
     "typescript": "~5.9.3",
     "vite": "^7.3.2",
     "vite-plugin-vue-devtools": "^8.1.1",
-    "vitest": "^4.1.4",
+    "vitest": "^4.1.5",
     "vue-tsc": "^3.2.7"
   },
   "engines": {
