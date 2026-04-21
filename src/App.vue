@@ -34,6 +34,14 @@ function getPath(url: URL) {
 const route = useRoute()
 const router = useRouter()
 const TAB_TITLE = 'Scale Workshop 3'
+
+function linkTo(path: string) {
+  if (route.hash.length) {
+    return { path, hash: route.hash }
+  }
+  return { path }
+}
+
 const documentTitle = computed(() => {
   const scaleTitle = scale.scale.title.trim()
   if (!scaleTitle) {
@@ -589,21 +597,21 @@ function panic() {
   <nav id="app-navigation">
     <ul id="app-tabs">
       <li>
-        <RouterLink to="/about"><strong>Sw</strong></RouterLink>
+        <RouterLink :to="linkTo('/about')"><strong>Sw</strong></RouterLink>
       </li>
-      <li><RouterLink to="/">Build Scale</RouterLink></li>
+      <li><RouterLink :to="linkTo('/')">Build Scale</RouterLink></li>
       <li v-if="state.showMosTab">
-        <RouterLink to="/mos">MOS</RouterLink>
+        <RouterLink :to="linkTo('/mos')">MOS</RouterLink>
       </li>
-      <li><RouterLink to="/analysis">Analysis</RouterLink></li>
-      <li><RouterLink to="/lattice">Lattice</RouterLink></li>
-      <li><RouterLink to="/vk">Virtual Keyboard</RouterLink></li>
+      <li><RouterLink :to="linkTo('/analysis')">Analysis</RouterLink></li>
+      <li><RouterLink :to="linkTo('/lattice')">Lattice</RouterLink></li>
+      <li><RouterLink :to="linkTo('/vk')">Virtual Keyboard</RouterLink></li>
       <li v-if="state.showVirtualQwerty">
-        <RouterLink to="/qwerty">Virtual QWERTY</RouterLink>
+        <RouterLink :to="linkTo('/qwerty')">Virtual QWERTY</RouterLink>
       </li>
-      <li><RouterLink to="/synth">Synth</RouterLink></li>
-      <li><RouterLink to="/midi">MIDI I/O</RouterLink></li>
-      <li><RouterLink to="/prefs">Preferences</RouterLink></li>
+      <li><RouterLink :to="linkTo('/synth')">Synth</RouterLink></li>
+      <li><RouterLink :to="linkTo('/midi')">MIDI I/O</RouterLink></li>
+      <li><RouterLink :to="linkTo('/prefs')">Preferences</RouterLink></li>
     </ul>
     <div id="app-tray" class="hidden-sm">
       <ul>
@@ -633,8 +641,8 @@ function panic() {
     <Component v-if="route.name !== 'scale'" :is="Component" />
   </RouterView>
   <footer id="app-footer">
-    <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
-    <RouterLink to="/terms-of-service">Terms of service</RouterLink>
+    <RouterLink :to="linkTo('/privacy-policy')">Privacy policy</RouterLink>,
+    <RouterLink :to="linkTo('/terms-of-service')">Terms of service</RouterLink>
   </footer>
 </template>
 
