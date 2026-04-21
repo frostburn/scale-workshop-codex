@@ -12,12 +12,10 @@ export function getScaleIdFromHash(url: URL) {
 }
 
 export function writeScaleIdToHash(scaleId: string) {
-  const url = new URL(window.location.href)
-  const hashParams = new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash)
+  const hashParams = new URLSearchParams(window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash)
   if (hashParams.get(SESSION_HASH_KEY) === scaleId) {
     return
   }
   hashParams.set(SESSION_HASH_KEY, scaleId)
-  url.hash = hashParams.toString()
-  window.history.replaceState(window.history.state, '', url)
+  window.location.hash = hashParams.toString()
 }

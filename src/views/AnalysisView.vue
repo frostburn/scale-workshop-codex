@@ -250,9 +250,13 @@ function highlight(y?: number, x?: number) {
       for (let j = 0; j < matrix.value[i].length; ++j) {
         if (violations.value[i][j]) {
           if (margin) {
-            highlights[i][j] = Math.abs(centsMatrix.value[i][j] - value) < margin
+            highlights[i][j] = Math.abs(centsMatrix.value[i][j] - (value as number)) < margin
           } else {
-            highlights[i][j] = matrix.value[i][j].value.strictEquals(value)
+            const candidate = matrix.value[i][j].value as { strictEquals?: (other: unknown) => boolean }
+            highlights[i][j] =
+              typeof candidate.strictEquals === 'function'
+                ? candidate.strictEquals(value)
+                : candidate === value
           }
         } else {
           highlights[i][j] = false
@@ -276,9 +280,13 @@ function highlight(y?: number, x?: number) {
   const value = margin ? centsMatrix.value[y][x] : matrix.value[y][x].value
   for (let i = 0; i < matrix.value.length; ++i) {
     if (margin) {
-      highlights[i][x] = Math.abs(centsMatrix.value[i][x] - value) < margin
+      highlights[i][x] = Math.abs(centsMatrix.value[i][x] - (value as number)) < margin
     } else {
-      highlights[i][x] = matrix.value[i][x].value.strictEquals(value)
+      const candidate = matrix.value[i][x].value as { strictEquals?: (other: unknown) => boolean }
+      highlights[i][x] =
+        typeof candidate.strictEquals === 'function'
+          ? candidate.strictEquals(value)
+          : candidate === value
     }
   }
 }
