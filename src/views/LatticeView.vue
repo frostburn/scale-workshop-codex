@@ -652,6 +652,9 @@ circle.node:not(.held) {
 circle.node.held {
   fill: var(--color-accent);
 }
+circle.node-glow {
+  pointer-events: none;
+}
 circle.node.auxiliary {
   stroke: none;
   fill: var(--color-drop-shadow);

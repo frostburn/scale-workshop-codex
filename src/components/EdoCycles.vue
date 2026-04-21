@@ -4,6 +4,7 @@ import { labelX, labelY } from '@/utils'
 import { type MultiVertex } from 'ji-lattice'
 import { type Interval } from 'sonic-weave/interval'
 import { computed } from 'vue'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { mmod } from 'xen-dev-utils/fraction'
 
 const RADIUS = 2
@@ -49,6 +50,10 @@ const vertices = computed<KeyedVertex[]>(() => {
   return Array.from(result.values())
 })
 
+const heldVertices = computed(() =>
+  vertices.value.filter((v) => v.indices.some((idx) => props.heldNotes.has(idx)))
+)
+
 const cycles = computed(() => {
   const result: { key: number; d: string }[] = []
   const dt = (2 * Math.PI) / store.modulus
@@ -86,7 +91,19 @@ const viewBox = computed(
     :viewBox="viewBox"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <LatticeNodeGlowGradient id="held-node-glow-cycles" />
+    </defs>
     <path v-for="cycle of cycles" :key="cycle.key" :d="cycle.d" stroke-width="0.03" />
+    <circle
+      v-for="v of heldVertices"
+      :key="`${v.key}-glow`"
+      class="node-glow"
+      :cx="v.x"
+      :cy="v.y"
+      :r="store.size * 2.2"
+      fill="url(#held-node-glow-cycles)"
+    />
     <circle
       v-for="v of vertices"
       :key="v.key"

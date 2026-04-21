@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGridStore } from '@/stores/grid'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { debounce, labelX, labelY } from '@/utils'
 import { spanGrid } from 'ji-lattice'
 import { type Interval } from 'sonic-weave/interval'
@@ -53,6 +54,10 @@ const keyedVertices = computed(() =>
     vertex,
     color: props.colors[vertex.indices[0]] ?? 'none'
   }))
+)
+
+const keyedHeldVertices = computed(() =>
+  keyedVertices.value.filter((item) => item.vertex.indices.some((idx) => props.heldNotes.has(idx)))
 )
 
 const viewBox = computed(
@@ -127,6 +132,9 @@ onUnmounted(() => {
     :viewBox="viewBox"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <LatticeNodeGlowGradient id="held-node-glow-grid" />
+    </defs>
     <line
       v-for="edge of keyedGridLines"
       :key="edge.key"
@@ -140,6 +148,15 @@ onUnmounted(() => {
       v-bind="edge.attrs"
       :class="`edge ${edge.attrs.type}`"
       :stroke-width="store.size * 0.2"
+    />
+    <circle
+      v-for="item of keyedHeldVertices"
+      :key="`${item.key}-glow`"
+      class="node-glow"
+      :cx="item.vertex.x"
+      :cy="item.vertex.y"
+      :r="store.size * 3.1"
+      fill="url(#held-node-glow-grid)"
     />
     <circle
       v-for="item of keyedVertices"

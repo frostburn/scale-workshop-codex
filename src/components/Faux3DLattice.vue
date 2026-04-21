@@ -4,6 +4,7 @@
  * Not as convincing as OpenGL, but much less bloated than three.js.
  */
 import { useJiLatticeStore } from '@/stores/ji-lattice'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { spanLattice3D } from 'ji-lattice'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 
@@ -108,6 +109,19 @@ const elements = computed(() => {
     const cx = vertex.x * s
     const cy = vertex.y * s
     const r = store.size * s
+    const held = props.heldNotes.has(vertex.index!)
+    if (vertex.index !== undefined && held) {
+      result.push({
+        key: `glow-${vertex.index}-${cx}-${cy}-${z}`,
+        tag: 'circle',
+        cx,
+        cy,
+        r: 3.1 * r,
+        class: { 'node-glow': true },
+        fill: 'url(#held-node-glow-3d)',
+        z: z + EPSILON
+      })
+    }
     const node: RenderElement = {
       key: `vertex-${vertex.index ?? 'aux'}-${cx}-${cy}-${z}`,
       tag: 'circle',
@@ -115,7 +129,7 @@ const elements = computed(() => {
       cy,
       r,
       'stroke-width': 0.1 * r,
-      class: { node: true, held: props.heldNotes.has(vertex.index!) },
+      class: { node: true, held },
       z
     }
     if (vertex.index === undefined) {
@@ -191,6 +205,9 @@ const elements = computed(() => {
     :viewBox="viewBox.join(' ')"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <LatticeNodeGlowGradient id="held-node-glow-3d" />
+    </defs>
     <template v-for="element of elements" :key="element.key">
       <circle v-if="element.tag === 'circle'" v-bind="element" />
       <polygon v-if="element.tag === 'polygon'" v-bind="element" />

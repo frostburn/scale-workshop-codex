@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Interval } from 'sonic-weave/interval'
 import { useJiLatticeStore } from '@/stores/ji-lattice'
+import LatticeNodeGlowGradient from './LatticeNodeGlowGradient.vue'
 import { spanLattice } from 'ji-lattice'
 import { TimeMonzo } from 'sonic-weave/monzo'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
@@ -119,6 +120,12 @@ const keyedVertices = computed(() =>
   }))
 )
 
+const keyedHeldVertices = computed(() =>
+  keyedVertices.value.filter(
+    (item) => item.vertex.index !== undefined && props.heldNotes.has(item.vertex.index)
+  )
+)
+
 watch(
   () => [
     svgElement.value,
@@ -183,6 +190,7 @@ watch(
       >
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
+      <LatticeNodeGlowGradient id="held-node-glow-ji" />
     </defs>
 
     <line
@@ -200,6 +208,16 @@ watch(
       :stroke-width="store.size * 0.2"
       class="arrow"
       marker-end="url(#arrow)"
+    />
+
+    <circle
+      v-for="item of keyedHeldVertices"
+      :key="`${item.key}-glow`"
+      class="node-glow"
+      :cx="item.vertex.x"
+      :cy="item.vertex.y"
+      :r="store.size * 3.1"
+      fill="url(#held-node-glow-ji)"
     />
 
     <circle
