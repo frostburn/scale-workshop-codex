@@ -372,7 +372,7 @@ watch(subtab, (newValue) => {
                 :key="columnIndex"
                 v-show="
                   state.intervalMatrixArrangement !== 'modes' ||
-                  !state.hideModesUnityColumn ||
+                  state.showModesUnityColumn ||
                   columnIndex !== 1
                 "
                 :class="{
@@ -403,7 +403,7 @@ watch(subtab, (newValue) => {
                 v-for="(name, j) of row"
                 :key="j"
                 v-show="
-                  state.intervalMatrixArrangement !== 'modes' || !state.hideModesUnityColumn || j !== 0
+                  state.intervalMatrixArrangement !== 'modes' || state.showModesUnityColumn || j !== 0
                 "
                 :class="{
                   violator:
@@ -432,7 +432,7 @@ watch(subtab, (newValue) => {
               <td
                 v-for="(v, i) of variety"
                 :key="i"
-                v-show="!state.hideModesUnityColumn || i !== 0"
+                v-show="state.showModesUnityColumn || i !== 0"
               >
                 {{ v }}
               </td>
@@ -524,8 +524,8 @@ watch(subtab, (newValue) => {
           <label for="calculate-violators">Show constant structure violations</label>
         </div>
         <div class="control checkbox-container">
-          <input id="hide-modes-unity-column" type="checkbox" v-model="state.hideModesUnityColumn" />
-          <label for="hide-modes-unity-column">Hide modes matrix 1/1 column</label>
+          <input id="show-modes-unity-column" type="checkbox" v-model="state.showModesUnityColumn" />
+          <label for="show-modes-unity-column">Show 1/1 column</label>
         </div>
         <div class="control">
           <label for="cs-margin">Constant structure / variety margin in cents</label>
