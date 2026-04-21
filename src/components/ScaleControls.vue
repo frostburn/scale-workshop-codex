@@ -3,13 +3,14 @@ import { useScaleStore } from '@/stores/scale'
 import { debounce, midiNoteNumberToName } from '@/utils'
 import { ref } from 'vue'
 import ScaleRule from './ScaleRule.vue'
+import ScaleSourceHighlighter from './ScaleSourceHighlighter.vue'
 import palette from '@/character-palette.json'
 
 const scale = useScaleStore()
 
 const updateScale = debounce(scale.computeScale)
 
-const sourceEditor = ref<HTMLTextAreaElement | null>(null)
+const sourceEditor = ref<InstanceType<typeof ScaleSourceHighlighter> | null>(null)
 
 const paletteInfo = ref('')
 
@@ -27,13 +28,10 @@ function insertFromPalette(event: Event) {
     return
   }
   const character = (event.target as HTMLButtonElement).textContent
-  const start = sourceEditor.value.selectionStart
-  const end = sourceEditor.value.selectionEnd
-  scale.sourceText =
-    scale.sourceText.substring(0, start) +
-    character +
-    scale.sourceText.substring(end, scale.sourceText.length)
-  updateScale()
+  if (!character) {
+    return
+  }
+  sourceEditor.value.insertTextAtSelection(character)
 }
 
 function focus() {
@@ -101,15 +99,15 @@ defineExpose({ focus, clearPaletteInfo })
     </h2>
     <div class="control">
       <label class="sr-only" for="scale-data">Scale data editor</label>
-      <textarea
+      <ScaleSourceHighlighter
         id="scale-data"
         aria-label="Scale data editor"
         ref="sourceEditor"
-        rows="20"
         v-model="scale.sourceText"
+        :rows="20"
         @input="updateScale()"
         @focus="clearPaletteInfo"
-      ></textarea>
+      />
     </div>
     <ScaleRule :scale="scale.scale" orientation="horizontal" />
     <p v-if="scale.error" class="error">{{ scale.error }}</p>
