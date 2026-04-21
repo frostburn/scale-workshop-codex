@@ -237,31 +237,29 @@ watch(
               <label for="midi-velocity">Use velocity</label>
             </div>
             <div>
-              <label for="raw-attack-default">Default attack velocity</label>
-              <input
-                id="raw-attack-default"
-                type="number"
-                min="0"
-                max="127"
-                v-model.number="midi.rawAttackDefault"
-                @change="sanitizeRawVelocityDefaults"
-              />
-            </div>
-            <div>
-              <label for="raw-release-default">Default release velocity</label>
-              <input
-                id="raw-release-default"
-                type="number"
-                min="0"
-                max="127"
-                v-model.number="midi.rawReleaseDefault"
-                @change="sanitizeRawVelocityDefaults"
-              />
-            </div>
-            <div>
               <input type="checkbox" id="multichannel" v-model="midi.multichannelToEquave" />
               <label for="multichannel">Multichannel-to-equave</label>
             </div>
+          </div>
+          <div class="control raw-velocity-defaults">
+            <label for="raw-attack-default">Default attack velocity</label>
+            <input
+              id="raw-attack-default"
+              type="number"
+              min="0"
+              max="127"
+              v-model.number="midi.rawAttackDefault"
+              @change="sanitizeRawVelocityDefaults"
+            />
+            <label for="raw-release-default">Default release velocity</label>
+            <input
+              id="raw-release-default"
+              type="number"
+              min="0"
+              max="127"
+              v-model.number="midi.rawReleaseDefault"
+              @change="sanitizeRawVelocityDefaults"
+            />
           </div>
           <template v-if="midi.multichannelToEquave">
             <label>Settings for multichannel-to-equave mode</label>
@@ -445,6 +443,12 @@ div.checkbox-group label {
   margin-left: 0.35rem;
   text-align: left;
   vertical-align: baseline;
+}
+
+div.raw-velocity-defaults {
+  display: grid;
+  gap: 0.15rem;
+  grid-template-columns: 1fr;
 }
 
 div.multichannel-input-container {
