@@ -241,7 +241,7 @@ watch(
               <label for="multichannel">Multichannel-to-equave</label>
             </div>
           </div>
-          <div class="control raw-velocity-defaults">
+          <div class="control">
             <label for="raw-attack-default">Default attack velocity</label>
             <input
               id="raw-attack-default"
@@ -251,6 +251,8 @@ watch(
               v-model.number="midi.rawAttackDefault"
               @change="sanitizeRawVelocityDefaults"
             />
+          </div>
+          <div class="control">
             <label for="raw-release-default">Default release velocity</label>
             <input
               id="raw-release-default"
@@ -443,12 +445,6 @@ div.checkbox-group label {
   margin-left: 0.35rem;
   text-align: left;
   vertical-align: baseline;
-}
-
-div.raw-velocity-defaults {
-  display: grid;
-  gap: 0.15rem;
-  grid-template-columns: 1fr;
 }
 
 div.multichannel-input-container {
