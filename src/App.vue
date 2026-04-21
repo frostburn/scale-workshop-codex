@@ -16,12 +16,14 @@ import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
 import { clamp } from 'xen-dev-utils/core'
 import ScaleView from '@/views/ScaleView.vue'
+import { useScaleUpload } from '@/composables/use-scale-upload'
 
 // === Pinia-managed state ===
 const state = useStateStore()
 const scale = useScaleStore()
 const midi = useMidiStore()
 const audio = useAudioStore()
+const { uploadScale } = useScaleUpload()
 
 // == URL path handling ==
 /**
@@ -367,12 +369,16 @@ function releaseActiveNotes() {
 }
 
 function windowBlur() {
+  void uploadScale()
   if (state.releaseOnBlur) {
     releaseActiveNotes()
   }
 }
 
 function documentVisibilitychange() {
+  if (document.visibilityState !== 'visible') {
+    void uploadScale()
+  }
   if (state.releaseOnBlur && document.visibilityState !== 'visible') {
     releaseActiveNotes()
   }
@@ -436,7 +442,7 @@ async function initializeResumableSession(url: URL) {
   }
 
   const sessionId = getScaleIdFromHash(url)
-  if (sessionId !== null) {
+  if (sessionId !== null && router.hasRoute('load-scale')) {
     await router.push({
       name: 'load-scale',
       params: { id: sessionId },
