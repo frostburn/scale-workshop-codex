@@ -5,7 +5,6 @@ import type { ExporterParams } from '@/exporters/base'
 import type { Scale } from '@/scale'
 import { useExportStore } from '@/stores/export'
 import { sanitizeFilename } from '@/utils'
-import type { Interval } from 'sonic-weave'
 
 const props = defineProps<{
   show: boolean
@@ -31,7 +30,7 @@ function doExport() {
     // Use dummy lists.
     // Kontakt is the only exporter that doesn't do anything with specific scale lines or labels.
     relativeIntervals: [],
-    labels: [],
+    labels: []
   }
 
   const exporter = new KontaktExporter(params)
