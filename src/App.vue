@@ -8,6 +8,7 @@ import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
 import { decodeQuery } from '@/url-encode'
 import { annotateColors } from '@/utils'
+import { getScaleIdFromHash } from '@/session-hash'
 import { version } from '../package.json'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from './stores/state'
@@ -15,12 +16,14 @@ import { useMidiStore } from './stores/midi'
 import { useScaleStore } from './stores/scale'
 import { clamp } from 'xen-dev-utils/core'
 import ScaleView from '@/views/ScaleView.vue'
+import { useScaleUpload } from '@/composables/use-scale-upload'
 
 // === Pinia-managed state ===
 const state = useStateStore()
 const scale = useScaleStore()
 const midi = useMidiStore()
 const audio = useAudioStore()
+const { uploadScale } = useScaleUpload()
 
 // == URL path handling ==
 /**
@@ -33,6 +36,14 @@ function getPath(url: URL) {
 const route = useRoute()
 const router = useRouter()
 const TAB_TITLE = 'Scale Workshop 3'
+
+function linkTo(path: string) {
+  if (route.hash.length) {
+    return { path, hash: route.hash }
+  }
+  return { path }
+}
+
 const documentTitle = computed(() => {
   const scaleTitle = scale.scale.title.trim()
   if (!scaleTitle) {
@@ -358,12 +369,16 @@ function releaseActiveNotes() {
 }
 
 function windowBlur() {
+  void uploadScale()
   if (state.releaseOnBlur) {
     releaseActiveNotes()
   }
 }
 
 function documentVisibilitychange() {
+  if (document.visibilityState !== 'visible') {
+    void uploadScale()
+  }
   if (state.releaseOnBlur && document.visibilityState !== 'visible') {
     releaseActiveNotes()
   }
@@ -417,6 +432,23 @@ async function ensureDefaultNumberOfComponents() {
 async function parseScaleWorkshop2Line(line: string) {
   const { parseScaleWorkshop2Line: parseLine } = await import('sonic-weave/scale-workshop-2-parser')
   return parseLine(line, DEFAULT_NUMBER_OF_COMPONENTS)
+}
+
+
+
+async function initializeResumableSession(url: URL) {
+  if (route.name === 'load-scale') {
+    return
+  }
+
+  const sessionId = getScaleIdFromHash(url)
+  if (sessionId !== null && router.hasRoute('load-scale')) {
+    await router.push({
+      name: 'load-scale',
+      params: { id: sessionId },
+      query: route.query
+    })
+  }
 }
 
 // === Lifecycle ===
@@ -541,6 +573,8 @@ onMounted(async () => {
       console.error(`Error parsing version ${query.get('version')} URL`, error)
     }
   }
+
+  void initializeResumableSession(url)
 })
 
 onUnmounted(() => {
@@ -569,21 +603,21 @@ function panic() {
   <nav id="app-navigation">
     <ul id="app-tabs">
       <li>
-        <RouterLink to="/about"><strong>Sw</strong></RouterLink>
+        <RouterLink :to="linkTo('/about')"><strong>Sw</strong></RouterLink>
       </li>
-      <li><RouterLink to="/">Build Scale</RouterLink></li>
+      <li><RouterLink :to="linkTo('/')">Build Scale</RouterLink></li>
       <li v-if="state.showMosTab">
-        <RouterLink to="/mos">MOS</RouterLink>
+        <RouterLink :to="linkTo('/mos')">MOS</RouterLink>
       </li>
-      <li><RouterLink to="/analysis">Analysis</RouterLink></li>
-      <li><RouterLink to="/lattice">Lattice</RouterLink></li>
-      <li><RouterLink to="/vk">Virtual Keyboard</RouterLink></li>
+      <li><RouterLink :to="linkTo('/analysis')">Analysis</RouterLink></li>
+      <li><RouterLink :to="linkTo('/lattice')">Lattice</RouterLink></li>
+      <li><RouterLink :to="linkTo('/vk')">Virtual Keyboard</RouterLink></li>
       <li v-if="state.showVirtualQwerty">
-        <RouterLink to="/qwerty">Virtual QWERTY</RouterLink>
+        <RouterLink :to="linkTo('/qwerty')">Virtual QWERTY</RouterLink>
       </li>
-      <li><RouterLink to="/synth">Synth</RouterLink></li>
-      <li><RouterLink to="/midi">MIDI I/O</RouterLink></li>
-      <li><RouterLink to="/prefs">Preferences</RouterLink></li>
+      <li><RouterLink :to="linkTo('/synth')">Synth</RouterLink></li>
+      <li><RouterLink :to="linkTo('/midi')">MIDI I/O</RouterLink></li>
+      <li><RouterLink :to="linkTo('/prefs')">Preferences</RouterLink></li>
     </ul>
     <div id="app-tray" class="hidden-sm">
       <ul>
@@ -613,8 +647,8 @@ function panic() {
     <Component v-if="route.name !== 'scale'" :is="Component" />
   </RouterView>
   <footer id="app-footer">
-    <RouterLink to="/privacy-policy">Privacy policy</RouterLink>,
-    <RouterLink to="/terms-of-service">Terms of service</RouterLink>
+    <RouterLink :to="linkTo('/privacy-policy')">Privacy policy</RouterLink>,
+    <RouterLink :to="linkTo('/terms-of-service')">Terms of service</RouterLink>
   </footer>
 </template>
 

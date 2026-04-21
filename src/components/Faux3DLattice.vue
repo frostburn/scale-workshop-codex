@@ -133,8 +133,8 @@ const elements = computed(() => {
       z
     }
     if (vertex.index === undefined) {
-      node.class.auxiliary = true
-      node.r *= 0.4
+      ;(node.class as Record<string, boolean>).auxiliary = true
+      node.r = (node.r as number) * 0.4
     } else {
       node.fill = props.colors[vertex.index]
     }
@@ -181,14 +181,12 @@ const elements = computed(() => {
       v *= 0.5
     }
     const points = `${x1 + v * s1},${y1 - u * s1} ${x1 - v * s1},${y1 + u * s1} ${x2 - v * s2},${y2 + u * s2} ${x2 + v * s2},${y2 - u * s2}`
-    if (store.grayExtras && edge.type === 'custom') {
-      edge.type = 'border'
-    }
+    const renderType = store.grayExtras && edge.type === 'custom' ? 'border' : edge.type
     result.push({
-      key: `edge-${edge.type}-${x1}-${y1}-${x2}-${y2}`,
+      key: `edge-${renderType}-${x1}-${y1}-${x2}-${y2}`,
       tag: 'polygon',
       points,
-      class: `edge ${edge.type}`,
+      class: `edge ${renderType}`,
       z: Math.max(z1, z2) + EPSILON
     })
   }

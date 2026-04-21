@@ -18,11 +18,12 @@ const grid = useGridStore()
 const cycles = useCyclesStore()
 
 const router = useRouter()
+const route = useRoute()
 
 const text = ref('Loading scale...')
 
+
 onMounted(async () => {
-  const route = useRoute()
   // Tildes are not wiki friendly.
   // Versions < 3.0.0-beta.38 used them. This replacing can be removed at the end of the beta cycle.
   const id = (route.params.id as string).replaceAll('~', '_')

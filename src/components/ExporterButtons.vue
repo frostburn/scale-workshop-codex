@@ -5,14 +5,11 @@
 import { API_URL, APP_TITLE } from '@/constants'
 import { exportFile, type ExporterKey } from '@/exporters'
 import type { ExporterParams } from '@/exporters/base'
-import { useAudioStore } from '@/stores/audio'
-import { useCyclesStore } from '@/stores/edo-cycles'
-import { useGridStore } from '@/stores/grid'
-import { useJiLatticeStore } from '@/stores/ji-lattice'
 import { useScaleStore } from '@/stores/scale'
 import { useStateStore } from '@/stores/state'
-import { makeEnvelope, sanitizeFilename } from '@/utils'
+import { sanitizeFilename } from '@/utils'
 import { computed, defineAsyncComponent, ref } from 'vue'
+import { useScaleUpload } from '@/composables/use-scale-upload'
 
 const ScalaExportModal = defineAsyncComponent(
   () => import('@/components/modals/export/ScalaExport.vue')
@@ -33,10 +30,6 @@ const KontaktExportModal = defineAsyncComponent(
 
 const state = useStateStore()
 const scale = useScaleStore()
-const audio = useAudioStore()
-const jiLattice = useJiLatticeStore()
-const grid = useGridStore()
-const cycles = useCyclesStore()
 
 const exportTextClipboard = ref(
   API_URL ? "Copy this scale's unique URL to clipboard" : '[URL sharing disabled]'
@@ -47,56 +40,18 @@ const showMtsSysexExportModal = ref(false)
 const showReaperExportModal = ref(false)
 const showKontaktExportModal = ref(false)
 
-const uploadBody = computed(() => {
-  return JSON.stringify({
-    id: scale.id,
-    payload: {
-      scale: scale.toJSON(),
-      audio: audio.toJSON(),
-      state: state.toJSON(),
-      'ji-lattice': jiLattice.toJSON(),
-      grid: grid.toJSON(),
-      'edo-cycles': cycles.toJSON()
-    },
-    envelope: makeEnvelope(state.shareStatistics)
-  })
-})
+const { uploadScale, uploadBody } = useScaleUpload()
+
+const uploadBodyText = computed(() => uploadBody())
 
 const uploadedScaleUrl = computed(() => `${window.location.origin}/scale/${scale.uploadedId}`)
-
-function uploadScale(retries = 1): Promise<string> {
-  const uploadId = scale.id
-  if (scale.uploadedId === uploadId) {
-    return Promise.resolve(`${window.location.origin}/scale/${uploadId}`)
-  }
-  return new Promise((resolve) => {
-    if (!API_URL) {
-      return resolve(window.location.origin)
-    }
-    fetch(new URL('scale', API_URL), { method: 'POST', body: uploadBody.value })
-      .then((res) => {
-        // Id collision: Retry
-        if (res.status === 409 && retries > 0) {
-          scale.rerollId()
-          return uploadScale(retries - 1).then(resolve)
-        }
-        if (res.ok) {
-          scale.uploadedId = uploadId
-          return resolve(`${window.location.origin}/scale/${uploadId}`)
-        } else {
-          return resolve(window.location.origin)
-        }
-      })
-      .catch(() => resolve(window.location.origin))
-  })
-}
 
 defineExpose({ uploadScale })
 
 function downloadDebugDump() {
   const link = document.createElement('a')
   link.download = sanitizeFilename(scale.scale.title) + '.json'
-  link.href = 'data:application/json,' + encodeURIComponent(uploadBody.value)
+  link.href = 'data:application/json,' + encodeURIComponent(uploadBodyText.value)
   // Open save dialog
   link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
 }

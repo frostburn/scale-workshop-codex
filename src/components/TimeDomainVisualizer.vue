@@ -13,7 +13,7 @@ defineExpose({ initialize })
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let animationFrame: number | undefined
-let buffer: Float32Array
+let buffer: Float32Array<ArrayBuffer>
 
 function draw() {
   const ctx = canvas.value!.getContext('2d')
@@ -51,7 +51,7 @@ function initialize(analyser?: AnalyserNode) {
     analyser = props.analyser
   }
 
-  buffer = new Float32Array(analyser.fftSize)
+  buffer = new Float32Array(analyser.fftSize) as Float32Array<ArrayBuffer>
 
   const ctx = canvas.value!.getContext('2d')
   if (ctx !== null) {

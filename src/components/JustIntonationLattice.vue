@@ -60,13 +60,6 @@ const lattice = computed(() => {
       edge.y2 = c * y2 + s * x2
     }
   }
-  if (store.grayExtras) {
-    for (const edge of result.edges) {
-      if (edge.type === 'custom') {
-        edge.type = 'border'
-      }
-    }
-  }
   return result
 })
 
@@ -99,10 +92,14 @@ const arrows = computed(() => {
 })
 
 const keyedEdges = computed(() =>
-  lattice.value.edges.map((edge) => ({
-    key: `${edge.type}-${edge.x1}-${edge.y1}-${edge.x2}-${edge.y2}`,
-    edge
-  }))
+  lattice.value.edges.map((edge) => {
+    const renderType = store.grayExtras && edge.type === 'custom' ? 'border' : edge.type
+    return {
+      key: `${renderType}-${edge.x1}-${edge.y1}-${edge.x2}-${edge.y2}`,
+      edge,
+      renderType
+    }
+  })
 )
 
 const keyedArrows = computed(() =>
@@ -197,7 +194,7 @@ watch(
       v-for="item of keyedEdges"
       :key="item.key"
       v-bind="item.edge"
-      :class="`edge ${item.edge.type}`"
+      :class="`edge ${item.renderType}`"
       :stroke-width="store.size * 0.2"
     />
 
