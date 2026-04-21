@@ -436,7 +436,7 @@ async function initializeResumableSession(url: URL) {
   }
 
   const sessionId = getScaleIdFromHash(url)
-  if (sessionId !== null) {
+  if (sessionId !== null && sessionId !== scale.uploadedId) {
     await router.push({
       name: 'load-scale',
       params: { id: sessionId },
