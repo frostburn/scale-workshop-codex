@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import grammar from '@/assets/sonic-weave.tmLanguage.json'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{
   modelValue: string
@@ -89,6 +89,32 @@ const highlightedHtml = computed(() => {
     .replaceAll('\n', '<br>')
 })
 
+
+function syncBackdropMetrics() {
+  if (!editor.value || !backdrop.value) {
+    return
+  }
+
+  const styles = getComputedStyle(editor.value)
+  backdrop.value.style.fontFamily = styles.fontFamily
+  backdrop.value.style.fontSize = styles.fontSize
+  backdrop.value.style.fontWeight = styles.fontWeight
+  backdrop.value.style.fontStyle = styles.fontStyle
+  backdrop.value.style.lineHeight = styles.lineHeight
+  backdrop.value.style.letterSpacing = styles.letterSpacing
+  backdrop.value.style.padding = styles.padding
+  backdrop.value.style.borderWidth = styles.borderWidth
+  backdrop.value.style.borderStyle = styles.borderStyle
+  backdrop.value.style.borderRadius = styles.borderRadius
+}
+
+onMounted(() => {
+  nextTick(() => {
+    syncBackdropMetrics()
+    syncScroll()
+  })
+})
+
 function syncScroll() {
   if (!editor.value || !backdrop.value) {
     return
@@ -100,6 +126,7 @@ function syncScroll() {
 watch(
   () => props.modelValue,
   () => {
+    syncBackdropMetrics()
     syncScroll()
   },
 )
@@ -168,8 +195,9 @@ defineExpose({ focus, insertTextAtSelection })
   margin: 0;
   width: 100%;
   min-height: 100%;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  line-height: var(--base-line-height);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
   white-space: pre;
   tab-size: 2;
   overflow: auto;
@@ -192,6 +220,7 @@ defineExpose({ focus, insertTextAtSelection })
   background: transparent;
   color: transparent;
   caret-color: var(--color-text);
+  border-color: transparent;
   resize: vertical;
 }
 
