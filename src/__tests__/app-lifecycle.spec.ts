@@ -7,6 +7,7 @@ import { MidiIn } from 'xen-midi'
 
 import App from '@/App.vue'
 import { useStateStore } from '@/stores/state'
+import { useScaleStore } from '@/stores/scale'
 
 type TestWindow = Window &
   typeof globalThis & {
@@ -102,6 +103,35 @@ afterAll(() => {
 })
 
 describe('App lifecycle listeners', () => {
+  it('uses the active scale title for the browser tab title', async () => {
+    setActivePinia(createPinia())
+    const scale = useScaleStore()
+    const router = createTestRouter()
+    await router.push('/')
+    await router.isReady()
+
+    const originalTitle = document.title
+    const wrapper = shallowMount(App, {
+      global: {
+        plugins: [router],
+        stubs: {
+          RouterView: true,
+          RouterLink: true,
+          Teleport: true,
+          Transition: false
+        }
+      }
+    })
+
+    scale.scale.title = 'Meantone test scale'
+    await wrapper.vm.$nextTick()
+
+    expect(document.title).toBe('Meantone test scale | Scale Workshop 3')
+
+    await wrapper.unmount()
+    document.title = originalTitle
+  })
+
   it('does not deactivate active notes on blur and visibility hide by default', async () => {
     vi.useFakeTimers()
     setActivePinia(createPinia())

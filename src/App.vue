@@ -32,6 +32,22 @@ function getPath(url: URL) {
 
 const route = useRoute()
 const router = useRouter()
+const TAB_TITLE = 'Scale Workshop 3'
+const documentTitle = computed(() => {
+  const scaleTitle = scale.scale.title.trim()
+  if (!scaleTitle) {
+    return TAB_TITLE
+  }
+  return `${scaleTitle} | ${TAB_TITLE}`
+})
+
+watch(
+  documentTitle,
+  (value) => {
+    document.title = value
+  },
+  { immediate: true }
+)
 
 // === Tuning table highlighting ===
 function tuningTableKeyOn(index: number) {
