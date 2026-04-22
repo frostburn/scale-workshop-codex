@@ -113,11 +113,11 @@ function midiNoteOn(index: number, rawAttack?: number, channel?: number) {
   }
 
   if (rawAttack === undefined) {
-    rawAttack = 80
+    rawAttack = midi.rawAttackDefault
   }
 
   if (!midi.velocityOn) {
-    rawAttack = 80
+    rawAttack = midi.rawAttackDefault
   }
 
   // since index can go out of range in multichannel-to-equave mode, use getFrequency()
@@ -179,10 +179,10 @@ function midiNoteOn(index: number, rawAttack?: number, channel?: number) {
   const noteOff = sendNoteOn(index, frequency, rawAttack)
   return (rawRelease?: number) => {
     if (rawRelease === undefined) {
-      rawRelease = 80
+      rawRelease = midi.rawReleaseDefault
     }
     if (!midi.velocityOn) {
-      rawRelease = 80
+      rawRelease = midi.rawReleaseDefault
     }
     if (whiteMode === 'off' || whiteMode === 'keyColors' || multichannel) {
       tuningTableKeyOff(index)
@@ -245,10 +245,10 @@ watch(
 // === Virtual and typing keyboard ===
 function keyboardNoteOn(index: number) {
   tuningTableKeyOn(index)
-  const noteOff = sendNoteOn(index, scale.getFrequency(index), 80)
+  const noteOff = sendNoteOn(index, scale.getFrequency(index), midi.rawAttackDefault)
   function keyOff() {
     tuningTableKeyOff(index)
-    return noteOff(80)
+    return noteOff(midi.rawReleaseDefault)
   }
   return keyOff
 }
