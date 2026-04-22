@@ -43,6 +43,7 @@ export const useStateStore = defineStore('state', () => {
   const calculateConstantStructureViolations = ref(
     storage.getItem('calculateConstantStructureViolations') === 'true'
   )
+  const showModesUnityColumn = ref(storage.getItem('showModesUnityColumn') !== 'false')
   const calculateVariety = ref(storage.getItem('calculateVariety') === 'true')
   const calculateBrightness = ref(storage.getItem('calculateBrightness') === 'true')
   const constantStructureMargin = ref(
@@ -91,6 +92,7 @@ export const useStateStore = defineStore('state', () => {
     intervalMatrixIndexing,
     maxMatrixWidth,
     calculateConstantStructureViolations,
+    showModesUnityColumn,
     calculateVariety,
     calculateBrightness,
     constantStructureMargin,
@@ -136,6 +138,7 @@ export const useStateStore = defineStore('state', () => {
     intervalMatrixIndexing,
     maxMatrixWidth,
     calculateConstantStructureViolations,
+    showModesUnityColumn,
     calculateVariety,
     calculateBrightness,
     constantStructureMargin,

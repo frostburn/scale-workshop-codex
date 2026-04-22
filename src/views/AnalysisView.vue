@@ -370,6 +370,11 @@ watch(subtab, (newValue) => {
               <th
                 v-for="columnIndex of displayColumnCount"
                 :key="columnIndex"
+                v-show="
+                  state.intervalMatrixArrangement !== 'modes' ||
+                  state.showModesUnityColumn ||
+                  columnIndex !== 1
+                "
                 :class="{
                   held:
                     state.intervalMatrixArrangement === 'symmetric' &&
@@ -397,6 +402,9 @@ watch(subtab, (newValue) => {
               <td
                 v-for="(name, j) of row"
                 :key="j"
+                v-show="
+                  state.intervalMatrixArrangement !== 'modes' || state.showModesUnityColumn || j !== 0
+                "
                 :class="{
                   violator:
                     state.calculateConstantStructureViolations &&
@@ -421,7 +429,13 @@ watch(subtab, (newValue) => {
               v-if="state.calculateVariety && state.intervalMatrixArrangement === 'modes'"
             >
               <th>Var</th>
-              <td v-for="(v, i) of variety" :key="i">{{ v }}</td>
+              <td
+                v-for="(v, i) of variety"
+                :key="i"
+                v-show="state.showModesUnityColumn || i !== 0"
+              >
+                {{ v }}
+              </td>
               <td class="brightness" v-if="state.calculateBrightness"></td>
             </tr>
           </tbody>
@@ -508,6 +522,10 @@ watch(subtab, (newValue) => {
             v-model="state.calculateConstantStructureViolations"
           />
           <label for="calculate-violators">Show constant structure violations</label>
+        </div>
+        <div class="control checkbox-container">
+          <input id="show-modes-unity-column" type="checkbox" v-model="state.showModesUnityColumn" />
+          <label for="show-modes-unity-column">Show 1/1 column</label>
         </div>
         <div class="control">
           <label for="cs-margin">Constant structure / variety margin in cents</label>
