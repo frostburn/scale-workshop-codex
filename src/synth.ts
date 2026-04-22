@@ -86,7 +86,8 @@ export const APERIODIC_WAVEFORMS = [
   'steel',
   'silver',
   'platinum',
-  '12-TET'
+  '12-TET',
+  'harmonium'
 ].concat(getPlainSpectraWaveformNames())
 export const APERIODIC_WAVES: Record<string, ComputedRef<AperiodicWave>> = {}
 
@@ -392,6 +393,61 @@ function initializeAperiodic(audioContext: BaseAudioContext) {
       audioContext,
       twelveSpectrumCents.map(centsToValue),
       twelveAmplitudes,
+      maxNumberOfVoices,
+      tolerance
+    )
+  })
+
+  APERIODIC_WAVES['harmonium'] = computed(() => {
+    const harmonics = 60
+    const dutyCycle = 0.43
+    const targetFundamentalHz = 330
+    const soloDetuneHz = 0.18
+    const nearDetuneHz = 0.55
+    const wideDetuneHz = 1.1
+    const shimmerOffsets = [
+      0,
+      soloDetuneHz,
+      -soloDetuneHz,
+      nearDetuneHz,
+      -nearDetuneHz,
+      wideDetuneHz,
+      -wideDetuneHz
+    ]
+    const shimmerWeights = [1, 0.3, 0.3, 0.7, 0.7, 0.4, 0.4]
+    const spectrum: number[] = []
+    const amplitudes: number[] = []
+
+    for (let n = 1; n <= harmonics; ++n) {
+      const pwm = Math.abs((2 / (n * Math.PI)) * Math.sin(n * Math.PI * dutyCycle))
+      const lowpass = Math.exp(-Math.max(0, n - 3) / 28)
+      const brightnessTrim = 1 / (1 + 0.009 * n ** 1.32)
+      const oddBias = n % 2 ? 1.15 : 0.9
+      const fundamentalBoost = n === 1 ? 3.4 : n === 2 ? 1.8 : n === 3 ? 1.4 : 1
+      const baseAmplitude = pwm * lowpass * brightnessTrim * oddBias * fundamentalBoost
+
+      shimmerOffsets.forEach((offsetHz, i) => {
+        const ratio = n * (1 + offsetHz / (targetFundamentalHz * n))
+        spectrum.push(ratio)
+        amplitudes.push(baseAmplitude * shimmerWeights[i])
+      })
+
+      if (n <= 8) {
+        shimmerOffsets.forEach((offsetHz, i) => {
+          const ratio = 2 * n * (1 + offsetHz / (targetFundamentalHz * 2 * n))
+          spectrum.push(ratio)
+          amplitudes.push(baseAmplitude * 0.18 * shimmerWeights[i])
+        })
+      }
+    }
+
+    const normalization = 1.4 / sum(amplitudes)
+    const normalizedAmplitudes = amplitudes.map((a) => a * normalization)
+
+    return new AperiodicWave(
+      audioContext,
+      spectrum,
+      normalizedAmplitudes,
       maxNumberOfVoices,
       tolerance
     )
