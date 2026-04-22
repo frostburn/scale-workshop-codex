@@ -65,6 +65,7 @@ const tagline = computed(() => TAGLINES[Math.floor(Math.random() * TAGLINES.leng
         Scott Dakota - <i>lattice advisor / generator sequence advisor</i> <br />
         Richie Greene - <i>quality assurance</i> <br />
         Akselai - <i>quality assurance</i> <br />
+        SoundChaser83 - <i>quality assurance / MIDI tester</i> <br />
         <span class="spoob">Spoob<img src="@/assets/img/spoob.png" /></span> -
         <i>emotional support</i>
       </p>
