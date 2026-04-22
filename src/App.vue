@@ -7,7 +7,7 @@ import type { Input, Output } from 'webmidi'
 import { MidiIn, midiKeyInfo, MidiOut, type NoteOff } from 'xen-midi'
 import { Keyboard, type CoordinateKeyboardEvent, COORDS_BY_CODE } from 'isomorphic-qwerty'
 import { decodeQuery } from '@/url-encode'
-import { annotateColors } from '@/utils'
+import { annotateColors, axisOffset } from '@/utils'
 import { version } from '../package.json'
 import { useAudioStore } from '@/stores/audio'
 import { useStateStore } from './stores/state'
@@ -390,7 +390,7 @@ function typingKeydown(event: CoordinateKeyboardEvent) {
   let index = scale.scale.baseMidiNote + scale.scale.size * scale.equaveShift + scale.degreeShift
 
   if (scale.keyboardMode === 'isomorphic') {
-    index += x * scale.isomorphicHorizontal + (2 - y) * scale.isomorphicVertical
+    index += axisOffset(x, scale.isomorphicHorizontal) + axisOffset(2 - y, scale.isomorphicVertical)
   } else {
     if (scale.qwertyMapping.has(event.code)) {
       // QWERTY mapping incorporates shifts
@@ -449,8 +449,8 @@ onMounted(async () => {
       scale.userBaseFrequency = scaleWorkshopOneData.freq
       scale.autoFrequency = false
       scale.baseMidiNote = scaleWorkshopOneData.midi
-      scale.isomorphicHorizontal = scaleWorkshopOneData.horizontal
-      scale.isomorphicVertical = scaleWorkshopOneData.vertical
+      scale.isomorphicHorizontal = [scaleWorkshopOneData.horizontal]
+      scale.isomorphicVertical = [scaleWorkshopOneData.vertical]
 
       if (scaleWorkshopOneData.data !== undefined) {
         const colors = scaleWorkshopOneData.colors ?? ''
@@ -490,8 +490,8 @@ onMounted(async () => {
       scale.userBaseFrequency = decodedState.baseFrequency
       scale.autoFrequency = false
       scale.baseMidiNote = decodedState.baseMidiNote
-      scale.isomorphicHorizontal = decodedState.isomorphicHorizontal
-      scale.isomorphicVertical = decodedState.isomorphicVertical
+      scale.isomorphicHorizontal = [decodedState.isomorphicHorizontal]
+      scale.isomorphicVertical = [decodedState.isomorphicVertical]
       scale.keyboardMode = decodedState.keyboardMode
       scale.pianoMode = pianoMode
       scale.equaveShift = decodedState.equaveShift
