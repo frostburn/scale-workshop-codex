@@ -1,6 +1,20 @@
 # Change log
 
 ## 3.3.0 (Unreleased)
+  * Feature: Add a harmonium sound [#833](https://github.com/xenharmonic-devs/scale-workshop/issues/833)
+  * Feature: Add the parabolic waveform [#877](https://github.com/xenharmonic-devs/scale-workshop/issues/877)
+  * Feature: Make default attack and release velocities configurable [#887](https://github.com/xenharmonic-devs/scale-workshop/issues/887)
+  * Feature: Add an option to hide the first interval matrix column [#445](https://github.com/xenharmonic-devs/scale-workshop/issues/445)
+  * Feature: Add support for quasi-isomorphic layouts [#611](https://github.com/xenharmonic-devs/scale-workshop/issues/611)
+  * Feature: Keep analysis controls as live Pinia state [#434](https://github.com/xenharmonic-devs/scale-workshop/issues/434)
+  * Feature: Add a glow effect for played nodes in the lattice [#635](https://github.com/xenharmonic-devs/scale-workshop/issues/635)
+  * Feature: Set the scale title as the browser tab title [#624](https://github.com/xenharmonic-devs/scale-workshop/issues/624)
+  * Feature: Add hints about period circle UX [#927](https://github.com/xenharmonic-devs/scale-workshop/issues/927)
+  * Feature: Add symmetric interval matrix arrangement and multi-note highlights [#932](https://github.com/xenharmonic-devs/scale-workshop/issues/932), [#940](https://github.com/xenharmonic-devs/scale-workshop/issues/940)
+  * Feature: Add optional Kontakt sample remapping toggle [#892](https://github.com/xenharmonic-devs/scale-workshop/issues/892)
+  * Bug fix: Fix "Take subset" modal display when the root is taken out [#939](https://github.com/xenharmonic-devs/scale-workshop/issues/939)
+  * Bug fix: Fix centered tuning table row scrolling into view [#934](https://github.com/xenharmonic-devs/scale-workshop/issues/934)
+  * Maintenance: Add the necessary library types for `Array.replaceAll()` [#925](https://github.com/xenharmonic-devs/scale-workshop/issues/925)
   * Improvement: Further reduce initial app size by lazy-loading legacy Scale Workshop 2 support
 
 ## 3.2.0
