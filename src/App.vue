@@ -204,9 +204,9 @@ function midiNoteOn(index: number, rawAttack?: number, channel?: number) {
 
 const midiInputChannels = reactive(new Set([1]))
 
-const midiIn = new MidiIn(midiNoteOn, midiInputChannels)
+const midiIn = new MidiIn(midiNoteOn, midiInputChannels, {sustainPedal: true})
 
-const RESERVED_MESSAGES = ['noteon', 'noteoff', 'pitchbend']
+const RESERVED_MESSAGES = ['noteon', 'noteoff', 'pitchbend', 'damperpedal', 'sostenuto']
 watch(
   () => midi.input,
   (newValue, oldValue) => {

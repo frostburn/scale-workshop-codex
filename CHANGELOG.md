@@ -12,6 +12,7 @@
   * Feature: Add hints about period circle UX [#927](https://github.com/xenharmonic-devs/scale-workshop/issues/927)
   * Feature: Add symmetric interval matrix arrangement and multi-note highlights [#932](https://github.com/xenharmonic-devs/scale-workshop/issues/932), [#940](https://github.com/xenharmonic-devs/scale-workshop/issues/940)
   * Feature: Add optional Kontakt sample remapping toggle [#892](https://github.com/xenharmonic-devs/scale-workshop/issues/892)
+  * Feature: Add support for MIDI sustain pedals [#936](https://github.com/xenharmonic-devs/scale-workshop/issues/936)
   * Bug fix: Fix "Take subset" modal display when the root is taken out [#939](https://github.com/xenharmonic-devs/scale-workshop/issues/939)
   * Bug fix: Fix centered tuning table row scrolling into view [#934](https://github.com/xenharmonic-devs/scale-workshop/issues/934)
   * Maintenance: Add the necessary library types for `Array.replaceAll()` [#925](https://github.com/xenharmonic-devs/scale-workshop/issues/925)
