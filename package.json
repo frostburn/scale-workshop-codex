@@ -1,6 +1,6 @@
 {
   "name": "scale-workshop",
-  "version": "3.3.0-rc5",
+  "version": "3.3.0-rc6",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -27,7 +27,7 @@
     "moment-of-symmetry": "^0.10.0",
     "pinia": "^3.0.4",
     "qs": "^6.15.1",
-    "sonic-weave": "^0.14.0",
+    "sonic-weave": "^0.14.1",
     "sw-synth": "^0.3.2",
     "values.js": "^2.1.1",
     "vue": "^3.5.27",
