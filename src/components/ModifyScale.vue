@@ -165,7 +165,6 @@ defineExpose({ blur })
   <DropdownGroup ref="element" title="Modify scale" @mouseenter="$emit('mouseenter')">
     <ul>
       <a href="#" @click="showExpandModal = true"><li>Expand/simplify lines</li></a>
-      <a href="#" @click="showInterpolateModal = true"><li>Interpolate</li></a>
       <a href="#" @click="sort"><li>Sort ascending</li></a>
       <a href="#" @click="reduce"
         ><li>{{ capitalizeFirstLetter(scale.nameOfEquave) }} reduce</li></a
@@ -186,6 +185,7 @@ defineExpose({ blur })
         ><li>Approximate by subharmonics</li></a
       >
       <a href="#" @click="showEqualizeModal = true"><li>Equalize</li></a>
+      <a href="#" @click="showInterpolateModal = true"><li>Interpolate</li></a>
       <a href="#" @click="showTemperModal = true"><li>Temper</li></a>
       <a href="#" @click="showMergeOffsetsModal = true"><li>Merge offsets</li></a>
       <a href="#" @click="showConvertModal = true"><li>Convert interval values</li></a>

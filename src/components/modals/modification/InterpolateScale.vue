@@ -12,10 +12,14 @@ const emit = defineEmits(['done', 'cancel'])
 const modal = useModalStore()
 const scale = useScaleStore()
 
-function modify() {
+function modify(expand = true) {
   const divisions = Math.max(1, Math.round(Number(modal.interpolationDivisions) || 1))
   const method = modal.interpolateLinearly ? 'interpolateLinear' : 'interpolate'
   scale.sourceText += `\n${method}(${divisions})`
+  if (expand) {
+    const { visitor, defaults } = scale.getUserScopeVisitor()
+    scale.sourceText = visitor.expand(defaults)
+  }
   scale.computeScale()
   emit('done')
 }
@@ -43,6 +47,13 @@ function modify() {
           <input type="checkbox" id="interpolate-linearly" v-model="modal.interpolateLinearly" />
           <label for="interpolate-linearly">Interpolate linearly</label>
         </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="btn-group">
+        <button @click="modify(true)">OK</button>
+        <button @click="$emit('cancel')">Cancel</button>
+        <button @click="modify(false)">Raw</button>
       </div>
     </template>
   </Modal>
