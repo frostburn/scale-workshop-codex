@@ -44,6 +44,10 @@ const ExpandModal = defineAsyncComponent(
   () => import('@/components/modals/modification/ExpandScale.vue')
 )
 
+const InterpolateModal = defineAsyncComponent(
+  () => import('@/components/modals/modification/InterpolateScale.vue')
+)
+
 const MergeOffsetsModal = defineAsyncComponent(
   () => import('@/components/modals/modification/MergeOffsets.vue')
 )
@@ -82,6 +86,7 @@ const showCoalesceModal = ref(false)
 const showEnumerateModal = ref(false)
 const showEqualizeModal = ref(false)
 const showExpandModal = ref(false)
+const showInterpolateModal = ref(false)
 const showMergeOffsetsModal = ref(false)
 const showRandomModal = ref(false)
 const showRepeatModal = ref(false)
@@ -99,6 +104,7 @@ function closeModals() {
   showEnumerateModal.value = false
   showEqualizeModal.value = false
   showExpandModal.value = false
+  showInterpolateModal.value = false
   showMergeOffsetsModal.value = false
   showRandomModal.value = false
   showRepeatModal.value = false
@@ -159,6 +165,7 @@ defineExpose({ blur })
   <DropdownGroup ref="element" title="Modify scale" @mouseenter="$emit('mouseenter')">
     <ul>
       <a href="#" @click="showExpandModal = true"><li>Expand/simplify lines</li></a>
+      <a href="#" @click="showInterpolateModal = true"><li>Interpolate</li></a>
       <a href="#" @click="sort"><li>Sort ascending</li></a>
       <a href="#" @click="reduce"
         ><li>{{ capitalizeFirstLetter(scale.nameOfEquave) }} reduce</li></a
@@ -233,6 +240,12 @@ defineExpose({ blur })
       :show="showExpandModal"
       @done="closeModals"
       @cancel="showExpandModal = false"
+    />
+    <InterpolateModal
+      v-if="showInterpolateModal"
+      :show="showInterpolateModal"
+      @done="closeModals"
+      @cancel="showInterpolateModal = false"
     />
     <MergeOffsetsModal
       v-if="showMergeOffsetsModal"
