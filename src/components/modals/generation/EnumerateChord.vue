@@ -18,9 +18,13 @@ function generate(expand = true) {
     const equalDivisions = Math.max(1, Math.round(modal.equalDivisions))
     let chordTitle = modal.chord
     if (modal.retrovertChord) {
-      const retrovertChord = [...chordParts].reverse().join(':')
-      source = `/${retrovertChord}`
-      chordTitle = `/${retrovertChord}`
+      if (chordParts.length === 1) {
+        source = `retrovert(${source})`
+      } else {
+        const retrovertChord = [...chordParts].reverse().join(':')
+        source = `/${retrovertChord}`
+        chordTitle = `/${retrovertChord}`
+      }
     }
     let name = `Chord ${chordTitle}`
     if (equalDivisions !== 1) {
