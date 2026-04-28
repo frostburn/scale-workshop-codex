@@ -41,6 +41,7 @@ export const useModalStore = defineStore('modal', () => {
   // Harmonics / Subharmonics
   const lowInteger = ref(8)
   const highInteger = ref(16)
+  const equalDivisions = ref(1)
 
   // Enumerate chord
   const chord = ref('')
@@ -518,6 +519,7 @@ export const useModalStore = defineStore('modal', () => {
     // Harmonics / Subharmonics
     lowInteger,
     highInteger,
+    equalDivisions,
 
     // Enumerate chord
     chord,

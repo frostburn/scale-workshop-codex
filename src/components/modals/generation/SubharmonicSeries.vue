@@ -16,10 +16,17 @@ function generate(expand = true) {
   const numerator = Math.max(1, Math.round(modal.lowInteger))
   const greatestDenominator = clamp(numerator + 1, numerator + 1000, Math.round(modal.highInteger))
   let source = `/${greatestDenominator}::${numerator}`
+  const equalDivisions = Math.max(1, Math.round(modal.equalDivisions))
+  const titleRange = `${numerator}-${greatestDenominator}`
+  let name = `Subharmonics ${titleRange}`
+  if (equalDivisions !== 1) {
+    source += `\ninterpolate(${equalDivisions})`
+    name = `Subharmonics ${equalDivisions}ED(${titleRange})`
+  }
   if (expand) {
     source = expandCode(source)
   }
-  emit('update:scaleName', `Subharmonics ${numerator}-${greatestDenominator}`)
+  emit('update:scaleName', name)
   emit('update:source', source)
 }
 </script>
@@ -49,6 +56,17 @@ function generate(expand = true) {
             min="1"
             class="control"
             v-model="modal.highInteger"
+          />
+        </div>
+        <div class="control">
+          <label for="subharmonic-equal-divisions">Equal divisions</label>
+          <input
+            id="subharmonic-equal-divisions"
+            type="number"
+            min="1"
+            step="1"
+            class="control"
+            v-model="modal.equalDivisions"
           />
         </div>
       </div>
