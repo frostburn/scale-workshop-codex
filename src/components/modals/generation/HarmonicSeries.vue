@@ -20,10 +20,17 @@ function generate(expand = true) {
     Math.round(modal.highInteger)
   )
   let source = `${denominator}::${greatestNumerator}`
+  const equalDivisions = Math.max(1, Math.round(modal.equalDivisions))
+  const titleRange = `${denominator}-${greatestNumerator}`
+  let name = `Harmonics ${titleRange}`
+  if (equalDivisions !== 1) {
+    source += `\ninterpolate(${equalDivisions})`
+    name = `Harmonics ${equalDivisions}ED(${titleRange})`
+  }
   if (expand) {
     source = expandCode(source)
   }
-  emit('update:scaleName', `Harmonics ${denominator}-${greatestNumerator}`)
+  emit('update:scaleName', name)
   emit('update:source', source)
 }
 </script>
@@ -53,6 +60,17 @@ function generate(expand = true) {
             min="1"
             class="control"
             v-model="modal.highInteger"
+          />
+        </div>
+        <div class="control">
+          <label for="harmonic-equal-divisions">Equal divisions</label>
+          <input
+            id="harmonic-equal-divisions"
+            type="number"
+            min="1"
+            step="1"
+            class="control"
+            v-model="modal.equalDivisions"
           />
         </div>
       </div>

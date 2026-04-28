@@ -14,10 +14,16 @@ const modal = useModalStore()
 function generate(expand = true) {
   try {
     let source = modal.chordIntervals.map((i) => i.toString()).join(':')
-    emit('update:scaleName', `Chord ${modal.chord}`)
+    const equalDivisions = Math.max(1, Math.round(modal.equalDivisions))
+    let name = `Chord ${modal.chord}`
     if (modal.retrovertChord) {
       source = `retrovert(${source})`
     }
+    if (equalDivisions !== 1) {
+      source += `\ninterpolate(${equalDivisions})`
+      name = `Chord ${equalDivisions}ED(${modal.chord})`
+    }
+    emit('update:scaleName', name)
     if (expand) {
       emit('update:source', expandCode(source))
     } else {
@@ -53,6 +59,17 @@ function generate(expand = true) {
         <div class="control checkbox-container">
           <input type="checkbox" id="integrate-period" v-model="modal.retrovertChord" />
           <label for="integrate-period">Retrovert chord (negative harmony)</label>
+        </div>
+        <div class="control">
+          <label for="chord-equal-divisions">Equal divisions</label>
+          <input
+            id="chord-equal-divisions"
+            type="number"
+            min="1"
+            step="1"
+            class="control"
+            v-model="modal.equalDivisions"
+          />
         </div>
       </div>
     </template>
