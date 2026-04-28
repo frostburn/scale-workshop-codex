@@ -416,6 +416,10 @@ export const useModalStore = defineStore('modal', () => {
   // Repeat scale
   const numRepeats = ref(2)
 
+  // Interpolate scale
+  const interpolationDivisions = ref(2)
+  const interpolateLinearly = ref(false)
+
   // Rotate scale
   const newUnison = ref(0)
 
@@ -620,6 +624,10 @@ export const useModalStore = defineStore('modal', () => {
 
     // Repeat
     numRepeats,
+
+    // Interpolate
+    interpolationDivisions,
+    interpolateLinearly,
 
     // Rotate
     newUnison,
