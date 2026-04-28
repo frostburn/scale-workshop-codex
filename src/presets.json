@@ -44,7 +44,7 @@
   "hirajoshi": {
     "title": "Hirajoshi",
     "name": "Observed Japanese pentatonic koto scale. Helmholtz/Ellis p.519, nr.112",
-    "source": "185. white\n337. white\n683. white\n790. white\n1200. gray\n",
+    "source": "185. 337. 683. 790. white\n1200. gray\n",
     "categories": ["traditional"]
   },
   "hirajoshi-ji": {
@@ -56,13 +56,13 @@
   "balafon": {
     "title": "Balafon 1",
     "name": "Observed balafon tuning from Patna, Helmholtz/Ellis p. 518, nr.81",
-    "source": "187. white\n356. white\n526. white\n672. white\n856. white\n985. white\n1222. gray\n",
+    "source": "187. 356. 526. 672. 856. 985. white\n1222. gray\n",
     "categories": ["traditional"]
   },
   "balafon2": {
     "title": "Balafon 2",
     "name": "Observed balafon tuning from West-Africa, Helmholtz/Ellis p. 518, nr.86",
-    "source": "152. white\n287. white\n533. white\n724. white\n890. white\n1029. white\n1200. gray\n",
+    "source": "152. 287. 533. 724. 890. 1029. white\n1200. gray\n",
     "categories": ["traditional"]
   },
   "balafon3": {
@@ -141,14 +141,14 @@
   },
   "werckmeisteriii": {
     "name": "Werckmeister III (1691)",
-    "source": "{\n  const pythComma = aa1 - M2\n  const flatFif = P5 - pythComma / 4\n  P5 white 'C'\n  P5 white 'G'\n  flatFif white 'D'\n  P5 white 'A'\n  P5 white 'E'\n  P5 white 'B'\n  P5 black 'F♯'\n  P5 black 'C♯'\n  P5 black 'G♯'\n  flatFif black 'D♯'\n  flatFif black 'A♯'\n  stack()\n  P8 white 'F'\n  reduce()\n  sort()\n  cents(£, 3)\n}\n",
+    "source": "{\n  const pythComma = aa1 - M2\n  const flatFif = P5 - pythComma / 4\n  (P5 'C') (P5 'G') (flatFif 'D') (P5 'A') (P5 'E') (P5 'B') white\n  (P5 'F♯') (P5 'C♯') (P5 'G♯') (flatFif 'D♯') (flatFif 'A♯') black\n  stack()\n  P8 'F' white\n  reduce()\n  sort()\n  cents(£, 3)\n}\n",
     "categories": ["traditional"],
     "baseMidiNote": 65,
     "baseFrequency": 349
   },
   "young1799": {
     "name": "Young (1799)",
-    "source": "697.9 white 'C'\n700.1 white 'G'\n700.1 white 'D'\n702.0 white 'A'\n701.9 white 'E'\n702.0 white 'B'\n702.0 black 'F♯'\n700.1 black 'C♯'\n700.1 black 'G♯'\n697.9 black 'D♯'\n697.9 black 'A♯'\nstack()\n\n1200. 'F'\nreduce()\nsort()\n",
+    "source": "(697.9 'C') (700.1 'G') (700.1 'D') (702.0 'A') (701.9 'E') (702.0 'B') white\n(702.0 'F♯') (700.1 'C♯') (700.1 'G♯') (697.9 'D♯') (697.9 'A♯') black\nstack()\n\n1200. 'F' white\nreduce()\nsort()\n",
     "categories": ["traditional"],
     "baseMidiNote": 65,
     "baseFrequency": 349
@@ -173,7 +173,7 @@
   "gradycentaur": {
     "title": "Kraig Grady Centaur (7-limit)",
     "name": "Kraig Grady Centaur",
-    "source": "gs(geodiff(12:14 blue:15 yellow:18 white), 10, 2/1 white)\nrotate(6)\ninsert(21/20 cyan)\ninsert(7/5 cyan)\n",
+    "source": "gs(geodiff(12:14 blue:15 yellow:18 white), 10, 2/1 white)\nrotate(6)\n(21/20 cyan) (7/5 cyan) insert\n",
     "baseFrequency": 264,
     "baseMidiNote": 60,
     "categories": ["just intonation"]
@@ -181,7 +181,7 @@
   "gradycentauras": {
     "title": "Kraig Grady Centaura Subharmonic (11-limit)",
     "name": "Kraig Grady Centaura Subharmonic",
-    "source": "4/3 white\n3/2 white\n2/1 white\nmergeOffset([15/14 cyan, 5/4 yellow, 20/11 black, 5/3 yellow], 'wrap')\ndel $[5]\n",
+    "source": "4/3 white\n3/2 white\n2/1 white\nmergeOffset([15/14 cyan, 5/4 yellow, 20/11 black, 5/3 yellow], 'wrap')\n15/11 dislodge void\n",
     "baseFrequency": 264,
     "baseMidiNote": 60,
     "categories": ["just intonation"]
@@ -196,7 +196,7 @@
   },
   "11machine6": {
     "name": "11edo machine[6]",
-    "source": "cps([1, 9, 7, 11] white, 2, 2/1 gray)\n11@2.9.7.11\n",
+    "source": "cps(1 9 7 11 white, 2, 2/1 gray)\n11@2.9.7.11\n",
     "categories": ["MOS", "equal temperament"]
   },
   "13glacial7": {
@@ -221,7 +221,7 @@
   },
   "17superpyth12": {
     "name": "17edo superpyth[12]",
-    "source": "[3^i rdc 2 for i of concat([0 white..6], [7 black..11])]\n['F', 'C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'C♯', 'G♯', 'D♯', 'A♯']\nsort()\n17@",
+    "source": "[3^i rdc 2 for i of [0 white..6] ([7 black..11])]\n['F', 'C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'C♯', 'G♯', 'D♯', 'A♯']\nsort()\n17@",
     "categories": ["MOS", "equal temperament"],
     "baseMidiNote": 65,
     "baseFrequency": 349
@@ -358,5 +358,11 @@
     "name": "Orgone[7], a 2.7.11 classic. POTE optimized.",
     "source": "rank2(77/64 white, 3, 3, 2/1 gray)\nPOTE([11@2.7.11, 26@2.7.11])\ncents(£, 3)\n",
     "categories": ["MOS", "POTE", "rank 2"]
+  },
+  "2ED(5::10)": {
+    "title": "2ED(5::10)",
+    "name": "Interpolated harmonic segment 2ED(5::10)",
+    "source": "white 5::10\ninterpolate()\narrayRepeat(5, [black, white])\n",
+    "categories": []
   }
 }
