@@ -424,6 +424,14 @@ onUnmounted(() => {
               />
               <label for="keyboard-show-frequency">Display frequency</label>
             </div>
+            <div class="control checkbox-container">
+              <input
+                id="keyboard-slide-behavior"
+                type="checkbox"
+                v-model="state.slideVirtualKeyboard"
+              />
+              <label for="keyboard-slide-behavior">Slide across notes while dragging</label>
+            </div>
           </div>
         </template>
         <template v-if="scale.keyboardMode === 'isomorphic'">
