@@ -6,6 +6,7 @@ const props = defineProps<{
   index: number
   color: string
   active: boolean
+  held: boolean
 }>()
 
 const light = computed(() => new Values(props.color).getBrightness() > 50)
@@ -15,7 +16,7 @@ const light = computed(() => new Values(props.color).getBrightness() > 50)
   <td
     :data-key-number="index"
     :style="'background-color:' + color"
-    :class="{ active, light, dark: !light }"
+    :class="{ active, held, light, dark: !light }"
   >
     <slot></slot>
   </td>

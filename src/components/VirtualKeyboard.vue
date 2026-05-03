@@ -154,13 +154,11 @@ onUnmounted(() => {
         <VirtualKeyboardKey
           v-for="key of row"
           :key="key.x"
-          :class="{
-            'hidden-sm': key.x > 8,
-            held: (heldNotes.get(key.index) || 0) > 0
-          }"
+          :class="{ 'hidden-sm': key.x > 8 }"
           :index="key.index"
           :color="key.color"
           :active="isActive(key.index)"
+          :held="(heldNotes.get(key.index) || 0) > 0"
           @touchstart="onTouchStart($event, key.index)"
           @touchend="onTouchEnd($event, key.index)"
           @touchcancel="onTouchEnd($event, key.index)"
