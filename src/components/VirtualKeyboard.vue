@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { LEFT_MOUSE_BTN } from '@/constants'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import VirtualKeyboardKey from '@/components/VirtualKeyboardKey.vue'
 import VirtualKeyInfo from '@/components/VirtualKeyInfo.vue'
 import type { Scale } from '@/scale'
@@ -28,6 +29,7 @@ const props = defineProps<{
 type VirtualKey = {
   x: number
   y: number
+  id: string
   index: number
   color: string
   frequency: number
@@ -52,6 +54,7 @@ const virtualKeys = computed(() => {
       row.push({
         x,
         y,
+        id: `${x},${y}`,
         index,
         color,
         frequency,
@@ -66,6 +69,84 @@ const virtualKeys = computed(() => {
 })
 
 const isMousePressed = ref(false)
+const noteOffs: Map<string, NoteOff> = new Map()
+
+function start(key: VirtualKey) {
+  end(key)
+  noteOffs.set(key.id, props.noteOn(key.index))
+}
+
+function end(key: VirtualKey) {
+  if (noteOffs.has(key.id)) {
+    noteOffs.get(key.id)!()
+    noteOffs.delete(key.id)
+  }
+}
+
+function isActive(key: VirtualKey) {
+  return noteOffs.has(key.id)
+}
+
+function onTouchStart(event: TouchEvent, key: VirtualKey) {
+  event.preventDefault()
+  start(key)
+}
+
+function onTouchEnd(event: TouchEvent, key: VirtualKey) {
+  event.preventDefault()
+  end(key)
+}
+
+function onMouseDown(event: MouseEvent, key: VirtualKey) {
+  if (event.button !== LEFT_MOUSE_BTN) {
+    return
+  }
+  event.preventDefault()
+  isMousePressed.value = true
+  start(key)
+}
+
+function onMouseUp(event: MouseEvent, key: VirtualKey) {
+  if (event.button !== LEFT_MOUSE_BTN) {
+    return
+  }
+  event.preventDefault()
+  end(key)
+}
+
+function onMouseEnter(event: MouseEvent, key: VirtualKey) {
+  if (!isMousePressed.value) {
+    return
+  }
+  event.preventDefault()
+  start(key)
+}
+
+function onMouseLeave(event: MouseEvent, key: VirtualKey) {
+  if (!isMousePressed.value) {
+    return
+  }
+  event.preventDefault()
+  end(key)
+}
+
+function windowMouseUp(event: MouseEvent) {
+  if (event.button !== LEFT_MOUSE_BTN) {
+    return
+  }
+  isMousePressed.value = false
+  noteOffs.forEach((off) => off())
+  noteOffs.clear()
+}
+
+onMounted(() => {
+  window.addEventListener('mouseup', windowMouseUp)
+})
+
+onUnmounted(() => {
+  noteOffs.forEach((off) => off())
+  window.removeEventListener('mouseup', windowMouseUp)
+})
 </script>
 
 <template>
@@ -74,17 +155,19 @@ const isMousePressed = ref(false)
       <tr v-for="[y, row] of virtualKeys" :key="y" :class="{ 'hidden-sm': y < 0 || y > 3 }">
         <VirtualKeyboardKey
           v-for="key of row"
-          :key="key.x"
-          :class="{
-            'hidden-sm': key.x > 8,
-            held: (heldNotes.get(key.index) || 0) > 0
-          }"
+          :key="key.id"
+          :class="{ 'hidden-sm': key.x > 8 }"
           :index="key.index"
           :color="key.color"
-          :isMousePressed="isMousePressed"
-          :noteOn="() => noteOn(key.index)"
-          @press="isMousePressed = true"
-          @unpress="isMousePressed = false"
+          :active="isActive(key)"
+          :held="(heldNotes.get(key.index) || 0) > 0"
+          @touchstart="onTouchStart($event, key)"
+          @touchend="onTouchEnd($event, key)"
+          @touchcancel="onTouchEnd($event, key)"
+          @mousedown="onMouseDown($event, key)"
+          @mouseup="onMouseUp($event, key)"
+          @mouseenter="onMouseEnter($event, key)"
+          @mouseleave="onMouseLeave($event, key)"
         >
           <VirtualKeyInfo
             :label="key.label"
