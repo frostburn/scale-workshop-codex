@@ -9,8 +9,6 @@ const props = defineProps<{
 }>()
 
 const light = computed(() => new Values(props.color).getBrightness() > 50)
-
-defineEmits(['touchstart', 'touchend', 'mousedown', 'mouseup', 'mouseenter', 'mouseleave'])
 </script>
 
 <template>
@@ -18,13 +16,6 @@ defineEmits(['touchstart', 'touchend', 'mousedown', 'mouseup', 'mouseenter', 'mo
     :data-key-number="index"
     :style="'background-color:' + color"
     :class="{ active, light, dark: !light }"
-    @touchstart="$emit('touchstart', $event)"
-    @touchend="$emit('touchend', $event)"
-    @touchcancel="$emit('touchend', $event)"
-    @mousedown="$emit('mousedown', $event)"
-    @mouseup="$emit('mouseup', $event)"
-    @mouseenter="$emit('mouseenter', $event)"
-    @mouseleave="$emit('mouseleave', $event)"
   >
     <slot></slot>
   </td>

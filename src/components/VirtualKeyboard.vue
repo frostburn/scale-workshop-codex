@@ -81,6 +81,10 @@ function end(index: number) {
   }
 }
 
+function isActive(index: number) {
+  return noteOffs.has(index)
+}
+
 function onTouchStart(event: TouchEvent, index: number) {
   event.preventDefault()
   start(index)
@@ -156,9 +160,10 @@ onUnmounted(() => {
           }"
           :index="key.index"
           :color="key.color"
-          :active="(heldNotes.get(key.index) || 0) > 0"
+          :active="isActive(key.index)"
           @touchstart="onTouchStart($event, key.index)"
           @touchend="onTouchEnd($event, key.index)"
+          @touchcancel="onTouchEnd($event, key.index)"
           @mousedown="onMouseDown($event, key.index)"
           @mouseup="onMouseUp($event, key.index)"
           @mouseenter="onMouseEnter($event, key.index)"
