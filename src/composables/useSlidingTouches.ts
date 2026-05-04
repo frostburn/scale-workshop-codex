@@ -7,19 +7,48 @@ type UseSlidingTouchesOptions<T extends KeyId, K> = {
   slideEnabled: () => boolean
   getKeyFromElement: KeyFromElement<T, K>
   getKeyId: KeyIdOf<K, T>
-  start: (key: K) => void
-  end: (key: K) => void
+  noteOn: (key: K) => () => void
 }
 
 export function useSlidingTouches<T extends KeyId, K>(options: UseSlidingTouchesOptions<T, K>) {
   const activeTouchKeys = new Map<number, K>()
+  const keyPressCounts = new Map<T, number>()
+  const noteOffs = new Map<T, () => void>()
+
+  function activateKey(key: K) {
+    const keyId = options.getKeyId(key)
+    const activeCount = keyPressCounts.get(keyId) ?? 0
+    if (activeCount === 0) {
+      noteOffs.set(keyId, options.noteOn(key))
+    }
+    keyPressCounts.set(keyId, activeCount + 1)
+  }
+
+  function releaseKey(key: K) {
+    const keyId = options.getKeyId(key)
+    const activeCount = keyPressCounts.get(keyId) ?? 0
+    if (activeCount <= 1) {
+      keyPressCounts.delete(keyId)
+      const noteOff = noteOffs.get(keyId)
+      if (noteOff) {
+        noteOff()
+        noteOffs.delete(keyId)
+      }
+      return
+    }
+    keyPressCounts.set(keyId, activeCount - 1)
+  }
+
+  function isKeyActive(key: K) {
+    return (keyPressCounts.get(options.getKeyId(key)) ?? 0) > 0
+  }
 
   function onTouchStart(event: TouchEvent, key: K) {
     event.preventDefault()
     for (const touch of event.changedTouches) {
       if (!activeTouchKeys.has(touch.identifier)) {
         activeTouchKeys.set(touch.identifier, key)
-        options.start(key)
+        activateKey(key)
       }
     }
   }
@@ -29,7 +58,7 @@ export function useSlidingTouches<T extends KeyId, K>(options: UseSlidingTouches
     for (const touch of event.changedTouches) {
       const activeKey = activeTouchKeys.get(touch.identifier)
       if (activeKey !== undefined) {
-        options.end(activeKey)
+        releaseKey(activeKey)
         activeTouchKeys.delete(touch.identifier)
       }
     }
@@ -53,15 +82,18 @@ export function useSlidingTouches<T extends KeyId, K>(options: UseSlidingTouches
       if (options.getKeyId(nextKey) === options.getKeyId(currentKey)) {
         continue
       }
-      options.end(currentKey)
-      options.start(nextKey)
+      releaseKey(currentKey)
+      activateKey(nextKey)
       activeTouchKeys.set(touch.identifier, nextKey)
     }
   }
 
-  function clearTouches() {
+  function releaseAll() {
+    noteOffs.forEach((noteOff) => noteOff())
+    noteOffs.clear()
+    keyPressCounts.clear()
     activeTouchKeys.clear()
   }
 
-  return { onTouchStart, onTouchEnd, onTouchMove, clearTouches }
+  return { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyActive, releaseAll }
 }

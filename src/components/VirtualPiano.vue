@@ -6,8 +6,7 @@ import { LEFT_MOUSE_BTN } from '@/constants'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
-type NoteOff = () => void
-type NoteOnCallback = (index: number) => NoteOff
+type NoteOnCallback = (index: number) => () => void
 type ColorMap = (index: number) => string
 
 const props = defineProps<{
@@ -51,8 +50,6 @@ const NUM_KEYS = 30
 const TOP_Y = 20
 const SPLIT_BOTTOM_Y = 60
 
-const noteOffs: Map<number, NoteOff> = new Map()
-const keyPressCounts: Map<number, number> = new Map()
 const activeMouseIndex = ref<number | null>(null)
 
 const whiteKeys = computed(() => {
@@ -255,28 +252,7 @@ const splitKeys = computed(() => {
 
 const isMousePressed = ref(false)
 
-function start(index: number) {
-  const count = keyPressCounts.get(index) ?? 0
-  if (count === 0) {
-    noteOffs.set(index, props.noteOn(index))
-  }
-  keyPressCounts.set(index, count + 1)
-}
-
-function end(index: number) {
-  const count = keyPressCounts.get(index) ?? 0
-  if (count <= 1) {
-    keyPressCounts.delete(index)
-    if (noteOffs.has(index)) {
-      noteOffs.get(index)!()
-      noteOffs.delete(index)
-    }
-    return
-  }
-  keyPressCounts.set(index, count - 1)
-}
-
-const { onTouchStart, onTouchEnd, onTouchMove, clearTouches } = useSlidingTouches({
+const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, releaseAll } = useSlidingTouches({
   slideEnabled: () => props.slideBehavior ?? true,
   getKeyFromElement: (element) => {
     const keyElement = element?.closest('[data-key-index]') as HTMLElement | null
@@ -288,8 +264,7 @@ const { onTouchStart, onTouchEnd, onTouchMove, clearTouches } = useSlidingTouche
     return Number.isNaN(nextIndex) ? undefined : nextIndex
   },
   getKeyId: (key) => key,
-  start,
-  end
+  noteOn: (key) => props.noteOn(key)
 })
 
 function onMouseDown(event: MouseEvent, index: number) {
@@ -298,7 +273,7 @@ function onMouseDown(event: MouseEvent, index: number) {
   }
   event.preventDefault()
   isMousePressed.value = true
-  start(index)
+  activateKey(index)
   activeMouseIndex.value = index
 }
 
@@ -309,7 +284,7 @@ function onMouseUp(event: MouseEvent, index: number) {
   event.preventDefault()
   isMousePressed.value = false
   if (activeMouseIndex.value !== null) {
-    end(activeMouseIndex.value)
+    releaseKey(activeMouseIndex.value)
   }
   activeMouseIndex.value = null
 }
@@ -322,7 +297,7 @@ function onMouseEnter(event: MouseEvent, index: number) {
     return
   }
   event.preventDefault()
-  start(index)
+  activateKey(index)
   activeMouseIndex.value = index
 }
 
@@ -334,16 +309,13 @@ function onMouseLeave(event: MouseEvent, index: number) {
     return
   }
   event.preventDefault()
-  end(index)
+  releaseKey(index)
 }
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button === LEFT_MOUSE_BTN) {
     isMousePressed.value = false
-    noteOffs.forEach((off) => off())
-    noteOffs.clear()
-    keyPressCounts.clear()
-    clearTouches()
+    releaseAll()
     activeMouseIndex.value = null
   }
 }
@@ -353,10 +325,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  noteOffs.forEach((off) => off())
-  noteOffs.clear()
-  keyPressCounts.clear()
-  clearTouches()
+  releaseAll()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
