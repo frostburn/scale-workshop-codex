@@ -72,7 +72,7 @@ const virtualKeys = computed(() => {
 })
 
 const isMousePressed = ref(false)
-const activeMouseKeyId = ref<string | null>(null)
+const activeMouseKey = ref<VirtualKey | null>(null)
 const noteOffs: Map<string, NoteOff> = new Map()
 const keyPressCounts: Map<string, number> = new Map()
 const activeTouchKeyIds: Map<number, string> = new Map()
@@ -162,7 +162,7 @@ function onMouseDown(event: MouseEvent, key: VirtualKey) {
   event.preventDefault()
   isMousePressed.value = true
   start(key)
-  activeMouseKeyId.value = key.id
+  activeMouseKey.value = key
 }
 
 function onMouseUp(event: MouseEvent, key: VirtualKey) {
@@ -170,13 +170,10 @@ function onMouseUp(event: MouseEvent, key: VirtualKey) {
     return
   }
   event.preventDefault()
-  if (activeMouseKeyId.value) {
-    const activeKey = virtualKeys.value.flatMap(([, row]) => row).find((k) => k.id === activeMouseKeyId.value)
-    if (activeKey) {
-      end(activeKey)
-    }
+  if (activeMouseKey.value) {
+    end(activeMouseKey.value)
   }
-  activeMouseKeyId.value = null
+  activeMouseKey.value = null
 }
 
 function onMouseEnter(event: MouseEvent, key: VirtualKey) {
@@ -188,7 +185,7 @@ function onMouseEnter(event: MouseEvent, key: VirtualKey) {
   }
   event.preventDefault()
   start(key)
-  activeMouseKeyId.value = key.id
+  activeMouseKey.value = key
 }
 
 function onMouseLeave(event: MouseEvent, key: VirtualKey) {
@@ -210,7 +207,7 @@ function windowMouseUp(event: MouseEvent) {
   noteOffs.forEach((off) => off())
   noteOffs.clear()
   keyPressCounts.clear()
-  activeMouseKeyId.value = null
+  activeMouseKey.value = null
 }
 
 onMounted(() => {

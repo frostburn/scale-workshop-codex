@@ -19,6 +19,7 @@ const props = defineProps<{
   highAccidentalColor: string
   noteOn: NoteOnCallback
   heldNotes: Map<number, number>
+  slideBehavior?: boolean
 }>()
 
 type VirtualKey = {
@@ -50,6 +51,9 @@ const TOP_Y = 20
 const SPLIT_BOTTOM_Y = 60
 
 const noteOffs: Map<number, NoteOff> = new Map()
+const keyPressCounts: Map<number, number> = new Map()
+const activeTouchIndexes: Map<number, number> = new Map()
+const activeMouseIndex = ref<number | null>(null)
 
 const whiteKeys = computed(() => {
   const low = props.lowAccidentalColor.toLowerCase()
@@ -252,27 +256,71 @@ const splitKeys = computed(() => {
 const isMousePressed = ref(false)
 
 function start(index: number) {
-  noteOffs.set(index, props.noteOn(index))
+  const count = keyPressCounts.get(index) ?? 0
+  if (count === 0) {
+    noteOffs.set(index, props.noteOn(index))
+  }
+  keyPressCounts.set(index, count + 1)
 }
 
 function end(index: number) {
-  if (noteOffs.has(index)) {
-    noteOffs.get(index)!()
-    noteOffs.delete(index)
+  const count = keyPressCounts.get(index) ?? 0
+  if (count <= 1) {
+    keyPressCounts.delete(index)
+    if (noteOffs.has(index)) {
+      noteOffs.get(index)!()
+      noteOffs.delete(index)
+    }
+    return
   }
+  keyPressCounts.set(index, count - 1)
 }
 
 function onTouchEnd(event: TouchEvent, index: number) {
   event.preventDefault()
-  end(index)
+  for (const touch of event.changedTouches) {
+    const currentIndex = activeTouchIndexes.get(touch.identifier)
+    if (currentIndex !== undefined) {
+      end(currentIndex)
+      activeTouchIndexes.delete(touch.identifier)
+    }
+  }
 }
 
 function onTouchStart(event: TouchEvent, index: number) {
   event.preventDefault()
-  // Make sure that we start a new note.
-  end(index)
+  for (const touch of event.changedTouches) {
+    if (!activeTouchIndexes.has(touch.identifier)) {
+      activeTouchIndexes.set(touch.identifier, index)
+      start(index)
+    }
+  }
+}
 
-  start(index)
+function onTouchMove(event: TouchEvent) {
+  if (!(props.slideBehavior ?? true)) {
+    return
+  }
+  event.preventDefault()
+  for (const touch of event.changedTouches) {
+    const currentIndex = activeTouchIndexes.get(touch.identifier)
+    if (currentIndex === undefined) {
+      continue
+    }
+    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+    const keyElement = element?.closest('[data-key-index]') as HTMLElement | null
+    const keyIndex = keyElement?.dataset.keyIndex
+    if (!keyIndex) {
+      continue
+    }
+    const nextIndex = parseInt(keyIndex, 10)
+    if (Number.isNaN(nextIndex) || nextIndex === currentIndex) {
+      continue
+    }
+    end(currentIndex)
+    start(nextIndex)
+    activeTouchIndexes.set(touch.identifier, nextIndex)
+  }
 }
 
 function onMouseDown(event: MouseEvent, index: number) {
@@ -282,6 +330,7 @@ function onMouseDown(event: MouseEvent, index: number) {
   event.preventDefault()
   isMousePressed.value = true
   start(index)
+  activeMouseIndex.value = index
 }
 
 function onMouseUp(event: MouseEvent, index: number) {
@@ -290,19 +339,29 @@ function onMouseUp(event: MouseEvent, index: number) {
   }
   event.preventDefault()
   isMousePressed.value = false
-  end(index)
+  if (activeMouseIndex.value !== null) {
+    end(activeMouseIndex.value)
+  }
+  activeMouseIndex.value = null
 }
 
 function onMouseEnter(event: MouseEvent, index: number) {
   if (!isMousePressed.value) {
     return
   }
+  if (!(props.slideBehavior ?? true)) {
+    return
+  }
   event.preventDefault()
   start(index)
+  activeMouseIndex.value = index
 }
 
 function onMouseLeave(event: MouseEvent, index: number) {
   if (!isMousePressed.value) {
+    return
+  }
+  if (!(props.slideBehavior ?? true)) {
     return
   }
   event.preventDefault()
@@ -314,6 +373,9 @@ function windowMouseUp(event: MouseEvent) {
     isMousePressed.value = false
     noteOffs.forEach((off) => off())
     noteOffs.clear()
+    keyPressCounts.clear()
+    activeTouchIndexes.clear()
+    activeMouseIndex.value = null
   }
 }
 
@@ -322,17 +384,16 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  noteOffs.forEach((off) => {
-    if (off !== null) {
-      off()
-    }
-  })
+  noteOffs.forEach((off) => off())
+  noteOffs.clear()
+  keyPressCounts.clear()
+  activeTouchIndexes.clear()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
 
 <template>
-  <svg width="100%" height="100%">
+  <svg width="100%" height="100%" @touchmove="onTouchMove">
     <rect
       v-for="(key, i) of whiteKeys"
       :key="i"
@@ -343,6 +404,7 @@ onUnmounted(() => {
       @mouseup="onMouseUp($event, key.index)"
       @mouseenter="onMouseEnter($event, key.index)"
       @mouseleave="onMouseLeave($event, key.index)"
+      :data-key-index="key.index"
       :class="{ white: true, active: (heldNotes.get(key.index) || 0) > 0 }"
       :x="4 * key.x - 2 * key.left + '%'"
       y="20%"
@@ -361,6 +423,7 @@ onUnmounted(() => {
         @mouseup="onMouseUp($event, key.index)"
         @mouseenter="onMouseEnter($event, key.index)"
         @mouseleave="onMouseLeave($event, key.index)"
+        :data-key-index="key.index"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
         :y="key.y"
@@ -380,6 +443,7 @@ onUnmounted(() => {
         @mouseup="onMouseUp($event, key.index)"
         @mouseenter="onMouseEnter($event, key.index)"
         @mouseleave="onMouseLeave($event, key.index)"
+        :data-key-index="key.index"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
         y="20%"
