@@ -74,22 +74,32 @@ const virtualKeys = computed(() => {
 const isMousePressed = ref(false)
 const activeMouseKeyId = ref<string | null>(null)
 const noteOffs: Map<string, NoteOff> = new Map()
+const keyPressCounts: Map<string, number> = new Map()
 const activeTouchKeyIds: Map<number, string> = new Map()
 
 function start(key: VirtualKey) {
-  end(key)
-  noteOffs.set(key.id, props.noteOn(key.index))
+  const activeCount = keyPressCounts.get(key.id) ?? 0
+  if (activeCount === 0) {
+    noteOffs.set(key.id, props.noteOn(key.index))
+  }
+  keyPressCounts.set(key.id, activeCount + 1)
 }
 
 function end(key: VirtualKey) {
-  if (noteOffs.has(key.id)) {
-    noteOffs.get(key.id)!()
-    noteOffs.delete(key.id)
+  const activeCount = keyPressCounts.get(key.id) ?? 0
+  if (activeCount <= 1) {
+    keyPressCounts.delete(key.id)
+    if (noteOffs.has(key.id)) {
+      noteOffs.get(key.id)!()
+      noteOffs.delete(key.id)
+    }
+    return
   }
+  keyPressCounts.set(key.id, activeCount - 1)
 }
 
 function isActive(key: VirtualKey) {
-  return noteOffs.has(key.id)
+  return (keyPressCounts.get(key.id) ?? 0) > 0
 }
 
 function onTouchStart(event: TouchEvent, key: VirtualKey) {
@@ -199,6 +209,7 @@ function windowMouseUp(event: MouseEvent) {
   isMousePressed.value = false
   noteOffs.forEach((off) => off())
   noteOffs.clear()
+  keyPressCounts.clear()
   activeMouseKeyId.value = null
 }
 
@@ -208,6 +219,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   noteOffs.forEach((off) => off())
+  noteOffs.clear()
+  keyPressCounts.clear()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
