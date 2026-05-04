@@ -4,6 +4,7 @@
  */
 import { LEFT_MOUSE_BTN } from '@/constants'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
 type NoteOff = () => void
 type NoteOnCallback = (index: number) => NoteOff
@@ -52,7 +53,6 @@ const SPLIT_BOTTOM_Y = 60
 
 const noteOffs: Map<number, NoteOff> = new Map()
 const keyPressCounts: Map<number, number> = new Map()
-const activeTouchIndexes: Map<number, number> = new Map()
 const activeMouseIndex = ref<number | null>(null)
 
 const whiteKeys = computed(() => {
@@ -276,52 +276,21 @@ function end(index: number) {
   keyPressCounts.set(index, count - 1)
 }
 
-function onTouchEnd(event: TouchEvent, index: number) {
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    const currentIndex = activeTouchIndexes.get(touch.identifier)
-    if (currentIndex !== undefined) {
-      end(currentIndex)
-      activeTouchIndexes.delete(touch.identifier)
-    }
-  }
-}
-
-function onTouchStart(event: TouchEvent, index: number) {
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    if (!activeTouchIndexes.has(touch.identifier)) {
-      activeTouchIndexes.set(touch.identifier, index)
-      start(index)
-    }
-  }
-}
-
-function onTouchMove(event: TouchEvent) {
-  if (!(props.slideBehavior ?? true)) {
-    return
-  }
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    const currentIndex = activeTouchIndexes.get(touch.identifier)
-    if (currentIndex === undefined) {
-      continue
-    }
-    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+const { onTouchStart, onTouchEnd, onTouchMove, clearTouches } = useSlidingTouches({
+  slideEnabled: () => props.slideBehavior ?? true,
+  getKeyFromElement: (element) => {
     const keyElement = element?.closest('[data-key-index]') as HTMLElement | null
     const keyIndex = keyElement?.dataset.keyIndex
     if (!keyIndex) {
-      continue
+      return undefined
     }
     const nextIndex = parseInt(keyIndex, 10)
-    if (Number.isNaN(nextIndex) || nextIndex === currentIndex) {
-      continue
-    }
-    end(currentIndex)
-    start(nextIndex)
-    activeTouchIndexes.set(touch.identifier, nextIndex)
-  }
-}
+    return Number.isNaN(nextIndex) ? undefined : nextIndex
+  },
+  getKeyId: (key) => key,
+  start,
+  end
+})
 
 function onMouseDown(event: MouseEvent, index: number) {
   if (event.button !== LEFT_MOUSE_BTN) {
@@ -374,7 +343,7 @@ function windowMouseUp(event: MouseEvent) {
     noteOffs.forEach((off) => off())
     noteOffs.clear()
     keyPressCounts.clear()
-    activeTouchIndexes.clear()
+    clearTouches()
     activeMouseIndex.value = null
   }
 }
@@ -387,7 +356,7 @@ onUnmounted(() => {
   noteOffs.forEach((off) => off())
   noteOffs.clear()
   keyPressCounts.clear()
-  activeTouchIndexes.clear()
+  clearTouches()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
@@ -398,8 +367,8 @@ onUnmounted(() => {
       v-for="(key, i) of whiteKeys"
       :key="i"
       @touchstart="onTouchStart($event, key.index)"
-      @touchend="onTouchEnd($event, key.index)"
-      @touchcancel="onTouchEnd($event, key.index)"
+      @touchend="onTouchEnd($event)"
+      @touchcancel="onTouchEnd($event)"
       @mousedown="onMouseDown($event, key.index)"
       @mouseup="onMouseUp($event, key.index)"
       @mouseenter="onMouseEnter($event, key.index)"
@@ -417,8 +386,8 @@ onUnmounted(() => {
         v-for="(key, i) of splitKeys"
         :key="i"
         @touchstart="onTouchStart($event, key.index)"
-        @touchend="onTouchEnd($event, key.index)"
-        @touchcancel="onTouchEnd($event, key.index)"
+        @touchend="onTouchEnd($event)"
+        @touchcancel="onTouchEnd($event)"
         @mousedown="onMouseDown($event, key.index)"
         @mouseup="onMouseUp($event, key.index)"
         @mouseenter="onMouseEnter($event, key.index)"
@@ -437,8 +406,8 @@ onUnmounted(() => {
         v-for="(key, i) of blackKeys"
         :key="i"
         @touchstart="onTouchStart($event, key.index)"
-        @touchend="onTouchEnd($event, key.index)"
-        @touchcancel="onTouchEnd($event, key.index)"
+        @touchend="onTouchEnd($event)"
+        @touchcancel="onTouchEnd($event)"
         @mousedown="onMouseDown($event, key.index)"
         @mouseup="onMouseUp($event, key.index)"
         @mouseenter="onMouseEnter($event, key.index)"

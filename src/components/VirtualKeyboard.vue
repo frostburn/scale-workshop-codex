@@ -5,7 +5,7 @@ import VirtualKeyboardKey from '@/components/VirtualKeyboardKey.vue'
 import VirtualKeyInfo from '@/components/VirtualKeyInfo.vue'
 import type { Scale } from '@/scale'
 import { axisOffset } from '@/utils'
-import { useStateStore } from '@/stores/state'
+import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
 type NoteOff = () => void
 type NoteOnCallback = (index: number) => NoteOff
@@ -25,9 +25,8 @@ const props = defineProps<{
   showCents: boolean
   showRatio: boolean
   showFrequency: boolean
+  slideBehavior: boolean
 }>()
-
-const state = useStateStore()
 
 type VirtualKey = {
   x: number
@@ -75,7 +74,6 @@ const isMousePressed = ref(false)
 const activeMouseKey = ref<VirtualKey | null>(null)
 const noteOffs: Map<string, NoteOff> = new Map()
 const keyPressCounts: Map<string, number> = new Map()
-const activeTouchKeyIds: Map<number, string> = new Map()
 
 function start(key: VirtualKey) {
   const activeCount = keyPressCounts.get(key.id) ?? 0
@@ -102,58 +100,20 @@ function isActive(key: VirtualKey) {
   return (keyPressCounts.get(key.id) ?? 0) > 0
 }
 
-function onTouchStart(event: TouchEvent, key: VirtualKey) {
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    if (!activeTouchKeyIds.has(touch.identifier)) {
-      activeTouchKeyIds.set(touch.identifier, key.id)
-      start(key)
-    }
-  }
-}
-
-function onTouchEnd(event: TouchEvent, key: VirtualKey) {
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    const keyId = activeTouchKeyIds.get(touch.identifier)
-    if (keyId !== undefined) {
-      const touchedKey = virtualKeys.value.flatMap(([, row]) => row).find((k) => k.id === keyId)
-      if (touchedKey) {
-        end(touchedKey)
-      }
-      activeTouchKeyIds.delete(touch.identifier)
-    }
-  }
-}
-
-function onTouchMove(event: TouchEvent) {
-  if (!state.slideVirtualKeyboard) {
-    return
-  }
-  event.preventDefault()
-  for (const touch of event.changedTouches) {
-    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+const { onTouchStart, onTouchEnd, onTouchMove, clearTouches } = useSlidingTouches({
+  slideEnabled: () => props.slideBehavior,
+  getKeyFromElement: (element) => {
     const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
     const keyId = keyElement?.dataset.keyId
     if (!keyId) {
-      continue
+      return undefined
     }
-    const previousKeyId = activeTouchKeyIds.get(touch.identifier)
-    if (!previousKeyId || previousKeyId === keyId) {
-      continue
-    }
-    const allKeys = virtualKeys.value.flatMap(([, row]) => row)
-    const previousKey = allKeys.find((k) => k.id === previousKeyId)
-    const nextKey = allKeys.find((k) => k.id === keyId)
-    if (previousKey) {
-      end(previousKey)
-    }
-    if (nextKey) {
-      start(nextKey)
-      activeTouchKeyIds.set(touch.identifier, keyId)
-    }
-  }
-}
+    return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
+  },
+  getKeyId: (key) => key.id,
+  start,
+  end
+})
 
 function onMouseDown(event: MouseEvent, key: VirtualKey) {
   if (event.button !== LEFT_MOUSE_BTN) {
@@ -180,7 +140,7 @@ function onMouseEnter(event: MouseEvent, key: VirtualKey) {
   if (!isMousePressed.value) {
     return
   }
-  if (!state.slideVirtualKeyboard) {
+  if (!props.slideBehavior) {
     return
   }
   event.preventDefault()
@@ -192,7 +152,7 @@ function onMouseLeave(event: MouseEvent, key: VirtualKey) {
   if (!isMousePressed.value) {
     return
   }
-  if (!state.slideVirtualKeyboard) {
+  if (!props.slideBehavior) {
     return
   }
   event.preventDefault()
@@ -207,6 +167,7 @@ function windowMouseUp(event: MouseEvent) {
   noteOffs.forEach((off) => off())
   noteOffs.clear()
   keyPressCounts.clear()
+  clearTouches()
   activeMouseKey.value = null
 }
 
@@ -218,6 +179,7 @@ onUnmounted(() => {
   noteOffs.forEach((off) => off())
   noteOffs.clear()
   keyPressCounts.clear()
+  clearTouches()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
@@ -236,8 +198,8 @@ onUnmounted(() => {
           :active="isActive(key)"
           :held="(heldNotes.get(key.index) || 0) > 0"
           @touchstart="onTouchStart($event, key)"
-          @touchend="onTouchEnd($event, key)"
-          @touchcancel="onTouchEnd($event, key)"
+          @touchend="onTouchEnd($event)"
+          @touchcancel="onTouchEnd($event)"
           @touchmove="onTouchMove"
           @mousedown="onMouseDown($event, key)"
           @mouseup="onMouseUp($event, key)"
