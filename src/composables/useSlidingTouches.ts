@@ -1,19 +1,17 @@
-type KeyId = string | number
+type KeyFromElement<K> = (element: Element | null) => K | undefined
+type KeyIdOf<K> = (key: K) => string
 
-type KeyFromElement<T extends KeyId, K> = (element: Element | null) => K | undefined
-type KeyIdOf<K, T extends KeyId> = (key: K) => T
-
-type UseSlidingTouchesOptions<T extends KeyId, K> = {
+type UseSlidingTouchesOptions<K> = {
   slideEnabled: () => boolean
-  getKeyFromElement: KeyFromElement<T, K>
-  getKeyId: KeyIdOf<K, T>
+  getKeyFromElement: KeyFromElement<K>
+  getKeyId: KeyIdOf<K>
   noteOn: (key: K) => () => void
 }
 
-export function useSlidingTouches<T extends KeyId, K>(options: UseSlidingTouchesOptions<T, K>) {
+export function useSlidingTouches<K>(options: UseSlidingTouchesOptions<K>) {
   const activeTouchKeys = new Map<number, K>()
-  const keyPressCounts = new Map<T, number>()
-  const noteOffs = new Map<T, () => void>()
+  const keyPressCounts = new Map<string, number>()
+  const noteOffs = new Map<string, () => void>()
 
   function activateKey(key: K) {
     const keyId = options.getKeyId(key)

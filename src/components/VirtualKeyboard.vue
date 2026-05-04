@@ -71,19 +71,20 @@ const virtualKeys = computed(() => {
 
 const isMousePressed = ref(false)
 const activeMouseKey = ref<VirtualKey | null>(null)
-const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyActive, releaseAll } = useSlidingTouches({
-  slideEnabled: () => props.slideBehavior,
-  getKeyFromElement: (element) => {
-    const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
-    const keyId = keyElement?.dataset.keyId
-    if (!keyId) {
-      return undefined
-    }
-    return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
-  },
-  getKeyId: (key) => key.id,
-  noteOn: (key) => props.noteOn(key.index)
-})
+const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyActive, releaseAll } =
+  useSlidingTouches({
+    slideEnabled: () => props.slideBehavior,
+    getKeyFromElement: (element) => {
+      const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
+      const keyId = keyElement?.dataset.keyId
+      if (!keyId) {
+        return undefined
+      }
+      return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
+    },
+    getKeyId: (key) => key.id,
+    noteOn: (key) => props.noteOn(key.index)
+  })
 
 function onMouseDown(event: MouseEvent, key: VirtualKey) {
   if (event.button !== LEFT_MOUSE_BTN) {
@@ -95,7 +96,7 @@ function onMouseDown(event: MouseEvent, key: VirtualKey) {
   activeMouseKey.value = key
 }
 
-function onMouseUp(event: MouseEvent, key: VirtualKey) {
+function onMouseUp(event: MouseEvent) {
   if (event.button !== LEFT_MOUSE_BTN) {
     return
   }
@@ -156,7 +157,6 @@ onUnmounted(() => {
           v-for="key of row"
           :key="key.id"
           :class="{ 'hidden-sm': key.x > 8 }"
-          :index="key.index"
           :key-id="key.id"
           :color="key.color"
           :active="isKeyActive(key)"
@@ -166,7 +166,7 @@ onUnmounted(() => {
           @touchcancel="onTouchEnd($event)"
           @touchmove="onTouchMove"
           @mousedown="onMouseDown($event, key)"
-          @mouseup="onMouseUp($event, key)"
+          @mouseup="onMouseUp($event)"
           @mouseenter="onMouseEnter($event, key)"
           @mouseleave="onMouseLeave($event, key)"
         >
