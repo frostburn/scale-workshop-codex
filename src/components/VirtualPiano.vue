@@ -273,20 +273,28 @@ const keyMap = computed(() => {
   return map
 })
 
-const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, onMouseMove, releaseAll } =
-  useSlidingTouches({
-    slideEnabled: () => props.slideBehavior,
-    getKeyFromElement: (element) => {
-      const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
-      const keyId = keyElement?.dataset.keyId
-      if (!keyId) {
-        return undefined
-      }
-      return keyMap.value.get(keyId)
-    },
-    noteOn: props.noteOn,
-    onBend: (value) => emit('bend', value)
-  })
+const {
+  onTouchStart,
+  onTouchEnd,
+  onTouchMove,
+  onMouseDown,
+  onMouseUp,
+  onMouseEnter,
+  onMouseMove,
+  releaseAll
+} = useSlidingTouches({
+  slideEnabled: () => props.slideBehavior,
+  getKeyFromElement: (element) => {
+    const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
+    const keyId = keyElement?.dataset.keyId
+    if (!keyId) {
+      return undefined
+    }
+    return keyMap.value.get(keyId)
+  },
+  noteOn: props.noteOn,
+  onBend: (value) => emit('bend', value)
+})
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button === LEFT_MOUSE_BTN) {
