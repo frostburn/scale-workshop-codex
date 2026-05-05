@@ -4,6 +4,7 @@ import VirtualPiano from '@/components/VirtualPiano.vue'
 import { useStateStore } from '@/stores/state'
 import { useScaleStore } from '@/stores/scale'
 import { computed } from 'vue'
+import type { NoteOnCallback } from '@/types'
 
 defineProps<{
   noteOn: NoteOnCallback
@@ -15,9 +16,6 @@ const scale = useScaleStore()
 const baseIndex = computed(
   () => scale.scale.baseMidiNote + scale.equaveShift * scale.scale.size + scale.degreeShift
 )
-
-type NoteOff = () => void
-type NoteOnCallback = (index: number) => NoteOff
 </script>
 
 <template>
@@ -34,6 +32,7 @@ type NoteOnCallback = (index: number) => NoteOff
       :highAccidentalColor="scale.highAccidentalColor"
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
+      :slide-behavior="state.slideVirtualKeyboard"
     ></VirtualPiano>
     <VirtualKeyboard
       v-else
@@ -43,6 +42,7 @@ type NoteOnCallback = (index: number) => NoteOff
       :colorMap="scale.colorForIndex"
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
+      :slide-behavior="state.slideVirtualKeyboard"
       :scale="scale.scale"
       :labelMap="scale.labelForIndex"
       :showLabel="state.showKeyboardLabel"

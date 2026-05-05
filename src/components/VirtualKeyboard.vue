@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { LEFT_MOUSE_BTN } from '@/constants'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import VirtualKeyboardKey from '@/components/VirtualKeyboardKey.vue'
 import VirtualKeyInfo from '@/components/VirtualKeyInfo.vue'
 import type { Scale } from '@/scale'
+import type { NoteOnCallback } from '@/types'
 import { axisOffset } from '@/utils'
+import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
-type NoteOff = () => void
-type NoteOnCallback = (index: number) => NoteOff
 type ColorMap = (index: number) => string
 type LabelMap = (index: number) => string
 
@@ -24,6 +24,7 @@ const props = defineProps<{
   showCents: boolean
   showRatio: boolean
   showFrequency: boolean
+  slideBehavior: boolean
 }>()
 
 type VirtualKey = {
@@ -68,75 +69,43 @@ const virtualKeys = computed(() => {
   return result
 })
 
-const isMousePressed = ref(false)
-const noteOffs: Map<string, NoteOff> = new Map()
-
-function start(key: VirtualKey) {
-  end(key)
-  noteOffs.set(key.id, props.noteOn(key.index))
-}
-
-function end(key: VirtualKey) {
-  if (noteOffs.has(key.id)) {
-    noteOffs.get(key.id)!()
-    noteOffs.delete(key.id)
+const virtualKeyMap = computed(() => {
+  const keyMap = new Map<string, VirtualKey>()
+  for (const [, row] of virtualKeys.value) {
+    for (const key of row) {
+      keyMap.set(key.id, key)
+    }
   }
-}
+  return keyMap
+})
 
-function isActive(key: VirtualKey) {
-  return noteOffs.has(key.id)
-}
-
-function onTouchStart(event: TouchEvent, key: VirtualKey) {
-  event.preventDefault()
-  start(key)
-}
-
-function onTouchEnd(event: TouchEvent, key: VirtualKey) {
-  event.preventDefault()
-  end(key)
-}
-
-function onMouseDown(event: MouseEvent, key: VirtualKey) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  isMousePressed.value = true
-  start(key)
-}
-
-function onMouseUp(event: MouseEvent, key: VirtualKey) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  end(key)
-}
-
-function onMouseEnter(event: MouseEvent, key: VirtualKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  event.preventDefault()
-  start(key)
-}
-
-function onMouseLeave(event: MouseEvent, key: VirtualKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  event.preventDefault()
-  end(key)
-}
+const {
+  onTouchStart,
+  onTouchEnd,
+  onTouchMove,
+  onMouseDown,
+  onMouseUp,
+  onMouseEnter,
+  isKeyActive,
+  releaseAll
+} = useSlidingTouches({
+  slideEnabled: () => props.slideBehavior,
+  getKeyFromElement: (element) => {
+    const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
+    const keyId = keyElement?.dataset.keyId
+    if (!keyId) {
+      return undefined
+    }
+    return virtualKeyMap.value.get(keyId)
+  },
+  noteOn: props.noteOn
+})
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button !== LEFT_MOUSE_BTN) {
     return
   }
-  isMousePressed.value = false
-  noteOffs.forEach((off) => off())
-  noteOffs.clear()
+  releaseAll()
 }
 
 onMounted(() => {
@@ -144,7 +113,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  noteOffs.forEach((off) => off())
+  releaseAll()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
@@ -157,17 +126,17 @@ onUnmounted(() => {
           v-for="key of row"
           :key="key.id"
           :class="{ 'hidden-sm': key.x > 8 }"
-          :index="key.index"
+          :key-id="key.id"
           :color="key.color"
-          :active="isActive(key)"
+          :active="isKeyActive(key)"
           :held="(heldNotes.get(key.index) || 0) > 0"
           @touchstart="onTouchStart($event, key)"
-          @touchend="onTouchEnd($event, key)"
-          @touchcancel="onTouchEnd($event, key)"
+          @touchend="onTouchEnd($event)"
+          @touchcancel="onTouchEnd($event)"
+          @touchmove="onTouchMove"
           @mousedown="onMouseDown($event, key)"
-          @mouseup="onMouseUp($event, key)"
+          @mouseup="onMouseUp($event)"
           @mouseenter="onMouseEnter($event, key)"
-          @mouseleave="onMouseLeave($event, key)"
         >
           <VirtualKeyInfo
             :label="key.label"
