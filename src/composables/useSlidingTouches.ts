@@ -1,5 +1,6 @@
 type KeyFromElement<K> = (element: Element | null) => K | undefined
 type SlidingKey = { id: string; index: number }
+const LEFT_MOUSE_BUTTON = 0
 
 type UseSlidingTouchesOptions<K extends SlidingKey> = {
   slideEnabled: () => boolean
@@ -97,6 +98,9 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
   }
 
   function onMouseDown(event: MouseEvent, key: K) {
+    if (event.button !== LEFT_MOUSE_BUTTON) {
+      return
+    }
     event.preventDefault()
     isMousePressed = true
     activateKey(key)
@@ -104,6 +108,9 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
   }
 
   function onMouseUp(event: MouseEvent) {
+    if (event.button !== LEFT_MOUSE_BUTTON) {
+      return
+    }
     event.preventDefault()
     if (activeMouseKey) {
       releaseKey(activeMouseKey)
