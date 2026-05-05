@@ -1,29 +1,33 @@
-type KeyFromElement<K> = (element: Element | null) => K | undefined
-type KeyIdOf<K> = (key: K) => string
+import { LEFT_MOUSE_BTN } from '@/constants'
+import type { NoteOnCallback } from '@/types/noteOn'
 
-type UseSlidingTouchesOptions<K> = {
+type KeyFromElement<K> = (element: Element | null) => K | undefined
+type SlidingKey = { id: string; index: number }
+
+type UseSlidingTouchesOptions<K extends SlidingKey> = {
   slideEnabled: () => boolean
   getKeyFromElement: KeyFromElement<K>
-  getKeyId: KeyIdOf<K>
-  noteOn: (key: K) => () => void
+  noteOn: NoteOnCallback
 }
 
-export function useSlidingTouches<K>(options: UseSlidingTouchesOptions<K>) {
+export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouchesOptions<K>) {
   const activeTouchKeys = new Map<number, K>()
   const keyPressCounts = new Map<string, number>()
   const noteOffs = new Map<string, () => void>()
+  let isMousePressed = false
+  let activeMouseKey: K | null = null
 
   function activateKey(key: K) {
-    const keyId = options.getKeyId(key)
+    const keyId = key.id
     const activeCount = keyPressCounts.get(keyId) ?? 0
     if (activeCount === 0) {
-      noteOffs.set(keyId, options.noteOn(key))
+      noteOffs.set(keyId, options.noteOn(key.index))
     }
     keyPressCounts.set(keyId, activeCount + 1)
   }
 
   function releaseKey(key: K) {
-    const keyId = options.getKeyId(key)
+    const keyId = key.id
     const activeCount = keyPressCounts.get(keyId) ?? 0
     if (activeCount <= 1) {
       keyPressCounts.delete(keyId)
@@ -38,7 +42,7 @@ export function useSlidingTouches<K>(options: UseSlidingTouchesOptions<K>) {
   }
 
   function isKeyActive(key: K) {
-    return (keyPressCounts.get(options.getKeyId(key)) ?? 0) > 0
+    return (keyPressCounts.get(key.id) ?? 0) > 0
   }
 
   function onTouchStart(event: TouchEvent, key: K) {
@@ -77,7 +81,7 @@ export function useSlidingTouches<K>(options: UseSlidingTouchesOptions<K>) {
       if (nextKey === undefined) {
         continue
       }
-      if (options.getKeyId(nextKey) === options.getKeyId(currentKey)) {
+      if (nextKey.id === currentKey.id) {
         continue
       }
       releaseKey(currentKey)
@@ -91,7 +95,57 @@ export function useSlidingTouches<K>(options: UseSlidingTouchesOptions<K>) {
     noteOffs.clear()
     keyPressCounts.clear()
     activeTouchKeys.clear()
+    isMousePressed = false
+    activeMouseKey = null
   }
 
-  return { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyActive, releaseAll }
+  function onMouseDown(event: MouseEvent, key: K) {
+    if (event.button !== LEFT_MOUSE_BTN) {
+      return
+    }
+    event.preventDefault()
+    isMousePressed = true
+    activateKey(key)
+    activeMouseKey = key
+  }
+
+  function onMouseUp(event: MouseEvent) {
+    if (event.button !== LEFT_MOUSE_BTN) {
+      return
+    }
+    event.preventDefault()
+    if (activeMouseKey) {
+      releaseKey(activeMouseKey)
+      activeMouseKey = null
+    }
+    isMousePressed = false
+  }
+
+  function onMouseEnter(event: MouseEvent, key: K) {
+    if (!isMousePressed || !options.slideEnabled()) {
+      return
+    }
+    event.preventDefault()
+    if (activeMouseKey && activeMouseKey.id === key.id) {
+      return
+    }
+    if (activeMouseKey) {
+      releaseKey(activeMouseKey)
+    }
+    activateKey(key)
+    activeMouseKey = key
+  }
+
+  return {
+    onTouchStart,
+    onTouchEnd,
+    onTouchMove,
+    onMouseDown,
+    onMouseUp,
+    onMouseEnter,
+    activateKey,
+    releaseKey,
+    isKeyActive,
+    releaseAll
+  }
 }
