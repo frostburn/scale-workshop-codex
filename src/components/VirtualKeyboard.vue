@@ -83,10 +83,6 @@ const emit = defineEmits<{
   bend: [value: number]
 }>()
 
-let mouseDownX: number | null = null
-const BEND_DRAG_PIXELS = 200
-const BEND_DEAD_ZONE_PIXELS = 16
-
 const {
   onTouchStart,
   onTouchEnd,
@@ -108,31 +104,7 @@ const {
     return virtualKeyMap.value.get(keyId)
   },
   noteOn: props.noteOn,
-  onMouseDown: (event) => {
-    if (!props.slideBehavior) {
-      mouseDownX = event.clientX
-    }
-  },
-  onMouseMove: (event, isMousePressed) => {
-    if (!isMousePressed || props.slideBehavior || mouseDownX === null) {
-      return
-    }
-    const deltaX = event.clientX - mouseDownX
-    const absDeltaX = Math.abs(deltaX)
-    if (absDeltaX <= BEND_DEAD_ZONE_PIXELS) {
-      emit('bend', 0)
-      return
-    }
-    const direction = Math.sign(deltaX)
-    const normalized = (absDeltaX - BEND_DEAD_ZONE_PIXELS) / (BEND_DRAG_PIXELS - BEND_DEAD_ZONE_PIXELS)
-    emit('bend', direction * Math.max(0, Math.min(1, normalized)))
-  },
-  onMouseUp: () => {
-    if (!props.slideBehavior) {
-      emit('bend', 0)
-      mouseDownX = null
-    }
-  }
+  onBend: (value) => emit('bend', value)
 })
 
 function windowMouseUp(event: MouseEvent) {

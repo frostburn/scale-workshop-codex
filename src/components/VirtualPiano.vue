@@ -51,10 +51,6 @@ const emit = defineEmits<{
   bend: [value: number]
 }>()
 
-let mouseDownX: number | null = null
-const BEND_DRAG_PIXELS = 200
-const BEND_DEAD_ZONE_PIXELS = 16
-
 const NUM_KEYS = 30
 
 // Percentages of SVG height
@@ -289,24 +285,7 @@ const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEn
       return keyMap.value.get(keyId)
     },
     noteOn: props.noteOn,
-    onMouseDown: (event) => {
-      if (!props.slideBehavior) {
-        mouseDownX = event.clientX
-      }
-    },
-    onMouseMove: (event, isMousePressed) => {
-      if (!isMousePressed || props.slideBehavior || mouseDownX === null) {
-        return
-      }
-      const deltaX = event.clientX - mouseDownX
-      emit('bend', Math.max(-1, Math.min(1, deltaX / 200)))
-    },
-    onMouseUp: () => {
-      if (!props.slideBehavior) {
-        emit('bend', 0)
-        mouseDownX = null
-      }
-    }
+    onBend: (value) => emit('bend', value)
   })
 
 function windowMouseUp(event: MouseEvent) {
