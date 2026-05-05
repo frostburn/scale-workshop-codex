@@ -79,6 +79,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
 
   function onTouchStart(event: TouchEvent, key: SlidingKey) {
     event.preventDefault()
+    const previousCentroid = !options.slideEnabled() && options.onBend ? touchCentroid() : null
     for (const touch of event.changedTouches) {
       if (!activeTouchKeys.has(touch.identifier)) {
         activeTouchKeys.set(touch.identifier, key)
@@ -86,13 +87,19 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
         activateKey(key)
       }
     }
-    if (!options.slideEnabled() && options.onBend && touchStartCentroid === null) {
-      touchStartCentroid = touchCentroid()
+    if (!options.slideEnabled() && options.onBend) {
+      const centroid = touchCentroid()
+      if (touchStartCentroid === null || centroid === null) {
+        touchStartCentroid = centroid
+      } else if (previousCentroid !== null) {
+        touchStartCentroid += centroid - previousCentroid
+      }
     }
   }
 
   function onTouchEnd(event: TouchEvent) {
     event.preventDefault()
+    const previousCentroid = !options.slideEnabled() && options.onBend ? touchCentroid() : null
     for (const touch of event.changedTouches) {
       const activeKey = activeTouchKeys.get(touch.identifier)
       if (activeKey !== undefined) {
@@ -104,6 +111,18 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     if (!activeTouchKeys.size) {
       touchStartCentroid = null
       options.onBend?.(0)
+      return
+    }
+    if (
+      !options.slideEnabled() &&
+      options.onBend &&
+      touchStartCentroid !== null &&
+      previousCentroid !== null
+    ) {
+      const centroid = touchCentroid()
+      if (centroid !== null) {
+        touchStartCentroid += centroid - previousCentroid
+      }
     }
   }
 
