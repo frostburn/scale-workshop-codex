@@ -408,6 +408,28 @@ onUnmounted(() => {
             />
             <label for="keyboard-slide-behavior">Slide across notes while dragging</label>
           </div>
+          <template v-if="!state.slideVirtualKeyboard">
+            <label for="bend-drag-pixels">Bend drag distance (pixels)</label>
+            <NumericSlider
+              id="bend-drag-pixels"
+              class="control"
+              min="24"
+              max="400"
+              step="1"
+              v-model="state.bendDragPixels"
+            />
+            <div class="control radio-group">
+              <label>Bend drag axis</label>
+              <span>
+                <input type="radio" id="bend-axis-y" value="y" v-model="state.bendDragAxis" />
+                <label for="bend-axis-y">Vertical (Y)</label>
+              </span>
+              <span>
+                <input type="radio" id="bend-axis-x" value="x" v-model="state.bendDragAxis" />
+                <label for="bend-axis-x">Horizontal (X)</label>
+              </span>
+            </div>
+          </template>
         </div>
         <template v-if="scale.keyboardMode === 'isomorphic'">
           <h2>Keyboard notes</h2>
