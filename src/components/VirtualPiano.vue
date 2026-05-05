@@ -4,9 +4,9 @@
  */
 import { LEFT_MOUSE_BTN } from '@/constants'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
-type NoteOff = () => void
-type NoteOnCallback = (index: number) => NoteOff
+type NoteOnCallback = (index: number) => () => void
 type ColorMap = (index: number) => string
 
 const props = defineProps<{
@@ -19,9 +19,11 @@ const props = defineProps<{
   highAccidentalColor: string
   noteOn: NoteOnCallback
   heldNotes: Map<number, number>
+  slideBehavior: boolean
 }>()
 
 type VirtualKey = {
+  id: string
   x: number
   left: number
   right: number
@@ -30,12 +32,14 @@ type VirtualKey = {
 }
 
 type VirtualBlackKey = {
+  id: string
   x: number
   index: number
   color: string
 }
 
 type VirtualSplitKey = {
+  id: string
   x: number
   y: string
   height: string
@@ -49,7 +53,7 @@ const NUM_KEYS = 30
 const TOP_Y = 20
 const SPLIT_BOTTOM_Y = 60
 
-const noteOffs: Map<number, NoteOff> = new Map()
+const activeMouseKey = ref<VirtualKey | VirtualBlackKey | VirtualSplitKey | null>(null)
 
 const whiteKeys = computed(() => {
   const low = props.lowAccidentalColor.toLowerCase()
@@ -115,6 +119,7 @@ const whiteKeys = computed(() => {
         }
         mainSeen.clear()
         result.push({
+          id: `${i}`,
           x,
           left,
           right,
@@ -138,6 +143,7 @@ const whiteKeys = computed(() => {
           right++
         }
         result.push({
+          id: `${x}`,
           x,
           left,
           right,
@@ -158,6 +164,7 @@ const blackKeys = computed(() => {
     const color = props.colorMap(index)
     if (color === black) {
       result.push({
+        id: `black${x}`,
         x,
         index,
         color
@@ -224,6 +231,7 @@ const splitKeys = computed(() => {
         pushKeys()
       }
       lowKey = {
+        id: `low${i}`,
         x,
         index,
         color,
@@ -234,12 +242,12 @@ const splitKeys = computed(() => {
       if (middleKey) {
         pushKeys()
       }
-      middleKey = { x, index, color, y: '', height: '' }
+      middleKey = { id: `mid${i}`, x, index, color, y: '', height: '' }
     } else if (color === high) {
       if (highKey) {
         pushKeys()
       }
-      highKey = { x, index, color, y: `${TOP_Y}%`, height: '' }
+      highKey = { id: `high${i}`, x, index, color, y: `${TOP_Y}%`, height: '' }
     } else {
       x++
       pushKeys()
@@ -251,69 +259,81 @@ const splitKeys = computed(() => {
 
 const isMousePressed = ref(false)
 
-function start(index: number) {
-  noteOffs.set(index, props.noteOn(index))
-}
+const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, releaseAll } =
+  useSlidingTouches({
+    slideEnabled: () => props.slideBehavior,
+    getKeyFromElement: (element) => {
+      const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
+      const keyId = keyElement?.dataset.keyId
+      if (!keyId) {
+        return undefined
+      }
+      let key: VirtualKey | VirtualBlackKey | VirtualSplitKey | undefined = whiteKeys.value.find(
+        (candidate) => candidate.id === keyId
+      )
+      if (key) {
+        return key
+      }
+      key = blackKeys.value.find((candidate) => candidate.id === keyId)
+      if (key) {
+        return key
+      }
+      return splitKeys.value.find((candidate) => candidate.id === keyId)
+    },
+    getKeyId: (key) => key.id,
+    noteOn: (key) => props.noteOn(key.index)
+  })
 
-function end(index: number) {
-  if (noteOffs.has(index)) {
-    noteOffs.get(index)!()
-    noteOffs.delete(index)
-  }
-}
-
-function onTouchEnd(event: TouchEvent, index: number) {
-  event.preventDefault()
-  end(index)
-}
-
-function onTouchStart(event: TouchEvent, index: number) {
-  event.preventDefault()
-  // Make sure that we start a new note.
-  end(index)
-
-  start(index)
-}
-
-function onMouseDown(event: MouseEvent, index: number) {
+function onMouseDown(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
   if (event.button !== LEFT_MOUSE_BTN) {
     return
   }
   event.preventDefault()
   isMousePressed.value = true
-  start(index)
+  activateKey(key)
+  activeMouseKey.value = key
 }
 
-function onMouseUp(event: MouseEvent, index: number) {
+function onMouseUp(event: MouseEvent) {
   if (event.button !== LEFT_MOUSE_BTN) {
     return
   }
   event.preventDefault()
   isMousePressed.value = false
-  end(index)
+  if (activeMouseKey.value !== null) {
+    releaseKey(activeMouseKey.value)
+  }
+  activeMouseKey.value = null
 }
 
-function onMouseEnter(event: MouseEvent, index: number) {
+function onMouseEnter(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
   if (!isMousePressed.value) {
     return
   }
-  event.preventDefault()
-  start(index)
-}
-
-function onMouseLeave(event: MouseEvent, index: number) {
-  if (!isMousePressed.value) {
+  if (!props.slideBehavior) {
     return
   }
   event.preventDefault()
-  end(index)
+  activateKey(key)
+  activeMouseKey.value = key
+}
+
+function onMouseLeave(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
+  if (!isMousePressed.value) {
+    return
+  }
+  if (!props.slideBehavior) {
+    return
+  }
+  event.preventDefault()
+  releaseKey(key)
 }
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button === LEFT_MOUSE_BTN) {
     isMousePressed.value = false
-    noteOffs.forEach((off) => off())
-    noteOffs.clear()
+    releaseAll()
+    activeMouseKey.value = null
   }
 }
 
@@ -322,27 +342,24 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  noteOffs.forEach((off) => {
-    if (off !== null) {
-      off()
-    }
-  })
+  releaseAll()
   window.removeEventListener('mouseup', windowMouseUp)
 })
 </script>
 
 <template>
-  <svg width="100%" height="100%">
+  <svg width="100%" height="100%" @touchmove="onTouchMove">
     <rect
       v-for="(key, i) of whiteKeys"
       :key="i"
-      @touchstart="onTouchStart($event, key.index)"
-      @touchend="onTouchEnd($event, key.index)"
-      @touchcancel="onTouchEnd($event, key.index)"
-      @mousedown="onMouseDown($event, key.index)"
-      @mouseup="onMouseUp($event, key.index)"
-      @mouseenter="onMouseEnter($event, key.index)"
-      @mouseleave="onMouseLeave($event, key.index)"
+      @touchstart="onTouchStart($event, key)"
+      @touchend="onTouchEnd($event)"
+      @touchcancel="onTouchEnd($event)"
+      @mousedown="onMouseDown($event, key)"
+      @mouseup="onMouseUp($event)"
+      @mouseenter="onMouseEnter($event, key)"
+      @mouseleave="onMouseLeave($event, key)"
+      :data-key-id="key.id"
       :class="{ white: true, active: (heldNotes.get(key.index) || 0) > 0 }"
       :x="4 * key.x - 2 * key.left + '%'"
       y="20%"
@@ -354,13 +371,14 @@ onUnmounted(() => {
       <rect
         v-for="(key, i) of splitKeys"
         :key="i"
-        @touchstart="onTouchStart($event, key.index)"
-        @touchend="onTouchEnd($event, key.index)"
-        @touchcancel="onTouchEnd($event, key.index)"
-        @mousedown="onMouseDown($event, key.index)"
-        @mouseup="onMouseUp($event, key.index)"
-        @mouseenter="onMouseEnter($event, key.index)"
-        @mouseleave="onMouseLeave($event, key.index)"
+        @touchstart="onTouchStart($event, key)"
+        @touchend="onTouchEnd($event)"
+        @touchcancel="onTouchEnd($event)"
+        @mousedown="onMouseDown($event, key)"
+        @mouseup="onMouseUp($event)"
+        @mouseenter="onMouseEnter($event, key)"
+        @mouseleave="onMouseLeave($event, key)"
+        :data-key-id="key.id"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
         :y="key.y"
@@ -373,13 +391,14 @@ onUnmounted(() => {
       <rect
         v-for="(key, i) of blackKeys"
         :key="i"
-        @touchstart="onTouchStart($event, key.index)"
-        @touchend="onTouchEnd($event, key.index)"
-        @touchcancel="onTouchEnd($event, key.index)"
-        @mousedown="onMouseDown($event, key.index)"
-        @mouseup="onMouseUp($event, key.index)"
-        @mouseenter="onMouseEnter($event, key.index)"
-        @mouseleave="onMouseLeave($event, key.index)"
+        @touchstart="onTouchStart($event, key)"
+        @touchend="onTouchEnd($event)"
+        @touchcancel="onTouchEnd($event)"
+        @mousedown="onMouseDown($event, key)"
+        @mouseup="onMouseUp($event)"
+        @mouseenter="onMouseEnter($event, key)"
+        @mouseleave="onMouseLeave($event, key)"
+        :data-key-id="key.id"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
         y="20%"

@@ -34,6 +34,7 @@ type NoteOnCallback = (index: number) => NoteOff
       :highAccidentalColor="scale.highAccidentalColor"
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
+      :slide-behavior="state.slideVirtualKeyboard"
     ></VirtualPiano>
     <VirtualKeyboard
       v-else
@@ -43,6 +44,7 @@ type NoteOnCallback = (index: number) => NoteOff
       :colorMap="scale.colorForIndex"
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
+      :slide-behavior="state.slideVirtualKeyboard"
       :scale="scale.scale"
       :labelMap="scale.labelForIndex"
       :showLabel="state.showKeyboardLabel"

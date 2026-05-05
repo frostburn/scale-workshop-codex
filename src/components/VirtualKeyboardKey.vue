@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import Values from 'values.js'
 
 const props = defineProps<{
-  index: number
+  keyId: string
   color: string
   active: boolean
   held: boolean
@@ -14,7 +14,7 @@ const light = computed(() => new Values(props.color).getBrightness() > 50)
 
 <template>
   <td
-    :data-key-number="index"
+    :data-key-id="keyId"
     :style="'background-color:' + color"
     :class="{ active, held, light, dark: !light }"
   >
