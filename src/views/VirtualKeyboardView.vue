@@ -3,6 +3,7 @@ import VirtualKeyboard from '@/components/VirtualKeyboard.vue'
 import VirtualPiano from '@/components/VirtualPiano.vue'
 import { useStateStore } from '@/stores/state'
 import { useScaleStore } from '@/stores/scale'
+import { useMidiStore } from '@/stores/midi'
 import { computed } from 'vue'
 import type { NoteOnCallback } from '@/types'
 
@@ -12,6 +13,11 @@ defineProps<{
 
 const state = useStateStore()
 const scale = useScaleStore()
+const midi = useMidiStore()
+
+function onBend(value: number) {
+  midi.bend = value
+}
 
 const baseIndex = computed(
   () => scale.scale.baseMidiNote + scale.equaveShift * scale.scale.size + scale.degreeShift
@@ -33,6 +39,7 @@ const baseIndex = computed(
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
       :slide-behavior="state.slideVirtualKeyboard"
+      @bend="onBend"
     ></VirtualPiano>
     <VirtualKeyboard
       v-else
@@ -49,6 +56,7 @@ const baseIndex = computed(
       :showCents="state.showKeyboardCents"
       :showRatio="state.showKeyboardRatio"
       :showFrequency="state.showKeyboardFrequency"
+      @bend="onBend"
     ></VirtualKeyboard>
   </main>
 </template>

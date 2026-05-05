@@ -79,6 +79,10 @@ const virtualKeyMap = computed(() => {
   return keyMap
 })
 
+const emit = defineEmits<{
+  bend: [value: number]
+}>()
+
 const {
   onTouchStart,
   onTouchEnd,
@@ -86,6 +90,7 @@ const {
   onMouseDown,
   onMouseUp,
   onMouseEnter,
+  onMouseMove,
   isKeyActive,
   releaseAll
 } = useSlidingTouches({
@@ -98,7 +103,8 @@ const {
     }
     return virtualKeyMap.value.get(keyId)
   },
-  noteOn: props.noteOn
+  noteOn: props.noteOn,
+  onBend: (value) => emit('bend', value)
 })
 
 function windowMouseUp(event: MouseEvent) {
@@ -110,11 +116,13 @@ function windowMouseUp(event: MouseEvent) {
 
 onMounted(() => {
   window.addEventListener('mouseup', windowMouseUp)
+  window.addEventListener('mousemove', onMouseMove)
 })
 
 onUnmounted(() => {
   releaseAll()
   window.removeEventListener('mouseup', windowMouseUp)
+  window.removeEventListener('mousemove', onMouseMove)
 })
 </script>
 

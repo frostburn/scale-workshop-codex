@@ -8,14 +8,43 @@ type UseSlidingTouchesOptions = {
   slideEnabled: () => boolean
   getKeyFromElement: KeyFromElement
   noteOn: NoteOnCallback
+  onBend?: (value: number) => void
+  bendDragPixels?: number
+  bendDeadZonePixels?: number
 }
 
 export function useSlidingTouches(options: UseSlidingTouchesOptions) {
   const activeTouchKeys = new Map<number, SlidingKey>()
+  const activeTouchPositions = new Map<number, { x: number; y: number }>()
   const keyPressCounts = new Map<string, number>()
   const noteOffs = new Map<string, () => void>()
+  const bendDragPixels = options.bendDragPixels ?? 200
+  const bendDeadZonePixels = options.bendDeadZonePixels ?? 16
+
   let isMousePressed = false
   let activeMouseKey: SlidingKey | null = null
+  let mouseStartY: number | null = null
+  let touchStartCentroidY: number | null = null
+
+  function applyBendFromDelta(delta: number) {
+    if (!options.onBend) return
+    const absDelta = Math.abs(delta)
+    if (absDelta <= bendDeadZonePixels) {
+      options.onBend(0)
+      return
+    }
+    const normalized = (absDelta - bendDeadZonePixels) / (bendDragPixels - bendDeadZonePixels)
+    options.onBend(Math.sign(delta) * Math.max(0, Math.min(1, normalized)))
+  }
+
+  function touchCentroidY() {
+    if (!activeTouchPositions.size) return null
+    let sum = 0
+    activeTouchPositions.forEach(({ y }) => {
+      sum += y
+    })
+    return sum / activeTouchPositions.size
+  }
 
   function activateKey(key: SlidingKey) {
     const keyId = key.id
@@ -50,8 +79,12 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     for (const touch of event.changedTouches) {
       if (!activeTouchKeys.has(touch.identifier)) {
         activeTouchKeys.set(touch.identifier, key)
+        activeTouchPositions.set(touch.identifier, { x: touch.clientX, y: touch.clientY })
         activateKey(key)
       }
+    }
+    if (!options.slideEnabled() && options.onBend && touchStartCentroidY === null) {
+      touchStartCentroidY = touchCentroidY()
     }
   }
 
@@ -62,32 +95,52 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
       if (activeKey !== undefined) {
         releaseKey(activeKey)
         activeTouchKeys.delete(touch.identifier)
+        activeTouchPositions.delete(touch.identifier)
       }
+    }
+    if (!activeTouchKeys.size) {
+      touchStartCentroidY = null
+      options.onBend?.(0)
     }
   }
 
   function onTouchMove(event: TouchEvent) {
-    if (!options.slideEnabled()) {
+    event.preventDefault()
+    if (options.slideEnabled()) {
+      for (const touch of event.changedTouches) {
+        const currentKey = activeTouchKeys.get(touch.identifier)
+        if (currentKey === undefined) {
+          continue
+        }
+        activeTouchPositions.set(touch.identifier, { x: touch.clientX, y: touch.clientY })
+        const element = document.elementFromPoint(touch.clientX, touch.clientY)
+        const nextKey = options.getKeyFromElement(element)
+        if (nextKey === undefined || nextKey.id === currentKey.id) {
+          continue
+        }
+        releaseKey(currentKey)
+        activateKey(nextKey)
+        activeTouchKeys.set(touch.identifier, nextKey)
+      }
       return
     }
-    event.preventDefault()
-    for (const touch of event.changedTouches) {
-      const currentKey = activeTouchKeys.get(touch.identifier)
-      if (currentKey === undefined) {
-        continue
-      }
-      const element = document.elementFromPoint(touch.clientX, touch.clientY)
-      const nextKey = options.getKeyFromElement(element)
-      if (nextKey === undefined) {
-        continue
-      }
-      if (nextKey.id === currentKey.id) {
-        continue
-      }
-      releaseKey(currentKey)
-      activateKey(nextKey)
-      activeTouchKeys.set(touch.identifier, nextKey)
+
+    if (!options.onBend) {
+      return
     }
+    for (const touch of event.changedTouches) {
+      if (activeTouchKeys.has(touch.identifier)) {
+        activeTouchPositions.set(touch.identifier, { x: touch.clientX, y: touch.clientY })
+      }
+    }
+    if (touchStartCentroidY === null) {
+      touchStartCentroidY = touchCentroidY()
+    }
+    const centroidY = touchCentroidY()
+    if (touchStartCentroidY === null || centroidY === null) {
+      return
+    }
+    applyBendFromDelta(touchStartCentroidY - centroidY)
   }
 
   function releaseAll() {
@@ -95,43 +148,47 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     noteOffs.clear()
     keyPressCounts.clear()
     activeTouchKeys.clear()
+    activeTouchPositions.clear()
     isMousePressed = false
     activeMouseKey = null
+    mouseStartY = null
+    touchStartCentroidY = null
+    options.onBend?.(0)
   }
 
   function onMouseDown(event: MouseEvent, key: SlidingKey) {
-    if (event.button !== LEFT_MOUSE_BTN) {
-      return
-    }
+    if (event.button !== LEFT_MOUSE_BTN) return
     event.preventDefault()
     isMousePressed = true
+    mouseStartY = event.clientY
     activateKey(key)
     activeMouseKey = key
   }
 
   function onMouseUp(event: MouseEvent) {
-    if (event.button !== LEFT_MOUSE_BTN) {
-      return
-    }
+    if (event.button !== LEFT_MOUSE_BTN) return
     event.preventDefault()
     if (activeMouseKey) {
       releaseKey(activeMouseKey)
       activeMouseKey = null
     }
     isMousePressed = false
+    mouseStartY = null
+    options.onBend?.(0)
+  }
+
+  function onMouseMove(event: MouseEvent) {
+    if (!isMousePressed || options.slideEnabled() || mouseStartY === null || !options.onBend) {
+      return
+    }
+    applyBendFromDelta(mouseStartY - event.clientY)
   }
 
   function onMouseEnter(event: MouseEvent, key: SlidingKey) {
-    if (!isMousePressed || !options.slideEnabled()) {
-      return
-    }
+    if (!isMousePressed || !options.slideEnabled()) return
     event.preventDefault()
-    if (activeMouseKey && activeMouseKey.id === key.id) {
-      return
-    }
-    if (activeMouseKey) {
-      releaseKey(activeMouseKey)
-    }
+    if (activeMouseKey && activeMouseKey.id === key.id) return
+    if (activeMouseKey) releaseKey(activeMouseKey)
     activateKey(key)
     activeMouseKey = key
   }
@@ -143,6 +200,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     onMouseDown,
     onMouseUp,
     onMouseEnter,
+    onMouseMove,
     activateKey,
     releaseKey,
     isKeyActive,
