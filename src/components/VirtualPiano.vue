@@ -319,7 +319,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <svg width="100%" height="100%" @touchmove="onTouchMove">
+  <svg width="100%" height="100%" @touchmove="onTouchMove" class="touch-surface">
     <rect
       v-for="(key, i) of whiteKeys"
       :key="i"

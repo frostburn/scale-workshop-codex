@@ -274,7 +274,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <svg width="200" height="100" viewBox="0 0 1700 800" style="width: 100%; height: auto">
+  <svg
+    width="200"
+    height="100"
+    viewBox="0 0 1700 800"
+    style="width: 100%; height: auto"
+    class="touch-surface"
+  >
     <g class="click-not-implemented">
       <rect
         x="100"

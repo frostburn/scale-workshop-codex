@@ -131,7 +131,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <table>
+  <table class="touch-surface">
     <tbody>
       <tr v-for="[y, row] of virtualKeys" :key="y" :class="{ 'hidden-sm': y < 0 || y > 3 }">
         <VirtualKeyboardKey
