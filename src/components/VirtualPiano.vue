@@ -5,8 +5,8 @@
 import { LEFT_MOUSE_BTN } from '@/constants'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useSlidingTouches } from '@/composables/useSlidingTouches'
+import type { NoteOnCallback } from '@/types/noteOn'
 
-type NoteOnCallback = (index: number) => () => void
 type ColorMap = (index: number) => string
 
 const props = defineProps<{
@@ -277,7 +277,7 @@ const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEn
       }
       return splitKeys.value.find((candidate) => candidate.id === keyId)
     },
-    noteOn: (key) => props.noteOn(key.index)
+    noteOn: props.noteOn
   })
 
 function windowMouseUp(event: MouseEvent) {

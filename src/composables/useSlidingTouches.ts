@@ -1,11 +1,13 @@
+import { LEFT_MOUSE_BTN } from '@/constants'
+import type { NoteOnCallback } from '@/types/noteOn'
+
 type KeyFromElement<K> = (element: Element | null) => K | undefined
 type SlidingKey = { id: string; index: number }
-const LEFT_MOUSE_BUTTON = 0
 
 type UseSlidingTouchesOptions<K extends SlidingKey> = {
   slideEnabled: () => boolean
   getKeyFromElement: KeyFromElement<K>
-  noteOn: (key: K) => () => void
+  noteOn: NoteOnCallback
 }
 
 export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouchesOptions<K>) {
@@ -19,7 +21,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
     const keyId = key.id
     const activeCount = keyPressCounts.get(keyId) ?? 0
     if (activeCount === 0) {
-      noteOffs.set(keyId, options.noteOn(key))
+      noteOffs.set(keyId, options.noteOn(key.index))
     }
     keyPressCounts.set(keyId, activeCount + 1)
   }
@@ -98,7 +100,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
   }
 
   function onMouseDown(event: MouseEvent, key: K) {
-    if (event.button !== LEFT_MOUSE_BUTTON) {
+    if (event.button !== LEFT_MOUSE_BTN) {
       return
     }
     event.preventDefault()
@@ -108,7 +110,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
   }
 
   function onMouseUp(event: MouseEvent) {
-    if (event.button !== LEFT_MOUSE_BUTTON) {
+    if (event.button !== LEFT_MOUSE_BTN) {
       return
     }
     event.preventDefault()
