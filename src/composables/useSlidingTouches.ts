@@ -1,23 +1,23 @@
 import { LEFT_MOUSE_BTN } from '@/constants'
 import type { NoteOnCallback } from '@/types'
 
-type KeyFromElement<K> = (element: Element | null) => K | undefined
 type SlidingKey = { id: string; index: number }
+type KeyFromElement = (element: Element | null) => SlidingKey | undefined
 
-type UseSlidingTouchesOptions<K extends SlidingKey> = {
+type UseSlidingTouchesOptions = {
   slideEnabled: () => boolean
-  getKeyFromElement: KeyFromElement<K>
+  getKeyFromElement: KeyFromElement
   noteOn: NoteOnCallback
 }
 
-export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouchesOptions<K>) {
-  const activeTouchKeys = new Map<number, K>()
+export function useSlidingTouches(options: UseSlidingTouchesOptions) {
+  const activeTouchKeys = new Map<number, SlidingKey>()
   const keyPressCounts = new Map<string, number>()
   const noteOffs = new Map<string, () => void>()
   let isMousePressed = false
-  let activeMouseKey: K | null = null
+  let activeMouseKey: SlidingKey | null = null
 
-  function activateKey(key: K) {
+  function activateKey(key: SlidingKey) {
     const keyId = key.id
     const activeCount = keyPressCounts.get(keyId) ?? 0
     if (activeCount === 0) {
@@ -26,7 +26,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
     keyPressCounts.set(keyId, activeCount + 1)
   }
 
-  function releaseKey(key: K) {
+  function releaseKey(key: SlidingKey) {
     const keyId = key.id
     const activeCount = keyPressCounts.get(keyId) ?? 0
     if (activeCount <= 1) {
@@ -41,11 +41,11 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
     keyPressCounts.set(keyId, activeCount - 1)
   }
 
-  function isKeyActive(key: K) {
+  function isKeyActive(key: SlidingKey) {
     return (keyPressCounts.get(key.id) ?? 0) > 0
   }
 
-  function onTouchStart(event: TouchEvent, key: K) {
+  function onTouchStart(event: TouchEvent, key: SlidingKey) {
     event.preventDefault()
     for (const touch of event.changedTouches) {
       if (!activeTouchKeys.has(touch.identifier)) {
@@ -99,7 +99,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
     activeMouseKey = null
   }
 
-  function onMouseDown(event: MouseEvent, key: K) {
+  function onMouseDown(event: MouseEvent, key: SlidingKey) {
     if (event.button !== LEFT_MOUSE_BTN) {
       return
     }
@@ -121,7 +121,7 @@ export function useSlidingTouches<K extends SlidingKey>(options: UseSlidingTouch
     isMousePressed = false
   }
 
-  function onMouseEnter(event: MouseEvent, key: K) {
+  function onMouseEnter(event: MouseEvent, key: SlidingKey) {
     if (!isMousePressed || !options.slideEnabled()) {
       return
     }
