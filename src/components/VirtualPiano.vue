@@ -20,6 +20,8 @@ const props = defineProps<{
   noteOn: NoteOnCallback
   heldNotes: Map<number, number>
   slideBehavior: boolean
+  bendDragPixels: number
+  bendAxis: 'x' | 'y'
 }>()
 
 type VirtualKey = {
@@ -293,7 +295,9 @@ const {
     return keyMap.value.get(keyId)
   },
   noteOn: props.noteOn,
-  onBend: (value) => emit('bend', value)
+  onBend: (value) => emit('bend', value),
+  bendDragPixels: () => props.bendDragPixels,
+  bendAxis: () => props.bendAxis
 })
 
 function windowMouseUp(event: MouseEvent) {

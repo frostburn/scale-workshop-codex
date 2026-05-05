@@ -9,7 +9,8 @@ type UseSlidingTouchesOptions = {
   getKeyFromElement: KeyFromElement
   noteOn: NoteOnCallback
   onBend?: (value: number) => void
-  bendDragPixels?: number
+  bendDragPixels?: () => number
+  bendAxis?: () => 'x' | 'y'
   bendDeadZonePixels?: number
 }
 
@@ -18,30 +19,32 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
   const activeTouchPositions = new Map<number, { x: number; y: number }>()
   const keyPressCounts = new Map<string, number>()
   const noteOffs = new Map<string, () => void>()
-  const bendDragPixels = options.bendDragPixels ?? 200
   const bendDeadZonePixels = options.bendDeadZonePixels ?? 16
+  const getBendAxis = () => options.bendAxis?.() ?? 'y'
 
   let isMousePressed = false
   let activeMouseKey: SlidingKey | null = null
-  let mouseStartY: number | null = null
-  let touchStartCentroidY: number | null = null
+  let mouseStart: number | null = null
+  let touchStartCentroid: number | null = null
 
   function applyBendFromDelta(delta: number) {
     if (!options.onBend) return
-    const absDelta = Math.abs(delta)
+    const adjustedDelta = getBendAxis() === 'x' ? -delta : delta
+    const absDelta = Math.abs(adjustedDelta)
     if (absDelta <= bendDeadZonePixels) {
       options.onBend(0)
       return
     }
+    const bendDragPixels = options.bendDragPixels?.() ?? 150
     const normalized = (absDelta - bendDeadZonePixels) / (bendDragPixels - bendDeadZonePixels)
-    options.onBend(Math.sign(delta) * Math.max(0, Math.min(1, normalized)))
+    options.onBend(Math.sign(adjustedDelta) * Math.max(0, Math.min(1, normalized)))
   }
 
-  function touchCentroidY() {
+  function touchCentroid() {
     if (!activeTouchPositions.size) return null
     let sum = 0
-    activeTouchPositions.forEach(({ y }) => {
-      sum += y
+    activeTouchPositions.forEach((position) => {
+      sum += getBendAxis() === 'x' ? position.x : position.y
     })
     return sum / activeTouchPositions.size
   }
@@ -83,8 +86,8 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
         activateKey(key)
       }
     }
-    if (!options.slideEnabled() && options.onBend && touchStartCentroidY === null) {
-      touchStartCentroidY = touchCentroidY()
+    if (!options.slideEnabled() && options.onBend && touchStartCentroid === null) {
+      touchStartCentroid = touchCentroid()
     }
   }
 
@@ -99,7 +102,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
       }
     }
     if (!activeTouchKeys.size) {
-      touchStartCentroidY = null
+      touchStartCentroid = null
       options.onBend?.(0)
     }
   }
@@ -133,14 +136,14 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
         activeTouchPositions.set(touch.identifier, { x: touch.clientX, y: touch.clientY })
       }
     }
-    if (touchStartCentroidY === null) {
-      touchStartCentroidY = touchCentroidY()
+    if (touchStartCentroid === null) {
+      touchStartCentroid = touchCentroid()
     }
-    const centroidY = touchCentroidY()
-    if (touchStartCentroidY === null || centroidY === null) {
+    const centroid = touchCentroid()
+    if (touchStartCentroid === null || centroid === null) {
       return
     }
-    applyBendFromDelta(touchStartCentroidY - centroidY)
+    applyBendFromDelta(touchStartCentroid - centroid)
   }
 
   function releaseAll() {
@@ -151,8 +154,8 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     activeTouchPositions.clear()
     isMousePressed = false
     activeMouseKey = null
-    mouseStartY = null
-    touchStartCentroidY = null
+    mouseStart = null
+    touchStartCentroid = null
     options.onBend?.(0)
   }
 
@@ -160,7 +163,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     if (event.button !== LEFT_MOUSE_BTN) return
     event.preventDefault()
     isMousePressed = true
-    mouseStartY = event.clientY
+    mouseStart = getBendAxis() === 'x' ? event.clientX : event.clientY
     activateKey(key)
     activeMouseKey = key
   }
@@ -173,15 +176,16 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
       activeMouseKey = null
     }
     isMousePressed = false
-    mouseStartY = null
+    mouseStart = null
     options.onBend?.(0)
   }
 
   function onMouseMove(event: MouseEvent) {
-    if (!isMousePressed || options.slideEnabled() || mouseStartY === null || !options.onBend) {
+    if (!isMousePressed || options.slideEnabled() || mouseStart === null || !options.onBend) {
       return
     }
-    applyBendFromDelta(mouseStartY - event.clientY)
+    const current = getBendAxis() === 'x' ? event.clientX : event.clientY
+    applyBendFromDelta(mouseStart - current)
   }
 
   function onMouseEnter(event: MouseEvent, key: SlidingKey) {

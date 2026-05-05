@@ -39,6 +39,8 @@ const baseIndex = computed(
       :noteOn="noteOn"
       :heldNotes="state.heldNotes"
       :slide-behavior="state.slideVirtualKeyboard"
+      :bend-drag-pixels="state.bendDragPixels"
+      :bend-axis="state.bendDragAxis"
       @bend="onBend"
     ></VirtualPiano>
     <VirtualKeyboard
@@ -56,6 +58,8 @@ const baseIndex = computed(
       :showCents="state.showKeyboardCents"
       :showRatio="state.showKeyboardRatio"
       :showFrequency="state.showKeyboardFrequency"
+      :bend-drag-pixels="state.bendDragPixels"
+      :bend-axis="state.bendDragAxis"
       @bend="onBend"
     ></VirtualKeyboard>
   </main>
