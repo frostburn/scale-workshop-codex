@@ -20,7 +20,9 @@ describe('VirtualPiano', () => {
         highAccidentalColor: '#333333',
         noteOn,
         heldNotes: new Map<number, number>(),
-        slideBehavior: false
+        slideBehavior: false,
+        bendDragPixels: 200,
+        bendAxis: 'y'
       }
     })
 

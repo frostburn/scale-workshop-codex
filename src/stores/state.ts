@@ -40,6 +40,8 @@ export const useStateStore = defineStore('state', () => {
   const showKeyboardRatio = ref(storage.getItem('showKeyboardRatio') !== 'false')
   const showKeyboardFrequency = ref(storage.getItem('showKeyboardFrequency') !== 'false')
   const slideVirtualKeyboard = ref(storage.getItem('slideVirtualKeyboard') !== 'false')
+  const bendDragPixels = ref(parseInt(storage.getItem('bendDragPixels') ?? '200', 10))
+  const bendDragAxis = ref<'x' | 'y'>(storage.getItem('bendDragAxis') === 'x' ? 'x' : 'y')
 
   // Analysis preferences
   const intervalMatrixIndexing = ref(parseInt(storage.getItem('intervalMatrixIndexing') ?? '0', 10))
@@ -98,6 +100,8 @@ export const useStateStore = defineStore('state', () => {
     showKeyboardRatio,
     showKeyboardFrequency,
     slideVirtualKeyboard,
+    bendDragPixels,
+    bendDragAxis,
     intervalMatrixIndexing,
     maxMatrixWidth,
     calculateConstantStructureViolations,
@@ -145,6 +149,8 @@ export const useStateStore = defineStore('state', () => {
     showKeyboardRatio,
     showKeyboardFrequency,
     slideVirtualKeyboard,
+    bendDragPixels,
+    bendDragAxis,
     intervalMatrixIndexing,
     maxMatrixWidth,
     calculateConstantStructureViolations,
