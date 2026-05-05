@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted } from 'vue'
 import VirtualKeyboardKey from '@/components/VirtualKeyboardKey.vue'
 import VirtualKeyInfo from '@/components/VirtualKeyInfo.vue'
 import type { Scale } from '@/scale'
-import type { NoteOnCallback } from '@/types/noteOn'
+import type { NoteOnCallback } from '@/types'
 import { axisOffset } from '@/utils'
 import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
@@ -69,19 +69,27 @@ const virtualKeys = computed(() => {
   return result
 })
 
-const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, activateKey, isKeyActive, releaseAll } =
-  useSlidingTouches({
-    slideEnabled: () => props.slideBehavior,
-    getKeyFromElement: (element) => {
-      const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
-      const keyId = keyElement?.dataset.keyId
-      if (!keyId) {
-        return undefined
-      }
-      return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
-    },
-    noteOn: props.noteOn
-  })
+const {
+  onTouchStart,
+  onTouchEnd,
+  onTouchMove,
+  onMouseDown,
+  onMouseUp,
+  onMouseEnter,
+  isKeyActive,
+  releaseAll
+} = useSlidingTouches({
+  slideEnabled: () => props.slideBehavior,
+  getKeyFromElement: (element) => {
+    const keyElement = element?.closest('[data-key-id]') as HTMLElement | null
+    const keyId = keyElement?.dataset.keyId
+    if (!keyId) {
+      return undefined
+    }
+    return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
+  },
+  noteOn: props.noteOn
+})
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button !== LEFT_MOUSE_BTN) {

@@ -5,7 +5,7 @@
 import { LEFT_MOUSE_BTN } from '@/constants'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useSlidingTouches } from '@/composables/useSlidingTouches'
-import type { NoteOnCallback } from '@/types/noteOn'
+import type { NoteOnCallback } from '@/types'
 
 type ColorMap = (index: number) => string
 
@@ -52,7 +52,6 @@ const NUM_KEYS = 30
 // Percentages of SVG height
 const TOP_Y = 20
 const SPLIT_BOTTOM_Y = 60
-
 
 const whiteKeys = computed(() => {
   const low = props.lowAccidentalColor.toLowerCase()

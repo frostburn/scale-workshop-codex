@@ -1,5 +1,5 @@
 import { LEFT_MOUSE_BTN } from '@/constants'
-import type { NoteOnCallback } from '@/types/noteOn'
+import type { NoteOnCallback } from '@/types'
 
 type KeyFromElement<K> = (element: Element | null) => K | undefined
 type SlidingKey = { id: string; index: number }

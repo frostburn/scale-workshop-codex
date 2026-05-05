@@ -11,6 +11,7 @@ import {
 } from 'isomorphic-qwerty'
 import { LEFT_MOUSE_BTN } from '@/constants'
 import { axisOffset } from '@/utils'
+import type { NoteOff, NoteOnCallback } from '@/types'
 
 /**
  * Unimplemented features:
@@ -19,8 +20,6 @@ import { axisOffset } from '@/utils'
  * - Sustain when multi-touching with the shift buttons.
  */
 
-type NoteOff = () => void
-type NoteOnCallback = (index: number) => NoteOff
 type ColorMap = (index: number) => string
 
 const props = defineProps<{
