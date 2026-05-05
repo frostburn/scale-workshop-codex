@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LEFT_MOUSE_BTN } from '@/constants'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import VirtualKeyboardKey from '@/components/VirtualKeyboardKey.vue'
 import VirtualKeyInfo from '@/components/VirtualKeyInfo.vue'
 import type { Scale } from '@/scale'
@@ -69,9 +69,7 @@ const virtualKeys = computed(() => {
   return result
 })
 
-const isMousePressed = ref(false)
-const activeMouseKey = ref<VirtualKey | null>(null)
-const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyActive, releaseAll } =
+const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, activateKey, isKeyActive, releaseAll } =
   useSlidingTouches({
     slideEnabled: () => props.slideBehavior,
     getKeyFromElement: (element) => {
@@ -82,61 +80,14 @@ const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, isKeyAct
       }
       return virtualKeys.value.flatMap(([, row]) => row).find((candidate) => candidate.id === keyId)
     },
-    getKeyId: (key) => key.id,
     noteOn: (key) => props.noteOn(key.index)
   })
-
-function onMouseDown(event: MouseEvent, key: VirtualKey) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  isMousePressed.value = true
-  activateKey(key)
-  activeMouseKey.value = key
-}
-
-function onMouseUp(event: MouseEvent) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  if (activeMouseKey.value) {
-    releaseKey(activeMouseKey.value)
-  }
-  activeMouseKey.value = null
-}
-
-function onMouseEnter(event: MouseEvent, key: VirtualKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  if (!props.slideBehavior) {
-    return
-  }
-  event.preventDefault()
-  activateKey(key)
-  activeMouseKey.value = key
-}
-
-function onMouseLeave(event: MouseEvent, key: VirtualKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  if (!props.slideBehavior) {
-    return
-  }
-  event.preventDefault()
-  releaseKey(key)
-}
 
 function windowMouseUp(event: MouseEvent) {
   if (event.button !== LEFT_MOUSE_BTN) {
     return
   }
-  isMousePressed.value = false
   releaseAll()
-  activeMouseKey.value = null
 }
 
 onMounted(() => {
@@ -168,7 +119,6 @@ onUnmounted(() => {
           @mousedown="onMouseDown($event, key)"
           @mouseup="onMouseUp($event)"
           @mouseenter="onMouseEnter($event, key)"
-          @mouseleave="onMouseLeave($event, key)"
         >
           <VirtualKeyInfo
             :label="key.label"

@@ -3,7 +3,7 @@
  * SVG-based virtual piano keyboard supporting split accidental rendering modes.
  */
 import { LEFT_MOUSE_BTN } from '@/constants'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useSlidingTouches } from '@/composables/useSlidingTouches'
 
 type NoteOnCallback = (index: number) => () => void
@@ -53,7 +53,6 @@ const NUM_KEYS = 30
 const TOP_Y = 20
 const SPLIT_BOTTOM_Y = 60
 
-const activeMouseKey = ref<VirtualKey | VirtualBlackKey | VirtualSplitKey | null>(null)
 
 const whiteKeys = computed(() => {
   const low = props.lowAccidentalColor.toLowerCase()
@@ -257,9 +256,7 @@ const splitKeys = computed(() => {
   return result
 })
 
-const isMousePressed = ref(false)
-
-const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, releaseAll } =
+const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, releaseAll } =
   useSlidingTouches({
     slideEnabled: () => props.slideBehavior,
     getKeyFromElement: (element) => {
@@ -280,60 +277,12 @@ const { onTouchStart, onTouchEnd, onTouchMove, activateKey, releaseKey, releaseA
       }
       return splitKeys.value.find((candidate) => candidate.id === keyId)
     },
-    getKeyId: (key) => key.id,
     noteOn: (key) => props.noteOn(key.index)
   })
 
-function onMouseDown(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  isMousePressed.value = true
-  activateKey(key)
-  activeMouseKey.value = key
-}
-
-function onMouseUp(event: MouseEvent) {
-  if (event.button !== LEFT_MOUSE_BTN) {
-    return
-  }
-  event.preventDefault()
-  isMousePressed.value = false
-  if (activeMouseKey.value !== null) {
-    releaseKey(activeMouseKey.value)
-  }
-  activeMouseKey.value = null
-}
-
-function onMouseEnter(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  if (!props.slideBehavior) {
-    return
-  }
-  event.preventDefault()
-  activateKey(key)
-  activeMouseKey.value = key
-}
-
-function onMouseLeave(event: MouseEvent, key: VirtualKey | VirtualBlackKey | VirtualSplitKey) {
-  if (!isMousePressed.value) {
-    return
-  }
-  if (!props.slideBehavior) {
-    return
-  }
-  event.preventDefault()
-  releaseKey(key)
-}
-
 function windowMouseUp(event: MouseEvent) {
   if (event.button === LEFT_MOUSE_BTN) {
-    isMousePressed.value = false
     releaseAll()
-    activeMouseKey.value = null
   }
 }
 
@@ -358,7 +307,6 @@ onUnmounted(() => {
       @mousedown="onMouseDown($event, key)"
       @mouseup="onMouseUp($event)"
       @mouseenter="onMouseEnter($event, key)"
-      @mouseleave="onMouseLeave($event, key)"
       :data-key-id="key.id"
       :class="{ white: true, active: (heldNotes.get(key.index) || 0) > 0 }"
       :x="4 * key.x - 2 * key.left + '%'"
@@ -377,7 +325,6 @@ onUnmounted(() => {
         @mousedown="onMouseDown($event, key)"
         @mouseup="onMouseUp($event)"
         @mouseenter="onMouseEnter($event, key)"
-        @mouseleave="onMouseLeave($event, key)"
         :data-key-id="key.id"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
@@ -397,7 +344,6 @@ onUnmounted(() => {
         @mousedown="onMouseDown($event, key)"
         @mouseup="onMouseUp($event)"
         @mouseenter="onMouseEnter($event, key)"
-        @mouseleave="onMouseLeave($event, key)"
         :data-key-id="key.id"
         :class="{ black: true, active: (heldNotes.get(key.index) || 0) > 0 }"
         :x="4 * key.x + '%'"
