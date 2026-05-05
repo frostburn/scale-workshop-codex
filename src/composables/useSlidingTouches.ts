@@ -8,6 +8,9 @@ type UseSlidingTouchesOptions = {
   slideEnabled: () => boolean
   getKeyFromElement: KeyFromElement
   noteOn: NoteOnCallback
+  onMouseDown?: (event: MouseEvent) => void
+  onMouseMove?: (event: MouseEvent, isMousePressed: boolean) => void
+  onMouseUp?: (event: MouseEvent) => void
 }
 
 export function useSlidingTouches(options: UseSlidingTouchesOptions) {
@@ -105,6 +108,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     }
     event.preventDefault()
     isMousePressed = true
+    options.onMouseDown?.(event)
     activateKey(key)
     activeMouseKey = key
   }
@@ -114,11 +118,16 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
       return
     }
     event.preventDefault()
+    options.onMouseUp?.(event)
     if (activeMouseKey) {
       releaseKey(activeMouseKey)
       activeMouseKey = null
     }
     isMousePressed = false
+  }
+
+  function onMouseMove(event: MouseEvent) {
+    options.onMouseMove?.(event, isMousePressed)
   }
 
   function onMouseEnter(event: MouseEvent, key: SlidingKey) {
@@ -129,6 +138,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     if (activeMouseKey && activeMouseKey.id === key.id) {
       return
     }
+    options.onMouseUp?.(event)
     if (activeMouseKey) {
       releaseKey(activeMouseKey)
     }
@@ -143,6 +153,7 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
     onMouseDown,
     onMouseUp,
     onMouseEnter,
+    onMouseMove,
     activateKey,
     releaseKey,
     isKeyActive,

@@ -47,6 +47,12 @@ type VirtualSplitKey = {
   color: string
 }
 
+const emit = defineEmits<{
+  bend: [value: number]
+}>()
+
+let mouseDownX: number | null = null
+
 const NUM_KEYS = 30
 
 // Percentages of SVG height
@@ -269,7 +275,7 @@ const keyMap = computed(() => {
   return map
 })
 
-const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, releaseAll } =
+const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEnter, onMouseMove, releaseAll } =
   useSlidingTouches({
     slideEnabled: () => props.slideBehavior,
     getKeyFromElement: (element) => {
@@ -280,7 +286,25 @@ const { onTouchStart, onTouchEnd, onTouchMove, onMouseDown, onMouseUp, onMouseEn
       }
       return keyMap.value.get(keyId)
     },
-    noteOn: props.noteOn
+    noteOn: props.noteOn,
+    onMouseDown: (event) => {
+      if (!props.slideBehavior) {
+        mouseDownX = event.clientX
+      }
+    },
+    onMouseMove: (event, isMousePressed) => {
+      if (!isMousePressed || props.slideBehavior || mouseDownX === null) {
+        return
+      }
+      const deltaX = event.clientX - mouseDownX
+      emit('bend', Math.max(-1, Math.min(1, deltaX / 200)))
+    },
+    onMouseUp: () => {
+      if (!props.slideBehavior) {
+        emit('bend', 0)
+        mouseDownX = null
+      }
+    }
   })
 
 function windowMouseUp(event: MouseEvent) {
@@ -291,11 +315,13 @@ function windowMouseUp(event: MouseEvent) {
 
 onMounted(() => {
   window.addEventListener('mouseup', windowMouseUp)
+  window.addEventListener('mousemove', onMouseMove)
 })
 
 onUnmounted(() => {
   releaseAll()
   window.removeEventListener('mouseup', windowMouseUp)
+  window.removeEventListener('mousemove', onMouseMove)
 })
 </script>
 
