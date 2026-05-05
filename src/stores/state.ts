@@ -40,7 +40,7 @@ export const useStateStore = defineStore('state', () => {
   const showKeyboardRatio = ref(storage.getItem('showKeyboardRatio') !== 'false')
   const showKeyboardFrequency = ref(storage.getItem('showKeyboardFrequency') !== 'false')
   const slideVirtualKeyboard = ref(storage.getItem('slideVirtualKeyboard') !== 'false')
-  const bendDragPixels = ref(parseInt(storage.getItem('bendDragPixels') ?? '200', 10))
+  const bendDragPixels = ref(parseInt(storage.getItem('bendDragPixels') ?? '150', 10))
   const bendDragAxis = ref<'x' | 'y'>(storage.getItem('bendDragAxis') === 'x' ? 'x' : 'y')
 
   // Analysis preferences

@@ -29,14 +29,15 @@ export function useSlidingTouches(options: UseSlidingTouchesOptions) {
 
   function applyBendFromDelta(delta: number) {
     if (!options.onBend) return
-    const absDelta = Math.abs(delta)
+    const adjustedDelta = getBendAxis() === 'x' ? -delta : delta
+    const absDelta = Math.abs(adjustedDelta)
     if (absDelta <= bendDeadZonePixels) {
       options.onBend(0)
       return
     }
-    const bendDragPixels = options.bendDragPixels?.() ?? 200
+    const bendDragPixels = options.bendDragPixels?.() ?? 150
     const normalized = (absDelta - bendDeadZonePixels) / (bendDragPixels - bendDeadZonePixels)
-    options.onBend(Math.sign(delta) * Math.max(0, Math.min(1, normalized)))
+    options.onBend(Math.sign(adjustedDelta) * Math.max(0, Math.min(1, normalized)))
   }
 
   function touchCentroid() {
