@@ -52,6 +52,8 @@ const emit = defineEmits<{
 }>()
 
 let mouseDownX: number | null = null
+const BEND_DRAG_PIXELS = 200
+const BEND_DEAD_ZONE_PIXELS = 16
 
 const NUM_KEYS = 30
 
