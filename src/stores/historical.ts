@@ -256,6 +256,12 @@ export const useHistoricalStore = defineStore('historical', () => {
       comma: '531441/524288',
       commaFractions: '0,0,0,0,0,0,-1/2,0,0,0,0'
     },
+    werckmeisterpc: {
+      name: 'Werckmeister (1/6 p.c.) 1698',
+      down: 2,
+      comma: '531441/524288',
+      commaFractions: '-1/6,-1/6,-1/6,-1/6,-1/6,-1/6,-1/6,-1/6,-1/6,-1/24,1/6,1/6',
+    },
     neidhardtgrosse: {
       name: 'Neidhardt Große Stadt 1724',
       down: 5,
@@ -315,6 +321,12 @@ export const useHistoricalStore = defineStore('historical', () => {
       down: 4,
       comma: '531441/524288',
       commaFractions: '0,0,0,0,-1/6,-1/6,-1/6,-1/6,-1/6,-1/18,-1/18'
+    },
+    ramos: {
+      name: "Ramos 1482",
+      down: 5,
+      comma: '81/80',
+      commaFractions: '0,0,0,0,-1,0,0,0,0,0,0'
     },
     werckmeister3: {
       name: 'Werckmeister III 1691',
@@ -382,11 +394,13 @@ export const useHistoricalStore = defineStore('historical', () => {
 
   function extractYear(name: string) {
     for (const word of name.split(' ')) {
-      const year = parseInt(word, 10)
-      if (isNaN(year)) {
+      if (word.length !== 4) {
         continue
       }
-      return year
+      const year = parseInt(word, 10)
+      if (!isNaN(year)) {
+        return year
+      }
     }
     return Infinity
   }

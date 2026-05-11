@@ -16,6 +16,7 @@
   * Feature: Add scale-aware pitch bend in the virtual synth and hook virtual keyboard mouse/touch displacement to pitch bend [#74](https://github.com/xenharmonic-devs/scale-workshop/issues/74), [#205](https://github.com/xenharmonic-devs/scale-workshop/issues/205)
   * Feature: Make browser tabs resumable by storing session state and updating the hash with scale IDs [#806](https://github.com/xenharmonic-devs/scale-workshop/issues/806)
   * Feature: Add shared equal divisions and interpolation options to scale generation/modify workflows [#954](https://github.com/xenharmonic-devs/scale-workshop/issues/954)
+  * Feature: Add more historical temperament presets [#964](https://github.com/xenharmonic-devs/scale-workshop/issues/964), [#965](https://github.com/xenharmonic-devs/scale-workshop/issues/965)
   * Bug fix: Invalidate session IDs consistently across live stores to avoid stale-state ordering issues [#956](https://github.com/xenharmonic-devs/scale-workshop/issues/956)
   * Bug fix: Fix "Take subset" modal display when the root is taken out [#939](https://github.com/xenharmonic-devs/scale-workshop/issues/939)
   * Bug fix: Fix centered tuning table row scrolling into view [#934](https://github.com/xenharmonic-devs/scale-workshop/issues/934)
