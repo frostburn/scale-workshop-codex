@@ -4,6 +4,7 @@ import NumericSlider from '@/components/NumericSlider.vue'
 import ScaleRule from '@/components/ScaleRule.vue'
 import { useScaleStore } from '@/stores/scale'
 import { debounce } from '@/utils'
+import { mosModes, splitMosPattern, type ModeInfo } from 'moment-of-symmetry'
 import { getHardness } from 'moment-of-symmetry/hardness'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -42,6 +43,15 @@ const name = ref('Diatonic')
 const pattern = ref('5L 2s')
 const udp = ref('5|1')
 
+const modes = computed<ModeInfo[]>(() => {
+  const [numberOfLargeSteps, numberOfSmallSteps] = splitMosPattern(pattern.value)
+  return mosModes(numberOfLargeSteps, numberOfSmallSteps, true)
+})
+
+function formatMode(mode: ModeInfo) {
+  return `${mode.modeName ?? 'Unnamed mode'} — ${mode.mode} — ${mode.udp}`
+}
+
 function computeScale() {
   const h = rationalHardness.value
   const hStr = h.d ? (h as Fraction).toFraction() : 'inf'
@@ -52,6 +62,11 @@ function computeScale() {
 }
 
 const updateScale = debounce(computeScale)
+
+function selectMode() {
+  message.value = 'Loading...'
+  updateScale()
+}
 
 function mos(mosName: string, mosPattern: string, udpStr: string) {
   name.value = mosName
@@ -116,6 +131,14 @@ async function easterEgg() {
       </div>
     </div>
     <div class="controls control-group">
+      <div class="control">
+        <label for="mos-mode">Musical mode</label>
+        <select id="mos-mode" v-model="udp" @change="selectMode">
+          <option v-for="mode of modes" :key="mode.udp" :value="mode.udp">
+            {{ formatMode(mode) }}
+          </option>
+        </select>
+      </div>
       <label for="hardness">Hardness ({{ hardnessRange }})</label>
       <NumericSlider
         id="hardness"
