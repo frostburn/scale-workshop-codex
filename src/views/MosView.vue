@@ -48,8 +48,14 @@ const modes = computed<ModeInfo[]>(() => {
   return mosModes(numberOfLargeSteps, numberOfSmallSteps, true)
 })
 
+const maxModeNameLength = computed(() =>
+  Math.max(...modes.value.map((mode) => (mode.modeName ?? '(Unnamed)').length))
+)
+
 function formatMode(mode: ModeInfo) {
-  return `${mode.modeName ?? '(Unnamed)'} — ${mode.mode} — ${mode.udp}`
+  const modeName = mode.modeName ?? '(Unnamed)'
+  const paddedModeName = modeName.padEnd(maxModeNameLength.value, '\u00a0')
+  return `${paddedModeName} — ${mode.mode} — ${mode.udp}`
 }
 
 function computeScale() {
@@ -204,9 +210,6 @@ main {
   margin-left: 1em;
   margin-right: 1em;
 }
-.mode-control {
-  max-width: 18rem;
-}
 .mode-control select {
   min-width: 0;
   width: 100%;
@@ -215,7 +218,7 @@ main {
 /* Content layout (medium-large) */
 @media screen and (min-width: 600px) {
   .grid-container {
-    grid-template-columns: 10px 1fr minmax(10rem, 14rem);
+    grid-template-columns: 10px 1fr 4em;
     grid-template-rows: 1fr;
   }
   .scale-rule {
@@ -232,6 +235,14 @@ main {
   }
   .pan-controls > div {
     display: block;
+  }
+  .mode-control {
+    overflow: visible;
+  }
+  .mode-control select:focus {
+    width: 18rem;
+    transform: translateX(calc(4em - 18rem));
+    z-index: 1;
   }
 }
 </style>
