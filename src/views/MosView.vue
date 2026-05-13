@@ -49,7 +49,7 @@ const modes = computed<ModeInfo[]>(() => {
 })
 
 function formatMode(mode: ModeInfo) {
-  return `${mode.modeName ?? 'Unnamed mode'} — ${mode.mode} — ${mode.udp}`
+  return `${mode.modeName ?? '(Unnamed)'} — ${mode.mode} — ${mode.udp}`
 }
 
 function computeScale() {
@@ -127,18 +127,18 @@ async function easterEgg() {
           <button class="arrow" @click="vertical--">⇧</button>
           <button class="arrow" @click="vertical++">⇩</button>
         </div>
+        <div class="control mode-control">
+          <label for="mos-mode">Musical mode</label>
+          <select id="mos-mode" v-model="udp" @change="selectMode">
+            <option v-for="mode of modes" :key="mode.udp" :value="mode.udp">
+              {{ formatMode(mode) }}
+            </option>
+          </select>
+        </div>
         <button class="done" @click="done">done</button>
       </div>
     </div>
     <div class="controls control-group">
-      <div class="control">
-        <label for="mos-mode">Musical mode</label>
-        <select id="mos-mode" v-model="udp" @change="selectMode">
-          <option v-for="mode of modes" :key="mode.udp" :value="mode.udp">
-            {{ formatMode(mode) }}
-          </option>
-        </select>
-      </div>
       <label for="hardness">Hardness ({{ hardnessRange }})</label>
       <NumericSlider
         id="hardness"
@@ -204,11 +204,18 @@ main {
   margin-left: 1em;
   margin-right: 1em;
 }
+.mode-control {
+  max-width: 18rem;
+}
+.mode-control select {
+  min-width: 0;
+  width: 100%;
+}
 
 /* Content layout (medium-large) */
 @media screen and (min-width: 600px) {
   .grid-container {
-    grid-template-columns: 10px 1fr 4em;
+    grid-template-columns: 10px 1fr minmax(10rem, 14rem);
     grid-template-rows: 1fr;
   }
   .scale-rule {
