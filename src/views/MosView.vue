@@ -43,7 +43,7 @@ const name = ref('Diatonic')
 const pattern = ref('5L 2s')
 const udp = ref('5|1')
 
-const modeSelect = ref<SelectElement | null>(null)
+const modeSelect = ref<HTMLSelectElement | null>(null)
 
 const modes = computed<ModeInfo[]>(() => {
   const [numberOfLargeSteps, numberOfSmallSteps] = splitMosPattern(pattern.value)
