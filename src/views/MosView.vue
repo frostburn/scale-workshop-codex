@@ -43,19 +43,16 @@ const name = ref('Diatonic')
 const pattern = ref('5L 2s')
 const udp = ref('5|1')
 
+const modeSelect = ref<SelectElement | null>(null)
+
 const modes = computed<ModeInfo[]>(() => {
   const [numberOfLargeSteps, numberOfSmallSteps] = splitMosPattern(pattern.value)
   return mosModes(numberOfLargeSteps, numberOfSmallSteps, true)
 })
 
-const maxModeNameLength = computed(() =>
-  Math.max(...modes.value.map((mode) => (mode.modeName ?? '(Unnamed)').length))
-)
-
 function formatMode(mode: ModeInfo) {
   const modeName = mode.modeName ?? '(Unnamed)'
-  const paddedModeName = modeName.padEnd(maxModeNameLength.value, '\u00a0')
-  return `${paddedModeName} — ${mode.mode} — ${mode.udp}`
+  return `${mode.udp} — ${mode.mode} — ${modeName}`
 }
 
 function computeScale() {
@@ -72,6 +69,9 @@ const updateScale = debounce(computeScale)
 function selectMode() {
   message.value = 'Loading...'
   updateScale()
+  if (modeSelect.value) {
+    modeSelect.value.blur()
+  }
 }
 
 function mos(mosName: string, mosPattern: string, udpStr: string) {
@@ -133,9 +133,9 @@ async function easterEgg() {
           <button class="arrow" @click="vertical--">⇧</button>
           <button class="arrow" @click="vertical++">⇩</button>
         </div>
-        <div class="control mode-control">
-          <label for="mos-mode">Musical mode</label>
-          <select id="mos-mode" v-model="udp" @change="selectMode">
+        <div class="mode-control">
+          <label for="mos-mode">Mode</label>
+          <select ref="modeSelect" id="mos-mode" v-model="udp" @change="selectMode">
             <option v-for="mode of modes" :key="mode.udp" :value="mode.udp">
               {{ formatMode(mode) }}
             </option>
@@ -166,6 +166,7 @@ main {
   display: flex;
   flex-direction: column;
   padding: 1em;
+  overflow: hidden;
 }
 .grid-container {
   height: 87%;
@@ -184,7 +185,7 @@ main {
   font-size: xx-large;
 }
 .done {
-  margin-top: 1em;
+  margin-top: 0.5em;
   font-size: x-large;
 }
 
@@ -207,11 +208,18 @@ main {
 }
 .pan-controls > div {
   display: inline-block;
-  margin-left: 1em;
-  margin-right: 1em;
+  margin-left: 0;
+  margin-right: 0;
+}
+.mode-control {
+  margin-top: 0.5em;
+}
+.mode-control label {
+  color: var(--color-accent-text-btn);
+  font-weight: bold;
 }
 .mode-control select {
-  min-width: 0;
+  min-width: 5em;
   width: 100%;
 }
 
@@ -236,7 +244,11 @@ main {
   .pan-controls > div {
     display: block;
   }
+  .done {
+    margin-top: 1em;
+  }
   .mode-control {
+    margin-top: 1em;
     overflow: visible;
   }
   .mode-control select:focus {
