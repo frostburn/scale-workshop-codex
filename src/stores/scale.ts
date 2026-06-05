@@ -44,6 +44,7 @@ import { midiKeyInfo } from 'xen-midi'
 import { undoHistory } from '@/undo'
 import { useHarmonicEntropyStore } from './harmonic-entropy'
 import { useSessionIdStore } from './session-id'
+import { type LiveStatePayload, type LiveStateValues } from './live-state'
 
 const AUTO_LABEL_MAX_LENGTH = 20
 const MAX_ERROR_LENGTH = 10000
@@ -595,10 +596,8 @@ export const useScaleStore = defineStore('scale', () => {
   }
   type LiveState = typeof LIVE_STATE
   type LiveStateKey = keyof LiveState
-  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
-  type LiveStatePayload = Partial<LiveStateValues>
   type SerializedScaleStore = Omit<
-    LiveStateValues,
+    LiveStateValues<LiveState>,
     'scale' | 'relativeIntervals' | 'latticeIntervals' | 'colors' | 'labels'
   > & {
     scale: ReturnType<Scale['toJSON']>
@@ -690,7 +689,7 @@ export const useScaleStore = defineStore('scale', () => {
    * Apply revived state to current state.
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
     for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
       if (stateKey === 'latticeIntervals' && !data[stateKey]) {
         latticeIntervals.value = data['relativeIntervals'] as Interval[]

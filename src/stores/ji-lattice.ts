@@ -17,6 +17,12 @@ import { parseChord } from 'sonic-weave/parser'
 import { TimeMonzo } from 'sonic-weave/monzo'
 import { useSessionIdStore } from './session-id'
 import { computedAndError } from '@/utils'
+import {
+  applyLiveState,
+  serializeLiveState,
+  type LiveStatePayload,
+  type LiveStateValues
+} from './live-state'
 
 /**
  * Store for just-intonation lattice rendering state (2D/3D) and presets.
@@ -314,8 +320,13 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
     depth
   }
   type LiveState = typeof LIVE_STATE
-  type LiveStateKey = keyof LiveState
-  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
+  type SerializedJiLatticeStore = LiveStateValues<LiveState> & {
+    horizontalCoordinates: number[]
+    verticalCoordinates: number[]
+    xCoords: number[]
+    yCoords: number[]
+    zCoords: number[]
+  }
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -324,31 +335,23 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
   /**
    * Convert live state to a format suitable for storing on the server.
    */
-  function toJSON() {
-    const result: Record<string, unknown> = {
+  function toJSON(): SerializedJiLatticeStore {
+    return {
+      ...serializeLiveState(LIVE_STATE),
       horizontalCoordinates,
       verticalCoordinates,
       xCoords,
       yCoords,
       zCoords
     }
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      result[key] = value.value
-    }
-    return result
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
-    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
-      const value = data[stateKey]
-      if (value !== undefined) {
-        LIVE_STATE[stateKey].value = value
-      }
-    }
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
+    applyLiveState(LIVE_STATE, data)
     horizontalCoordinates.length = 0
     horizontalCoordinates.push(...(data.horizontalCoordinates as number[]))
     verticalCoordinates.length = 0

@@ -7,6 +7,12 @@ import { parseChord } from 'sonic-weave/parser'
 import { useSessionIdStore } from './session-id'
 import { computedAndError, parseVal } from '@/utils'
 import { FIFTH, THIRD } from '@/constants'
+import {
+  applyLiveState,
+  serializeLiveState,
+  type LiveStatePayload,
+  type LiveStateValues
+} from './live-state'
 
 /**
  * Store for equal-division grid-lattice visualization state and derived geometry.
@@ -275,8 +281,6 @@ export const useGridStore = defineStore('grid', () => {
     diagonals2
   }
   type LiveState = typeof LIVE_STATE
-  type LiveStateKey = keyof LiveState
-  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -285,25 +289,16 @@ export const useGridStore = defineStore('grid', () => {
   /**
    * Convert live state to a format suitable for storing on the server.
    */
-  function toJSON() {
-    const result: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      result[key] = value.value
-    }
-    return result
+  function toJSON(): LiveStateValues<LiveState> {
+    return serializeLiveState(LIVE_STATE)
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload) {
-    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
-      const value = data[stateKey]
-      if (value !== undefined) {
-        LIVE_STATE[stateKey].value = value
-      }
-    }
+  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
+    applyLiveState(LIVE_STATE, data)
   }
 
   return {
