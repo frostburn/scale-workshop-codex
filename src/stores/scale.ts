@@ -593,20 +593,59 @@ export const useScaleStore = defineStore('scale', () => {
     middleAccidentalColor,
     highAccidentalColor
   }
-  type LiveState = typeof LIVE_STATE
-  type LiveStateKey = keyof LiveState
-  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
-  type LiveStatePayload = Partial<LiveStateValues>
-  type SerializedScaleStore = Omit<
-    LiveStateValues,
-    'scale' | 'relativeIntervals' | 'latticeIntervals' | 'colors' | 'labels'
-  > & {
+  type SerializedInterval = ReturnType<Interval['toJSON']>
+  type SerializedScaleStore = {
     scale: ReturnType<Scale['toJSON']>
-    relativeIntervals: ReturnType<Interval['toJSON']>[]
-    latticeIntervals: ReturnType<Interval['toJSON']>[] | null
+    relativeIntervals: SerializedInterval[]
+    latticeIntervals: SerializedInterval[] | null
     colors: string[]
     labels: string[]
+    name: string
+    baseMidiNote: number
+    userBaseFrequency: number
+    autoFrequency: boolean
+    autoColors: 'silver' | 'cents' | 'factors'
+    sourceText: string
+    latticeEquave: Interval | undefined
+    error: string
+    warning: string
+    isomorphicVertical: number[]
+    isomorphicHorizontal: number[]
+    keyboardMode: 'isomorphic' | 'piano'
+    equaveShift: number
+    degreeShift: number
+    pianoMode: 'Asdf' | 'QweZxc' | 'Zxc'
+    accidentalColor: string
+    lowAccidentalColor: string
+    middleAccidentalColor: string
+    highAccidentalColor: string
   }
+  type ScaleStorePayload = Partial<{
+    scale: Scale
+    relativeIntervals: Interval[]
+    latticeIntervals: Interval[] | null
+    colors: string[]
+    labels: string[]
+    name: string
+    baseMidiNote: number
+    userBaseFrequency: number
+    autoFrequency: boolean
+    autoColors: 'silver' | 'cents' | 'factors'
+    sourceText: string
+    latticeEquave: Interval | undefined
+    error: string
+    warning: string
+    isomorphicVertical: number[] | number
+    isomorphicHorizontal: number[] | number
+    keyboardMode: 'isomorphic' | 'piano'
+    equaveShift: number
+    degreeShift: number
+    pianoMode: 'Asdf' | 'QweZxc' | 'Zxc'
+    accidentalColor: string
+    lowAccidentalColor: string
+    middleAccidentalColor: string
+    highAccidentalColor: string
+  }>
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -690,22 +729,43 @@ export const useScaleStore = defineStore('scale', () => {
    * Apply revived state to current state.
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
-  function fromJSON(data: LiveStatePayload) {
-    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
-      if (stateKey === 'latticeIntervals' && !data[stateKey]) {
-        latticeIntervals.value = data['relativeIntervals'] as Interval[]
-      } else {
-        const value = data[stateKey]
-        if (value !== undefined) {
-          const liveState = LIVE_STATE as Record<string, { value: unknown }>
-          if (stateKey === 'isomorphicHorizontal' || stateKey === 'isomorphicVertical') {
-            liveState[stateKey].value = Array.isArray(value) ? value : [value as number]
-          } else {
-            liveState[stateKey].value = value
-          }
-        }
-      }
+  function fromJSON(data: ScaleStorePayload) {
+    if (data.name !== undefined) name.value = data.name
+    if (data.baseMidiNote !== undefined) baseMidiNote.value = data.baseMidiNote
+    if (data.userBaseFrequency !== undefined) userBaseFrequency.value = data.userBaseFrequency
+    if (data.autoFrequency !== undefined) autoFrequency.value = data.autoFrequency
+    if (data.autoColors !== undefined) autoColors.value = data.autoColors
+    if (data.sourceText !== undefined) sourceText.value = data.sourceText
+    if (data.scale !== undefined) scale.value = data.scale
+    if (data.relativeIntervals !== undefined) relativeIntervals.value = data.relativeIntervals
+    if (data.latticeIntervals) {
+      latticeIntervals.value = data.latticeIntervals
+    } else if (data.relativeIntervals !== undefined) {
+      latticeIntervals.value = data.relativeIntervals
     }
+    if (data.latticeEquave !== undefined) latticeEquave.value = data.latticeEquave
+    if (data.colors !== undefined) colors.value = data.colors
+    if (data.labels !== undefined) labels.value = data.labels
+    if (data.error !== undefined) error.value = data.error
+    if (data.warning !== undefined) warning.value = data.warning
+    if (data.isomorphicVertical !== undefined) {
+      isomorphicVertical.value = Array.isArray(data.isomorphicVertical)
+        ? data.isomorphicVertical
+        : [data.isomorphicVertical]
+    }
+    if (data.isomorphicHorizontal !== undefined) {
+      isomorphicHorizontal.value = Array.isArray(data.isomorphicHorizontal)
+        ? data.isomorphicHorizontal
+        : [data.isomorphicHorizontal]
+    }
+    if (data.keyboardMode !== undefined) keyboardMode.value = data.keyboardMode
+    if (data.equaveShift !== undefined) equaveShift.value = data.equaveShift
+    if (data.degreeShift !== undefined) degreeShift.value = data.degreeShift
+    if (data.pianoMode !== undefined) pianoMode.value = data.pianoMode
+    if (data.accidentalColor !== undefined) accidentalColor.value = data.accidentalColor
+    if (data.lowAccidentalColor !== undefined) lowAccidentalColor.value = data.lowAccidentalColor
+    if (data.middleAccidentalColor !== undefined) middleAccidentalColor.value = data.middleAccidentalColor
+    if (data.highAccidentalColor !== undefined) highAccidentalColor.value = data.highAccidentalColor
     history.pushState()
     history.truncate()
   }

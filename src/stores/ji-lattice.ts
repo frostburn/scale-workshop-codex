@@ -313,15 +313,21 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
     grayExtras,
     depth
   }
-  type LiveState = typeof LIVE_STATE
-  type LiveStateKey = keyof LiveState
-  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
-  type SerializedJiLatticeStore = LiveStateValues & {
+  type SerializedJiLatticeStore = {
     horizontalCoordinates: number[]
     verticalCoordinates: number[]
     xCoords: number[]
     yCoords: number[]
     zCoords: number[]
+    maxDistance: number
+    size: number
+    labelOffset: number
+    edgesString: string
+    showLabels: boolean
+    rotation: number
+    drawArrows: boolean
+    grayExtras: boolean
+    depth: number
   }
 
   watch(Object.values(LIVE_STATE), () => {
@@ -332,17 +338,22 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedJiLatticeStore {
-    const result: Record<string, unknown> = {
+    return {
       horizontalCoordinates,
       verticalCoordinates,
       xCoords,
       yCoords,
-      zCoords
+      zCoords,
+      maxDistance: maxDistance.value,
+      size: size.value,
+      labelOffset: labelOffset.value,
+      edgesString: edgesString.value,
+      showLabels: showLabels.value,
+      rotation: rotation.value,
+      drawArrows: drawArrows.value,
+      grayExtras: grayExtras.value,
+      depth: depth.value
     }
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      result[key] = value.value
-    }
-    return result as SerializedJiLatticeStore
   }
 
   /**
@@ -350,12 +361,15 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * @param data JSON data as an Object instance.
    */
   function fromJSON(data: SerializedJiLatticeStore) {
-    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
-      const value = data[stateKey]
-      if (value !== undefined) {
-        LIVE_STATE[stateKey].value = value
-      }
-    }
+    maxDistance.value = data.maxDistance
+    size.value = data.size
+    labelOffset.value = data.labelOffset
+    edgesString.value = data.edgesString
+    showLabels.value = data.showLabels
+    rotation.value = data.rotation
+    drawArrows.value = data.drawArrows
+    grayExtras.value = data.grayExtras
+    depth.value = data.depth
     horizontalCoordinates.length = 0
     horizontalCoordinates.push(...data.horizontalCoordinates)
     verticalCoordinates.length = 0

@@ -407,11 +407,6 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
     pingPongGain,
     pingPongSeparation
   }
-  type AudioLiveState = typeof LIVE_STATE
-  type AudioLiveStateKey = keyof AudioLiveState
-  type AudioLiveStatePayload = Partial<{
-    [K in AudioLiveStateKey]: AudioLiveState[K]['value']
-  }>
 
   // The first trigger happens due to user input, which shouldn't be tracked.
   let firstUpdate = true
@@ -427,24 +422,43 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedAudioStore {
-    const result: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      result[key] = value.value
+    return {
+      mainVolume: mainVolume.value,
+      waveform: waveform.value,
+      attackTime: attackTime.value,
+      decayTime: decayTime.value,
+      sustainLevel: sustainLevel.value,
+      releaseTime: releaseTime.value,
+      stackSize: stackSize.value,
+      spread: spread.value,
+      aperiodicWaveform: aperiodicWaveform.value,
+      synthType: synthType.value,
+      pingPongDelayTime: pingPongDelayTime.value,
+      pingPongFeedback: pingPongFeedback.value,
+      pingPongGain: pingPongGain.value,
+      pingPongSeparation: pingPongSeparation.value
     }
-    return result as SerializedAudioStore
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: AudioLiveStatePayload) {
-    for (const stateKey of Object.keys(LIVE_STATE) as AudioLiveStateKey[]) {
-      const value = data[stateKey]
-      if (value !== undefined) {
-        LIVE_STATE[stateKey].value = value
-      }
-    }
+  function fromJSON(data: Partial<SerializedAudioStore>) {
+    if (data.mainVolume !== undefined) mainVolume.value = data.mainVolume
+    if (data.waveform !== undefined) waveform.value = data.waveform
+    if (data.attackTime !== undefined) attackTime.value = data.attackTime
+    if (data.decayTime !== undefined) decayTime.value = data.decayTime
+    if (data.sustainLevel !== undefined) sustainLevel.value = data.sustainLevel
+    if (data.releaseTime !== undefined) releaseTime.value = data.releaseTime
+    if (data.stackSize !== undefined) stackSize.value = data.stackSize
+    if (data.spread !== undefined) spread.value = data.spread
+    if (data.aperiodicWaveform !== undefined) aperiodicWaveform.value = data.aperiodicWaveform
+    if (data.synthType !== undefined) synthType.value = data.synthType
+    if (data.pingPongDelayTime !== undefined) pingPongDelayTime.value = data.pingPongDelayTime
+    if (data.pingPongFeedback !== undefined) pingPongFeedback.value = data.pingPongFeedback
+    if (data.pingPongGain !== undefined) pingPongGain.value = data.pingPongGain
+    if (data.pingPongSeparation !== undefined) pingPongSeparation.value = data.pingPongSeparation
   }
 
   return {

@@ -36,10 +36,13 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
     valString,
     generator
   }
-  type LiveState = typeof LIVE_STATE
-  type LiveStateKey = keyof LiveState
-  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
-  type LiveStatePayload = Partial<LiveStateValues>
+  type SerializedCyclesStore = {
+    size: number
+    labelOffset: number
+    showLabels: boolean
+    valString: string
+    generator: number
+  }
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -48,25 +51,26 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
   /**
    * Convert live state to a format suitable for storing on the server.
    */
-  function toJSON(): LiveStateValues {
-    const result: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      result[key] = value.value
+  function toJSON(): SerializedCyclesStore {
+    return {
+      size: size.value,
+      labelOffset: labelOffset.value,
+      showLabels: showLabels.value,
+      valString: valString.value,
+      generator: generator.value
     }
-    return result as LiveStateValues
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: LiveStatePayload) {
-    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
-      const value = data[stateKey]
-      if (value !== undefined) {
-        LIVE_STATE[stateKey].value = value
-      }
-    }
+  function fromJSON(data: Partial<SerializedCyclesStore>) {
+    if (data.size !== undefined) size.value = data.size
+    if (data.labelOffset !== undefined) labelOffset.value = data.labelOffset
+    if (data.showLabels !== undefined) showLabels.value = data.showLabels
+    if (data.valString !== undefined) valString.value = data.valString
+    if (data.generator !== undefined) generator.value = data.generator
   }
 
   return {

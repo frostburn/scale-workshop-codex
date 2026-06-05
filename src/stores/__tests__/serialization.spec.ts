@@ -6,7 +6,7 @@ import { useGridStore } from '../grid'
 import { useJiLatticeStore } from '../ji-lattice'
 
 // These tests intentionally access serialized fields directly so type checking catches
-// regressions to Record<string, unknown> or other unhelpful store serialization types.
+// regressions to unhelpful generic store serialization types.
 describe('live store serialization types', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
