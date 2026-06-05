@@ -689,7 +689,7 @@ export const useScaleStore = defineStore('scale', () => {
    * Apply revived state to current state.
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
+  function fromJSON(data: LiveStatePayload<LiveState>) {
     for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
       if (stateKey === 'latticeIntervals' && !data[stateKey]) {
         latticeIntervals.value = data['relativeIntervals'] as Interval[]

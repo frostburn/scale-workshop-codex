@@ -20,7 +20,6 @@ import { computedAndError } from '@/utils'
 import {
   applyLiveState,
   serializeLiveState,
-  type LiveStatePayload,
   type LiveStateValues
 } from './live-state'
 
@@ -350,18 +349,18 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
+  function fromJSON(data: SerializedJiLatticeStore) {
     applyLiveState(LIVE_STATE, data)
     horizontalCoordinates.length = 0
-    horizontalCoordinates.push(...(data.horizontalCoordinates as number[]))
+    horizontalCoordinates.push(...data.horizontalCoordinates)
     verticalCoordinates.length = 0
-    verticalCoordinates.push(...(data.verticalCoordinates as number[]))
+    verticalCoordinates.push(...data.verticalCoordinates)
     xCoords.length = 0
-    xCoords.push(...(data.xCoords as number[]))
+    xCoords.push(...data.xCoords)
     yCoords.length = 0
-    yCoords.push(...(data.yCoords as number[]))
+    yCoords.push(...data.yCoords)
     zCoords.length = 0
-    zCoords.push(...(data.zCoords as number[]))
+    zCoords.push(...data.zCoords)
   }
 
   return {

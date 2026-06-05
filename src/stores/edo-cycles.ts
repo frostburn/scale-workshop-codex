@@ -59,7 +59,7 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload<LiveState>) {
+  function fromJSON(data: LiveStatePayload<LiveState>) {
     applyLiveState(LIVE_STATE, data)
   }
 

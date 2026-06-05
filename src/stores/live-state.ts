@@ -15,7 +15,7 @@ export function serializeLiveState<T extends LiveStateRefs>(liveState: T): LiveS
 
 export function applyLiveState<T extends LiveStateRefs>(
   liveState: T,
-  data: Record<string, unknown> & LiveStatePayload<T>
+  data: LiveStatePayload<T>
 ) {
   for (const stateKey of Object.keys(liveState) as (keyof T)[]) {
     const value = data[stateKey]

@@ -45,7 +45,7 @@ type AudioStore = {
   initialize: () => void
   uninitialize: () => Promise<void>
   toJSON: () => SerializedAudioStore
-  fromJSON: (data: Record<string, unknown> & Partial<SerializedAudioStore>) => void
+  fromJSON: (data: Partial<SerializedAudioStore>) => void
   context: Ref<AudioContext>
   mainVolume: Ref<number>
   waveform: Ref<string>
@@ -431,7 +431,7 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: Record<string, unknown> & LiveStatePayload<AudioLiveState>) {
+  function fromJSON(data: LiveStatePayload<AudioLiveState>) {
     applyLiveState(LIVE_STATE, data)
   }
 
