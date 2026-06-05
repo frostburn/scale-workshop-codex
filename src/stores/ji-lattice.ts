@@ -17,11 +17,6 @@ import { parseChord } from 'sonic-weave/parser'
 import { TimeMonzo } from 'sonic-weave/monzo'
 import { useSessionIdStore } from './session-id'
 import { computedAndError } from '@/utils'
-import {
-  applyLiveState,
-  serializeLiveState,
-  type LiveStateValues
-} from './live-state'
 
 /**
  * Store for just-intonation lattice rendering state (2D/3D) and presets.
@@ -319,7 +314,9 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
     depth
   }
   type LiveState = typeof LIVE_STATE
-  type SerializedJiLatticeStore = LiveStateValues<LiveState> & {
+  type LiveStateKey = keyof LiveState
+  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
+  type SerializedJiLatticeStore = LiveStateValues & {
     horizontalCoordinates: number[]
     verticalCoordinates: number[]
     xCoords: number[]
@@ -335,14 +332,17 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedJiLatticeStore {
-    return {
-      ...serializeLiveState(LIVE_STATE),
+    const result: Record<string, unknown> = {
       horizontalCoordinates,
       verticalCoordinates,
       xCoords,
       yCoords,
       zCoords
     }
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
+    }
+    return result as SerializedJiLatticeStore
   }
 
   /**
@@ -350,7 +350,12 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * @param data JSON data as an Object instance.
    */
   function fromJSON(data: SerializedJiLatticeStore) {
-    applyLiveState(LIVE_STATE, data)
+    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
+      const value = data[stateKey]
+      if (value !== undefined) {
+        LIVE_STATE[stateKey].value = value
+      }
+    }
     horizontalCoordinates.length = 0
     horizontalCoordinates.push(...data.horizontalCoordinates)
     verticalCoordinates.length = 0

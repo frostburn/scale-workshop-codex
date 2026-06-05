@@ -4,12 +4,6 @@ import { defineStore } from 'pinia'
 import { mmod } from 'xen-dev-utils/fraction'
 import { useSessionIdStore } from './session-id'
 import { parseVal } from '@/utils'
-import {
-  applyLiveState,
-  serializeLiveState,
-  type LiveStatePayload,
-  type LiveStateValues
-} from './live-state'
 
 /**
  * Store for EDO cycle diagram parameters and derived cycle math.
@@ -43,6 +37,9 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
     generator
   }
   type LiveState = typeof LIVE_STATE
+  type LiveStateKey = keyof LiveState
+  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
+  type LiveStatePayload = Partial<LiveStateValues>
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -51,16 +48,25 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
   /**
    * Convert live state to a format suitable for storing on the server.
    */
-  function toJSON(): LiveStateValues<LiveState> {
-    return serializeLiveState(LIVE_STATE)
+  function toJSON(): LiveStateValues {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
+    }
+    return result as LiveStateValues
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: LiveStatePayload<LiveState>) {
-    applyLiveState(LIVE_STATE, data)
+  function fromJSON(data: LiveStatePayload) {
+    for (const stateKey of Object.keys(LIVE_STATE) as LiveStateKey[]) {
+      const value = data[stateKey]
+      if (value !== undefined) {
+        LIVE_STATE[stateKey].value = value
+      }
+    }
   }
 
   return {

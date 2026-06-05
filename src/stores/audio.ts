@@ -1,6 +1,5 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import { defineStore } from 'pinia'
-import { applyLiveState, serializeLiveState, type LiveStatePayload } from './live-state'
 import { useSessionIdStore } from './session-id'
 import {
   APERIODIC_WAVEFORMS,
@@ -409,6 +408,10 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
     pingPongSeparation
   }
   type AudioLiveState = typeof LIVE_STATE
+  type AudioLiveStateKey = keyof AudioLiveState
+  type AudioLiveStatePayload = Partial<{
+    [K in AudioLiveStateKey]: AudioLiveState[K]['value']
+  }>
 
   // The first trigger happens due to user input, which shouldn't be tracked.
   let firstUpdate = true
@@ -424,15 +427,24 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedAudioStore {
-    return serializeLiveState(LIVE_STATE)
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
+    }
+    return result as SerializedAudioStore
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: LiveStatePayload<AudioLiveState>) {
-    applyLiveState(LIVE_STATE, data)
+  function fromJSON(data: AudioLiveStatePayload) {
+    for (const stateKey of Object.keys(LIVE_STATE) as AudioLiveStateKey[]) {
+      const value = data[stateKey]
+      if (value !== undefined) {
+        LIVE_STATE[stateKey].value = value
+      }
+    }
   }
 
   return {
