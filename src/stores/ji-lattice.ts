@@ -1,6 +1,6 @@
 import { dot } from 'xen-dev-utils/number-array'
 import { mmod } from 'xen-dev-utils/fraction'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
   kraigGrady9,
@@ -338,48 +338,50 @@ export const useJiLatticeStore = defineStore('ji-lattice', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedJiLatticeStore {
-    return {
+    const result: Record<string, unknown> = {
       horizontalCoordinates,
       verticalCoordinates,
       xCoords,
       yCoords,
-      zCoords,
-      maxDistance: maxDistance.value,
-      size: size.value,
-      labelOffset: labelOffset.value,
-      edgesString: edgesString.value,
-      showLabels: showLabels.value,
-      rotation: rotation.value,
-      drawArrows: drawArrows.value,
-      grayExtras: grayExtras.value,
-      depth: depth.value
+      zCoords
     }
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
+    }
+    return result as SerializedJiLatticeStore
   }
 
   /**
    * Apply revived state to current state.
    * @param data JSON data as an Object instance.
    */
-  function fromJSON(data: SerializedJiLatticeStore) {
-    maxDistance.value = data.maxDistance
-    size.value = data.size
-    labelOffset.value = data.labelOffset
-    edgesString.value = data.edgesString
-    showLabels.value = data.showLabels
-    rotation.value = data.rotation
-    drawArrows.value = data.drawArrows
-    grayExtras.value = data.grayExtras
-    depth.value = data.depth
-    horizontalCoordinates.length = 0
-    horizontalCoordinates.push(...data.horizontalCoordinates)
-    verticalCoordinates.length = 0
-    verticalCoordinates.push(...data.verticalCoordinates)
-    xCoords.length = 0
-    xCoords.push(...data.xCoords)
-    yCoords.length = 0
-    yCoords.push(...data.yCoords)
-    zCoords.length = 0
-    zCoords.push(...data.zCoords)
+  function fromJSON(data: Partial<SerializedJiLatticeStore>) {
+    for (const stateKey of Object.keys(LIVE_STATE)) {
+      const value = data[stateKey as keyof SerializedJiLatticeStore]
+      if (value !== undefined) {
+        ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = value
+      }
+    }
+    if (data.horizontalCoordinates !== undefined) {
+      horizontalCoordinates.length = 0
+      horizontalCoordinates.push(...data.horizontalCoordinates)
+    }
+    if (data.verticalCoordinates !== undefined) {
+      verticalCoordinates.length = 0
+      verticalCoordinates.push(...data.verticalCoordinates)
+    }
+    if (data.xCoords !== undefined) {
+      xCoords.length = 0
+      xCoords.push(...data.xCoords)
+    }
+    if (data.yCoords !== undefined) {
+      yCoords.length = 0
+      yCoords.push(...data.yCoords)
+    }
+    if (data.zCoords !== undefined) {
+      zCoords.length = 0
+      zCoords.push(...data.zCoords)
+    }
   }
 
   return {

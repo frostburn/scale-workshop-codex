@@ -1,5 +1,5 @@
 import { modInv } from 'xen-dev-utils/core'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import { mmod } from 'xen-dev-utils/fraction'
 import { useSessionIdStore } from './session-id'
@@ -52,13 +52,11 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedCyclesStore {
-    return {
-      size: size.value,
-      labelOffset: labelOffset.value,
-      showLabels: showLabels.value,
-      valString: valString.value,
-      generator: generator.value
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
     }
+    return result as SerializedCyclesStore
   }
 
   /**
@@ -66,11 +64,12 @@ export const useCyclesStore = defineStore('edo-cycles', () => {
    * @param data JSON data as an Object instance.
    */
   function fromJSON(data: Partial<SerializedCyclesStore>) {
-    if (data.size !== undefined) size.value = data.size
-    if (data.labelOffset !== undefined) labelOffset.value = data.labelOffset
-    if (data.showLabels !== undefined) showLabels.value = data.showLabels
-    if (data.valString !== undefined) valString.value = data.valString
-    if (data.generator !== undefined) generator.value = data.generator
+    for (const stateKey of Object.keys(LIVE_STATE)) {
+      const value = data[stateKey as keyof SerializedCyclesStore]
+      if (value !== undefined) {
+        ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = value
+      }
+    }
   }
 
   return {

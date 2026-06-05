@@ -1,5 +1,5 @@
 import { mmod } from 'xen-dev-utils/fraction'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import { shortestEdge, type GridOptions } from 'ji-lattice'
 import { LOG_PRIMES } from 'xen-dev-utils/primes'
@@ -307,30 +307,11 @@ export const useGridStore = defineStore('grid', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedGridStore {
-    return {
-      size: size.value,
-      viewCenterX: viewCenterX.value,
-      viewCenterY: viewCenterY.value,
-      viewScale: viewScale.value,
-      labelOffset: labelOffset.value,
-      showLabels: showLabels.value,
-      valString: valString.value,
-      edgesString: edgesString.value,
-      delta1: delta1.value,
-      delta1X: delta1X.value,
-      delta1Y: delta1Y.value,
-      delta2: delta2.value,
-      delta2X: delta2X.value,
-      delta2Y: delta2Y.value,
-      minX: minX.value,
-      maxX: maxX.value,
-      minY: minY.value,
-      maxY: maxY.value,
-      gridlines1: gridlines1.value,
-      gridlines2: gridlines2.value,
-      diagonals1: diagonals1.value,
-      diagonals2: diagonals2.value
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
     }
+    return result as SerializedGridStore
   }
 
   /**
@@ -338,28 +319,12 @@ export const useGridStore = defineStore('grid', () => {
    * @param data JSON data as an Object instance.
    */
   function fromJSON(data: Partial<SerializedGridStore>) {
-    if (data.size !== undefined) size.value = data.size
-    if (data.viewCenterX !== undefined) viewCenterX.value = data.viewCenterX
-    if (data.viewCenterY !== undefined) viewCenterY.value = data.viewCenterY
-    if (data.viewScale !== undefined) viewScale.value = data.viewScale
-    if (data.labelOffset !== undefined) labelOffset.value = data.labelOffset
-    if (data.showLabels !== undefined) showLabels.value = data.showLabels
-    if (data.valString !== undefined) valString.value = data.valString
-    if (data.edgesString !== undefined) edgesString.value = data.edgesString
-    if (data.delta1 !== undefined) delta1.value = data.delta1
-    if (data.delta1X !== undefined) delta1X.value = data.delta1X
-    if (data.delta1Y !== undefined) delta1Y.value = data.delta1Y
-    if (data.delta2 !== undefined) delta2.value = data.delta2
-    if (data.delta2X !== undefined) delta2X.value = data.delta2X
-    if (data.delta2Y !== undefined) delta2Y.value = data.delta2Y
-    if (data.minX !== undefined) minX.value = data.minX
-    if (data.maxX !== undefined) maxX.value = data.maxX
-    if (data.minY !== undefined) minY.value = data.minY
-    if (data.maxY !== undefined) maxY.value = data.maxY
-    if (data.gridlines1 !== undefined) gridlines1.value = data.gridlines1
-    if (data.gridlines2 !== undefined) gridlines2.value = data.gridlines2
-    if (data.diagonals1 !== undefined) diagonals1.value = data.diagonals1
-    if (data.diagonals2 !== undefined) diagonals2.value = data.diagonals2
+    for (const stateKey of Object.keys(LIVE_STATE)) {
+      const value = data[stateKey as keyof SerializedGridStore]
+      if (value !== undefined) {
+        ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = value
+      }
+    }
   }
 
   return {

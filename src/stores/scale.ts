@@ -13,7 +13,7 @@ import {
   parseIntegerList
 } from '@/utils'
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 import { parseAST, StatementVisitor, ExpressionVisitor, getGlobalVisitor } from 'sonic-weave/parser'
 import {
   relative,
@@ -680,37 +680,17 @@ export const useScaleStore = defineStore('scale', () => {
       slicedLabels = slicedLabels.slice(0, MAX_NUMBER_OF_SHARED_INTERVALS - 1)
       slicedLabels.push(equaveLabel)
     }
-    const result: SerializedScaleStore = {
+    const result: Record<string, unknown> = {
       scale: slicedScale.toJSON(),
       relativeIntervals: slicedIntervals.map((i) => i.toJSON()),
       colors: slicedColors,
-      labels: slicedLabels,
-      latticeIntervals: null,
-      name: name.value,
-      baseMidiNote: baseMidiNote.value,
-      userBaseFrequency: userBaseFrequency.value,
-      autoFrequency: autoFrequency.value,
-      autoColors: autoColors.value,
-      sourceText: sourceText.value,
-      latticeEquave: latticeEquave.value,
-      error: error.value,
-      warning: warning.value,
-      isomorphicVertical: isomorphicVertical.value,
-      isomorphicHorizontal: isomorphicHorizontal.value,
-      keyboardMode: keyboardMode.value,
-      equaveShift: equaveShift.value,
-      degreeShift: degreeShift.value,
-      pianoMode: pianoMode.value,
-      accidentalColor: accidentalColor.value,
-      lowAccidentalColor: lowAccidentalColor.value,
-      middleAccidentalColor: middleAccidentalColor.value,
-      highAccidentalColor: highAccidentalColor.value
+      labels: slicedLabels
     }
-    if (result.colors.length) {
-      result.colors[result.colors.length - 1] = colors.value[colors.value.length - 1]
+    if (slicedColors.length) {
+      slicedColors[slicedColors.length - 1] = colors.value[colors.value.length - 1]
     }
-    if (result.labels.length) {
-      result.labels[result.labels.length - 1] = labels.value[labels.value.length - 1]
+    if (slicedLabels.length) {
+      slicedLabels[slicedLabels.length - 1] = labels.value[labels.value.length - 1]
     }
     if (relativeIntervals.value === latticeIntervals.value) {
       result.latticeIntervals = null
@@ -722,7 +702,13 @@ export const useScaleStore = defineStore('scale', () => {
         result.latticeIntervals = null
       }
     }
-    return result
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      if (key in result) {
+        continue
+      }
+      result[key] = value.value
+    }
+    return result as SerializedScaleStore
   }
 
   /**
@@ -730,42 +716,24 @@ export const useScaleStore = defineStore('scale', () => {
    * @param data JSON revived through {@link Scale.reviver} and {@link Interval.reviver}.
    */
   function fromJSON(data: ScaleStorePayload) {
-    if (data.name !== undefined) name.value = data.name
-    if (data.baseMidiNote !== undefined) baseMidiNote.value = data.baseMidiNote
-    if (data.userBaseFrequency !== undefined) userBaseFrequency.value = data.userBaseFrequency
-    if (data.autoFrequency !== undefined) autoFrequency.value = data.autoFrequency
-    if (data.autoColors !== undefined) autoColors.value = data.autoColors
-    if (data.sourceText !== undefined) sourceText.value = data.sourceText
-    if (data.scale !== undefined) scale.value = data.scale
-    if (data.relativeIntervals !== undefined) relativeIntervals.value = data.relativeIntervals
-    if (data.latticeIntervals) {
-      latticeIntervals.value = data.latticeIntervals
-    } else if (data.relativeIntervals !== undefined) {
-      latticeIntervals.value = data.relativeIntervals
+    for (const stateKey of Object.keys(LIVE_STATE)) {
+      if (stateKey === 'latticeIntervals' && !data[stateKey]) {
+        if (data.relativeIntervals !== undefined) {
+          latticeIntervals.value = data.relativeIntervals
+        }
+      } else {
+        const value = data[stateKey as keyof ScaleStorePayload]
+        if (value !== undefined) {
+          if (stateKey === 'isomorphicHorizontal' || stateKey === 'isomorphicVertical') {
+            ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = Array.isArray(value)
+              ? value
+              : [value]
+          } else {
+            ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = value
+          }
+        }
+      }
     }
-    if (data.latticeEquave !== undefined) latticeEquave.value = data.latticeEquave
-    if (data.colors !== undefined) colors.value = data.colors
-    if (data.labels !== undefined) labels.value = data.labels
-    if (data.error !== undefined) error.value = data.error
-    if (data.warning !== undefined) warning.value = data.warning
-    if (data.isomorphicVertical !== undefined) {
-      isomorphicVertical.value = Array.isArray(data.isomorphicVertical)
-        ? data.isomorphicVertical
-        : [data.isomorphicVertical]
-    }
-    if (data.isomorphicHorizontal !== undefined) {
-      isomorphicHorizontal.value = Array.isArray(data.isomorphicHorizontal)
-        ? data.isomorphicHorizontal
-        : [data.isomorphicHorizontal]
-    }
-    if (data.keyboardMode !== undefined) keyboardMode.value = data.keyboardMode
-    if (data.equaveShift !== undefined) equaveShift.value = data.equaveShift
-    if (data.degreeShift !== undefined) degreeShift.value = data.degreeShift
-    if (data.pianoMode !== undefined) pianoMode.value = data.pianoMode
-    if (data.accidentalColor !== undefined) accidentalColor.value = data.accidentalColor
-    if (data.lowAccidentalColor !== undefined) lowAccidentalColor.value = data.lowAccidentalColor
-    if (data.middleAccidentalColor !== undefined) middleAccidentalColor.value = data.middleAccidentalColor
-    if (data.highAccidentalColor !== undefined) highAccidentalColor.value = data.highAccidentalColor
     history.pushState()
     history.truncate()
   }

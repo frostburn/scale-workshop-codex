@@ -422,22 +422,11 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * Convert live state to a format suitable for storing on the server.
    */
   function toJSON(): SerializedAudioStore {
-    return {
-      mainVolume: mainVolume.value,
-      waveform: waveform.value,
-      attackTime: attackTime.value,
-      decayTime: decayTime.value,
-      sustainLevel: sustainLevel.value,
-      releaseTime: releaseTime.value,
-      stackSize: stackSize.value,
-      spread: spread.value,
-      aperiodicWaveform: aperiodicWaveform.value,
-      synthType: synthType.value,
-      pingPongDelayTime: pingPongDelayTime.value,
-      pingPongFeedback: pingPongFeedback.value,
-      pingPongGain: pingPongGain.value,
-      pingPongSeparation: pingPongSeparation.value
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(LIVE_STATE)) {
+      result[key] = value.value
     }
+    return result as SerializedAudioStore
   }
 
   /**
@@ -445,20 +434,12 @@ export const useAudioStore = defineStore<'audio', AudioStore>('audio', () => {
    * @param data JSON data as an Object instance.
    */
   function fromJSON(data: Partial<SerializedAudioStore>) {
-    if (data.mainVolume !== undefined) mainVolume.value = data.mainVolume
-    if (data.waveform !== undefined) waveform.value = data.waveform
-    if (data.attackTime !== undefined) attackTime.value = data.attackTime
-    if (data.decayTime !== undefined) decayTime.value = data.decayTime
-    if (data.sustainLevel !== undefined) sustainLevel.value = data.sustainLevel
-    if (data.releaseTime !== undefined) releaseTime.value = data.releaseTime
-    if (data.stackSize !== undefined) stackSize.value = data.stackSize
-    if (data.spread !== undefined) spread.value = data.spread
-    if (data.aperiodicWaveform !== undefined) aperiodicWaveform.value = data.aperiodicWaveform
-    if (data.synthType !== undefined) synthType.value = data.synthType
-    if (data.pingPongDelayTime !== undefined) pingPongDelayTime.value = data.pingPongDelayTime
-    if (data.pingPongFeedback !== undefined) pingPongFeedback.value = data.pingPongFeedback
-    if (data.pingPongGain !== undefined) pingPongGain.value = data.pingPongGain
-    if (data.pingPongSeparation !== undefined) pingPongSeparation.value = data.pingPongSeparation
+    for (const stateKey of Object.keys(LIVE_STATE)) {
+      const value = data[stateKey as keyof SerializedAudioStore]
+      if (value !== undefined) {
+        ;(LIVE_STATE as Record<string, Ref<unknown>>)[stateKey].value = value
+      }
+    }
   }
 
   return {
