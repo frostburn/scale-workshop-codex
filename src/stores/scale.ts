@@ -620,32 +620,22 @@ export const useScaleStore = defineStore('scale', () => {
     middleAccidentalColor: string
     highAccidentalColor: string
   }
-  type ScaleStorePayload = Partial<{
-    scale: Scale
-    relativeIntervals: Interval[]
-    latticeIntervals: Interval[] | null
-    colors: string[]
-    labels: string[]
-    name: string
-    baseMidiNote: number
-    userBaseFrequency: number
-    autoFrequency: boolean
-    autoColors: 'silver' | 'cents' | 'factors'
-    sourceText: string
-    latticeEquave: Interval | undefined
-    error: string
-    warning: string
-    isomorphicVertical: number[] | number
-    isomorphicHorizontal: number[] | number
-    keyboardMode: 'isomorphic' | 'piano'
-    equaveShift: number
-    degreeShift: number
-    pianoMode: 'Asdf' | 'QweZxc' | 'Zxc'
-    accidentalColor: string
-    lowAccidentalColor: string
-    middleAccidentalColor: string
-    highAccidentalColor: string
-  }>
+  type ScaleStorePayload = Partial<
+    Omit<
+      SerializedScaleStore,
+      | 'scale'
+      | 'relativeIntervals'
+      | 'latticeIntervals'
+      | 'isomorphicVertical'
+      | 'isomorphicHorizontal'
+    >
+  > & {
+    scale?: Scale
+    relativeIntervals?: Interval[]
+    latticeIntervals?: Interval[] | null
+    isomorphicVertical?: number[] | number
+    isomorphicHorizontal?: number[] | number
+  }
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
