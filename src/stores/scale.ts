@@ -595,7 +595,18 @@ export const useScaleStore = defineStore('scale', () => {
   }
   type LiveState = typeof LIVE_STATE
   type LiveStateKey = keyof LiveState
-  type LiveStatePayload = { [K in LiveStateKey]?: LiveState[K]['value'] }
+  type LiveStateValues = { [K in LiveStateKey]: LiveState[K]['value'] }
+  type LiveStatePayload = Partial<LiveStateValues>
+  type SerializedScaleStore = Omit<
+    LiveStateValues,
+    'scale' | 'relativeIntervals' | 'latticeIntervals' | 'colors' | 'labels'
+  > & {
+    scale: ReturnType<Scale['toJSON']>
+    relativeIntervals: ReturnType<Interval['toJSON']>[]
+    latticeIntervals: ReturnType<Interval['toJSON']>[] | null
+    colors: string[]
+    labels: string[]
+  }
 
   watch(Object.values(LIVE_STATE), () => {
     invalidateUploadedId()
@@ -604,7 +615,7 @@ export const useScaleStore = defineStore('scale', () => {
   /**
    * Convert live state to a format suitable for storing on the server.
    */
-  function toJSON() {
+  function toJSON(): SerializedScaleStore {
     let slicedScale = scale.value
     let slicedIntervals = relativeIntervals.value
     let slicedColors = colors.value
@@ -630,14 +641,31 @@ export const useScaleStore = defineStore('scale', () => {
       slicedLabels = slicedLabels.slice(0, MAX_NUMBER_OF_SHARED_INTERVALS - 1)
       slicedLabels.push(equaveLabel)
     }
-    const result: Record<string, unknown> & {
-      colors: string[]
-      labels: string[]
-    } = {
+    const result: SerializedScaleStore = {
       scale: slicedScale.toJSON(),
       relativeIntervals: slicedIntervals.map((i) => i.toJSON()),
       colors: slicedColors,
-      labels: slicedLabels
+      labels: slicedLabels,
+      latticeIntervals: null,
+      name: name.value,
+      baseMidiNote: baseMidiNote.value,
+      userBaseFrequency: userBaseFrequency.value,
+      autoFrequency: autoFrequency.value,
+      autoColors: autoColors.value,
+      sourceText: sourceText.value,
+      latticeEquave: latticeEquave.value,
+      error: error.value,
+      warning: warning.value,
+      isomorphicVertical: isomorphicVertical.value,
+      isomorphicHorizontal: isomorphicHorizontal.value,
+      keyboardMode: keyboardMode.value,
+      equaveShift: equaveShift.value,
+      degreeShift: degreeShift.value,
+      pianoMode: pianoMode.value,
+      accidentalColor: accidentalColor.value,
+      lowAccidentalColor: lowAccidentalColor.value,
+      middleAccidentalColor: middleAccidentalColor.value,
+      highAccidentalColor: highAccidentalColor.value
     }
     if (result.colors.length) {
       result.colors[result.colors.length - 1] = colors.value[colors.value.length - 1]
@@ -654,12 +682,6 @@ export const useScaleStore = defineStore('scale', () => {
         // Give up. The lattice would be incomprehensible anyway.
         result.latticeIntervals = null
       }
-    }
-    for (const [key, value] of Object.entries(LIVE_STATE)) {
-      if (key in result) {
-        continue
-      }
-      result[key] = value.value
     }
     return result
   }
