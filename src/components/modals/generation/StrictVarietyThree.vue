@@ -24,7 +24,6 @@ type StrictVarietyThreeJiScale = {
   L: string
   M: string
   s: string
-  tier: string
   witnesses: StrictVarietyThreeScale[]
 }
 
@@ -488,7 +487,7 @@ function conditionWeight(counts: StepCounts) {
               value="ji"
               v-model="modal.strictVarietyThreeSource"
             />
-            <label for="strict-variety-3-source-ji">JI witnesses</label>
+            <label for="strict-variety-3-source-ji">Just intonation</label>
           </span>
         </div>
       </div>
@@ -533,7 +532,9 @@ function conditionWeight(counts: StepCounts) {
 
       <div v-if="isJiSource && usesCombinedJiScaleSelector" class="control-group">
         <div class="control">
-          <label for="strict-variety-3-ji-combined-scale">Pattern and JI step sizes</label>
+          <label for="strict-variety-3-ji-combined-scale"
+            >Pattern and Just intonation step sizes</label
+          >
           <select id="strict-variety-3-ji-combined-scale" v-model="modal.strictVarietyThreeJiScale">
             <option v-for="scale of combinedJiScaleOptions" :key="scale.key" :value="scale.key">
               {{ scale.label }}
@@ -556,7 +557,7 @@ function conditionWeight(counts: StepCounts) {
           </select>
         </div>
         <div class="control">
-          <label for="strict-variety-3-ji-scale">JI step sizes</label>
+          <label for="strict-variety-3-ji-scale">Just intonation step sizes</label>
           <select id="strict-variety-3-ji-scale" v-model="modal.strictVarietyThreeJiScale">
             <option v-for="scale of jiScaleOptions" :key="scale.key" :value="scale.key">
               {{ formatJiScale(scale) }}
@@ -591,7 +592,11 @@ function conditionWeight(counts: StepCounts) {
       </div>
 
       <div class="control-group">
-        <div class="control">
+        <div v-if="scaleOptions.length === 1" class="control">
+          <label>Steps</label>
+          <span>Steps = {{ selectedScale?.steps }}</span>
+        </div>
+        <div v-else class="control">
           <label for="strict-variety-3-steps">Steps</label>
           <select id="strict-variety-3-steps" v-model="modal.strictVarietyThreeSteps">
             <option v-for="option of scaleOptions" :key="option.steps" :value="option.steps">
