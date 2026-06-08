@@ -21,6 +21,7 @@ type StrictVarietyThreeBranch =
 type StrictVarietyThreeEntry = StrictVarietyThreeScale[] | Record<string, StrictVarietyThreeBranch>
 
 type StrictVarietyThreeJiScale = {
+  equave: string
   L: string
   M: string
   s: string
@@ -104,19 +105,19 @@ const selectedTemplateScales = computed<StrictVarietyThreeScale[]>(() => {
   }
   return patternEntry[modal.strictVarietyThreeRun] ?? []
 })
-const jiEquaveKeys = computed(() => Object.keys(jiHierarchy).sort(compareRatioStrings))
-const selectedJiEquaveEntry = computed(() => jiHierarchy[modal.strictVarietyThreeJiEquave])
-const jiSizeKeys = computed(() =>
-  selectedJiEquaveEntry.value ? Object.keys(selectedJiEquaveEntry.value).sort(compareSizeKeys) : []
-)
-const selectedJiSizeEntry = computed(
-  () => selectedJiEquaveEntry.value?.[modal.strictVarietyThreeJiSize]
-)
+const jiSizeKeys = computed(() => Object.keys(jiHierarchy).sort(compareSizeKeys))
+const selectedJiSizeEntry = computed(() => jiHierarchy[modal.strictVarietyThreeJiSize])
 const jiCountsKeys = computed(() =>
   selectedJiSizeEntry.value ? Object.keys(selectedJiSizeEntry.value).sort(comparePatternKeys) : []
 )
+const selectedJiCountsEntry = computed(
+  () => selectedJiSizeEntry.value?.[modal.strictVarietyThreeJiCounts]
+)
+const jiTierKeys = computed(() =>
+  selectedJiCountsEntry.value ? Object.keys(selectedJiCountsEntry.value).sort(compareTierKeys) : []
+)
 const selectedJiScales = computed(
-  () => selectedJiSizeEntry.value?.[modal.strictVarietyThreeJiCounts] ?? []
+  () => selectedJiCountsEntry.value?.[modal.strictVarietyThreeJiTier] ?? []
 )
 const selectedJiScale = computed(() =>
   selectedJiScales.value.find((scale) => jiScaleKey(scale) === modal.strictVarietyThreeJiScale)
@@ -213,14 +214,14 @@ const conditionWarning = computed(() => {
 })
 
 watchEffect(() => {
-  if (!jiEquaveKeys.value.includes(modal.strictVarietyThreeJiEquave)) {
-    modal.strictVarietyThreeJiEquave = jiEquaveKeys.value[0] ?? ''
-  }
   if (jiSizeKeys.value.length && !jiSizeKeys.value.includes(modal.strictVarietyThreeJiSize)) {
     modal.strictVarietyThreeJiSize = jiSizeKeys.value[0]
   }
   if (jiCountsKeys.value.length && !jiCountsKeys.value.includes(modal.strictVarietyThreeJiCounts)) {
     modal.strictVarietyThreeJiCounts = jiCountsKeys.value[0]
+  }
+  if (jiTierKeys.value.length && !jiTierKeys.value.includes(modal.strictVarietyThreeJiTier)) {
+    modal.strictVarietyThreeJiTier = jiTierKeys.value[0]
   }
   if (selectedJiScales.value.length && !selectedJiScale.value) {
     modal.strictVarietyThreeJiScale = jiScaleKey(selectedJiScales.value[0])
@@ -251,7 +252,7 @@ function generate(expand = true) {
   emit(
     'update:scaleName',
     isJiSource.value
-      ? `SV3 JI ${modal.strictVarietyThreeJiEquave}: ${formatCounts(selectedCounts.value)}`
+      ? `SV3 JI ${selectedJiScale.value?.equave ?? ''}: ${formatCounts(selectedCounts.value)}`
       : `SV3: ${formatCounts(selectedCounts.value)}`
   )
   emit('update:source', expand ? expandCode(source) : source)
@@ -278,15 +279,21 @@ function compareCounts(a: StepCounts, b: StepCounts) {
 }
 
 function jiScaleKey(scale: StrictVarietyThreeJiScale) {
-  return `${scale.L}|${scale.M}|${scale.s}`
-}
-
-function compareRatioStrings(a: string, b: string) {
-  return new Fraction(a).compare(new Fraction(b))
+  return `${scale.equave}|${scale.L}|${scale.M}|${scale.s}`
 }
 
 function formatJiScale(scale: StrictVarietyThreeJiScale) {
-  return `L=${scale.L} M=${scale.M} s=${scale.s}`
+  return `${scale.equave}: L=${scale.L} M=${scale.M} s=${scale.s}`
+}
+
+function controlId(prefix: string, value: string) {
+  return `${prefix}-${value.replace(/[^a-z0-9]+/gi, '-')}`
+}
+
+const tierOrder = ['wide small step', 'moderate small step', 'narrow small step', 'tiny small step']
+
+function compareTierKeys(a: string, b: string) {
+  return tierOrder.indexOf(a) - tierOrder.indexOf(b) || a.localeCompare(b)
 }
 
 function compareSizeKeys(a: string, b: string) {
@@ -463,27 +470,66 @@ function conditionWeight(counts: StepCounts) {
       </div>
 
       <div v-if="isJiSource" class="control-group">
-        <div class="control">
-          <label for="strict-variety-3-ji-equave">Equave</label>
-          <select id="strict-variety-3-ji-equave" v-model="modal.strictVarietyThreeJiEquave">
-            <option v-for="equaveKey of jiEquaveKeys" :key="equaveKey" :value="equaveKey">
-              {{ equaveKey }}
-            </option>
-          </select>
+        <div class="control radio-group">
+          <label>Scale size</label>
+          <span v-for="sizeKey of jiSizeKeys" :key="sizeKey">
+            <input
+              :id="`strict-variety-3-ji-size-${sizeKey}`"
+              type="radio"
+              :value="sizeKey"
+              v-model="modal.strictVarietyThreeJiSize"
+            />
+            <label :for="`strict-variety-3-ji-size-${sizeKey}`">{{ sizeKey }}</label>
+          </span>
         </div>
-        <div class="control">
-          <label for="strict-variety-3-ji-size">Size</label>
-          <select id="strict-variety-3-ji-size" v-model="modal.strictVarietyThreeJiSize">
-            <option v-for="sizeKey of jiSizeKeys" :key="sizeKey" :value="sizeKey">
-              {{ sizeKey }}
-            </option>
-          </select>
+      </div>
+
+      <div v-if="isJiSource" class="control-group">
+        <div v-if="jiCountsKeys.length === 1" class="control">
+          <label>Step counts</label>
+          <span>{{ modal.strictVarietyThreeJiCounts }}</span>
         </div>
-        <div class="control">
+        <div v-else-if="jiCountsKeys.length === 2" class="control radio-group">
+          <label>Step counts</label>
+          <span v-for="countsKey of jiCountsKeys" :key="countsKey">
+            <input
+              :id="controlId('strict-variety-3-ji-counts', countsKey)"
+              type="radio"
+              :value="countsKey"
+              v-model="modal.strictVarietyThreeJiCounts"
+            />
+            <label :for="controlId('strict-variety-3-ji-counts', countsKey)">{{ countsKey }}</label>
+          </span>
+        </div>
+        <div v-else class="control">
           <label for="strict-variety-3-ji-counts">Step counts</label>
           <select id="strict-variety-3-ji-counts" v-model="modal.strictVarietyThreeJiCounts">
             <option v-for="countsKey of jiCountsKeys" :key="countsKey" :value="countsKey">
               {{ countsKey }}
+            </option>
+          </select>
+        </div>
+        <div v-if="jiTierKeys.length === 1" class="control">
+          <label>Small-step tier</label>
+          <span>{{ modal.strictVarietyThreeJiTier }}</span>
+        </div>
+        <div v-else-if="jiTierKeys.length === 2" class="control radio-group">
+          <label>Small-step tier</label>
+          <span v-for="tierKey of jiTierKeys" :key="tierKey">
+            <input
+              :id="controlId('strict-variety-3-ji-tier', tierKey)"
+              type="radio"
+              :value="tierKey"
+              v-model="modal.strictVarietyThreeJiTier"
+            />
+            <label :for="controlId('strict-variety-3-ji-tier', tierKey)">{{ tierKey }}</label>
+          </span>
+        </div>
+        <div v-else class="control">
+          <label for="strict-variety-3-ji-tier">Small-step tier</label>
+          <select id="strict-variety-3-ji-tier" v-model="modal.strictVarietyThreeJiTier">
+            <option v-for="tierKey of jiTierKeys" :key="tierKey" :value="tierKey">
+              {{ tierKey }}
             </option>
           </select>
         </div>
@@ -608,7 +654,7 @@ function conditionWeight(counts: StepCounts) {
         <button @click="() => generate(true)">OK</button>
         <button @click="$emit('cancel')">Cancel</button>
         <button @click="() => generate(false)">Raw</button>
-        <i v-if="isJiSource">{{ modal.strictVarietyThreeJiEquave }}</i>
+        <i v-if="isJiSource">{{ selectedJiScale?.equave }}</i>
         <i v-else>{{ hostEd }}{{ nameOfEd(modal.equave, modal.equaveString) }}</i>
       </div>
     </template>
