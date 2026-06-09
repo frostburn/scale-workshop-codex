@@ -9,6 +9,7 @@ import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { useModalStore } from '@/stores/modal'
 import { gcd, lcm } from 'xen-dev-utils/fraction'
+import { det, matmul, minor, transpose } from 'xen-dev-utils/matrix'
 import type { FokkerBlockFactor } from '@/types'
 
 defineProps<{
@@ -42,36 +43,15 @@ function safeInteger(value: number, fallback: number, min = 0, max = 1000) {
   return Math.max(min, Math.min(max, Math.round(numericValue)))
 }
 
-function determinant(matrix: number[][]): number {
-  if (matrix.length === 1) {
-    return matrix[0][0]
-  }
-  return matrix[0].reduce((sum, entry, column) => {
-    const minor = matrix.slice(1).map((row) => row.filter((_, index) => index !== column))
-    return sum + (column % 2 ? -entry : entry) * determinant(minor)
-  }, 0)
-}
-
-function cofactorMatrix(matrix: number[][]) {
-  return matrix.map((row, rowIndex) =>
-    row.map((_, columnIndex) => {
-      const minor = matrix
-        .filter((__, index) => index !== rowIndex)
-        .map((minorRow) => minorRow.filter((__, index) => index !== columnIndex))
-      return (rowIndex + columnIndex) % 2 ? -determinant(minor) : determinant(minor)
-    })
-  )
-}
-
 function adjugate(matrix: number[][]) {
-  const cofactors = cofactorMatrix(matrix)
-  return matrix.map((row, rowIndex) =>
-    row.map((_, columnIndex) => cofactors[columnIndex][rowIndex])
+  return transpose(
+    matrix.map((row, rowIndex) =>
+      row.map((_, columnIndex) => {
+        const cofactor = det(minor(matrix, rowIndex, columnIndex))
+        return (rowIndex + columnIndex) % 2 ? -cofactor : cofactor
+      })
+    )
   )
-}
-
-function multiplyMatrixVector(matrix: number[][], vector: number[]) {
-  return matrix.map((row) => row.reduce((sum, entry, index) => sum + entry * vector[index], 0))
 }
 
 function subgroupVectorToMonzo(vector: number[], basis: ValBasis) {
@@ -105,7 +85,7 @@ function inferBasis(chromas: TimeMonzo[], equave: TimeMonzo) {
 }
 
 function vectorKey(vector: number[], adjugateMatrix: number[][], determinant_: number) {
-  return multiplyMatrixVector(adjugateMatrix, vector)
+  return matmul(adjugateMatrix, vector)
     .map((coordinate) => ((coordinate % determinant_) + determinant_) % determinant_)
     .join(',')
 }
@@ -267,7 +247,7 @@ const chromaBlock = computed<ChromaBlock | null>(() => {
     equaveVector[row],
     ...chromaVectors.map((vector) => vector[row])
   ])
-  const determinant_ = Math.abs(determinant(matrix))
+  const determinant_ = Math.abs(det(matrix))
   if (!determinant_) {
     throw new Error('The chromas and equave do not span a full-rank periodicity block.')
   }
