@@ -262,9 +262,12 @@ export const useModalStore = defineStore('modal', () => {
 
   // === Fokker block ===
 
+  const fokkerBlockMethod = ref<'product' | 'chromas'>('product')
   const fokkerBlockScaleSize = ref(7)
   const fokkerBlockActiveFactorIndex = ref(0)
   const fokkerBlockNextFactorId = ref(3)
+  const fokkerBlockChromasString = ref('25/24, 81/80')
+  const fokkerBlockSubgroupString = ref('')
   const fokkerBlockFactors = reactive<FokkerBlockFactor[]>([
     {
       id: 1,
@@ -641,9 +644,12 @@ export const useModalStore = defineStore('modal', () => {
     moreForEdo,
 
     // Fokker block
+    fokkerBlockMethod,
     fokkerBlockScaleSize,
     fokkerBlockActiveFactorIndex,
     fokkerBlockFactors,
+    fokkerBlockChromasString,
+    fokkerBlockSubgroupString,
     addFokkerBlockFactor,
     removeFokkerBlockFactor,
 

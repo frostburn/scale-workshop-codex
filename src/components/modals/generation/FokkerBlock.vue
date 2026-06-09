@@ -2,6 +2,9 @@
 import { computed } from 'vue'
 import { stepString } from 'moment-of-symmetry/core'
 import { OCTAVE } from '@/constants'
+import { Interval, ValBasis } from 'sonic-weave/interval'
+import { TimeMonzo } from 'sonic-weave/monzo'
+import { parseBasis, parseChord } from 'sonic-weave/parser'
 import Modal from '@/components/ModalDialog.vue'
 import ScaleLineInput from '@/components/ScaleLineInput.vue'
 import { useModalStore } from '@/stores/modal'
@@ -20,6 +23,13 @@ interface ProductStep {
   denominator: number
 }
 
+interface ChromaBlock {
+  name: string
+  source: string
+  scaleSize: number
+  preview: string
+}
+
 const STEP_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 const modal = useModalStore()
@@ -30,6 +40,98 @@ function safeInteger(value: number, fallback: number, min = 0, max = 1000) {
     return fallback
   }
   return Math.max(min, Math.min(max, Math.round(numericValue)))
+}
+
+function determinant(matrix: number[][]): number {
+  if (matrix.length === 1) {
+    return matrix[0][0]
+  }
+  return matrix[0].reduce((sum, entry, column) => {
+    const minor = matrix.slice(1).map((row) => row.filter((_, index) => index !== column))
+    return sum + (column % 2 ? -entry : entry) * determinant(minor)
+  }, 0)
+}
+
+function cofactorMatrix(matrix: number[][]) {
+  return matrix.map((row, rowIndex) =>
+    row.map((_, columnIndex) => {
+      const minor = matrix
+        .filter((__, index) => index !== rowIndex)
+        .map((minorRow) => minorRow.filter((__, index) => index !== columnIndex))
+      return (rowIndex + columnIndex) % 2 ? -determinant(minor) : determinant(minor)
+    })
+  )
+}
+
+function adjugate(matrix: number[][]) {
+  const cofactors = cofactorMatrix(matrix)
+  return matrix.map((row, rowIndex) =>
+    row.map((_, columnIndex) => cofactors[columnIndex][rowIndex])
+  )
+}
+
+function multiplyMatrixVector(matrix: number[][], vector: number[]) {
+  return matrix.map((row) => row.reduce((sum, entry, index) => sum + entry * vector[index], 0))
+}
+
+function subgroupVectorToMonzo(vector: number[], basis: ValBasis) {
+  let result = basis.value[0].pow(0)
+  vector.forEach((exponent, index) => {
+    result = result.mul(basis.value[index].pow(exponent))
+  })
+  if (result instanceof TimeMonzo) {
+    return result
+  }
+  throw new Error('Unable to construct a subgroup monzo.')
+}
+
+function significantComponents(monzo: TimeMonzo) {
+  if (!monzo.residual.isUnity()) {
+    return monzo.numberOfComponents
+  }
+  let result = monzo.primeExponents.length
+  while (result && !monzo.primeExponents[result - 1].n) {
+    result -= 1
+  }
+  return result
+}
+
+function inferBasis(chromas: TimeMonzo[], equave: TimeMonzo) {
+  const numberOfComponents = Math.max(
+    significantComponents(equave),
+    ...chromas.map((chroma) => significantComponents(chroma))
+  )
+  return new ValBasis(numberOfComponents)
+}
+
+function vectorKey(vector: number[], adjugateMatrix: number[][], determinant_: number) {
+  return multiplyMatrixVector(adjugateMatrix, vector)
+    .map((coordinate) => ((coordinate % determinant_) + determinant_) % determinant_)
+    .join(',')
+}
+
+function enumerateVectors(dimensions: number, radius: number) {
+  const result: number[][] = []
+  const current = Array(dimensions).fill(0)
+
+  function visit(index: number) {
+    if (index === dimensions) {
+      if (current.some((coordinate) => Math.abs(coordinate) === radius)) {
+        result.push([...current])
+      }
+      return
+    }
+    for (let coordinate = -radius; coordinate <= radius; ++coordinate) {
+      current[index] = coordinate
+      visit(index + 1)
+    }
+  }
+
+  if (radius === 0) {
+    return [current]
+  }
+  visit(0)
+  return result
 }
 
 const scaleSize = computed(() => safeInteger(modal.fokkerBlockScaleSize, 7, 2))
@@ -134,6 +236,90 @@ const preview = computed(() =>
     .join(', ')
 )
 
+const chromaBlock = computed<ChromaBlock | null>(() => {
+  const chromaIntervals = parseChord(modal.fokkerBlockChromasString)
+  const chromas = chromaIntervals.map((interval) => {
+    if (!(interval.value instanceof TimeMonzo)) {
+      throw new Error(`${interval.toString()} is not a rational subgroup interval.`)
+    }
+    return interval.value
+  })
+  if (!chromas.length) {
+    throw new Error('At least one chroma is required.')
+  }
+  if (!(modal.equave.value instanceof TimeMonzo)) {
+    throw new Error('The equave must be a rational subgroup interval.')
+  }
+
+  const basis = modal.fokkerBlockSubgroupString.trim()
+    ? parseBasis(modal.fokkerBlockSubgroupString)
+    : inferBasis(chromas, modal.equave.value)
+  const dimensions = basis.size
+  if (chromas.length !== dimensions - 1) {
+    throw new Error(
+      `Expected ${dimensions - 1} chroma${dimensions === 2 ? '' : 's'} for a rank-${dimensions} subgroup.`
+    )
+  }
+
+  const equaveVector = basis.toSubgroupMonzo(modal.equave.value)
+  const chromaVectors = chromas.map((chroma) => basis.toSubgroupMonzo(chroma))
+  const matrix = Array.from({ length: dimensions }, (_, row) => [
+    equaveVector[row],
+    ...chromaVectors.map((vector) => vector[row])
+  ])
+  const determinant_ = Math.abs(determinant(matrix))
+  if (!determinant_) {
+    throw new Error('The chromas and equave do not span a full-rank periodicity block.')
+  }
+  if (determinant_ > 2000) {
+    throw new Error('Fokker blocks above 2000 notes are not supported here.')
+  }
+
+  const adjugateMatrix = adjugate(matrix)
+  const representatives = new Map<string, TimeMonzo>()
+  const maxRadius = Math.max(3, Math.min(8, determinant_))
+  for (let radius = 0; radius <= maxRadius && representatives.size < determinant_; ++radius) {
+    for (const vector of enumerateVectors(dimensions, radius)) {
+      const key = vectorKey(vector, adjugateMatrix, determinant_)
+      if (representatives.has(key)) {
+        continue
+      }
+      representatives.set(
+        key,
+        subgroupVectorToMonzo(vector, basis).reduce(modal.equave.value) as TimeMonzo
+      )
+      if (representatives.size === determinant_) {
+        break
+      }
+    }
+  }
+  if (representatives.size !== determinant_) {
+    throw new Error('Unable to enumerate lattice representatives for this Fokker block.')
+  }
+
+  const unity = modal.equave.value.pow(0) as TimeMonzo
+  const notes = [...representatives.values()]
+    .filter((note) => !note.equals(unity))
+    .sort((a, b) => a.compare(b))
+  notes.push(modal.equave.value)
+  const source = notes.map((note) => new Interval(note, 'linear').toString()).join('\n') + '\n'
+  return {
+    name: `Fokker block from ${chromaIntervals.map((interval) => interval.toString()).join(', ')}`,
+    source,
+    scaleSize: determinant_,
+    preview: notes.map((note) => new Interval(note, 'linear').toString()).join(', ')
+  }
+})
+
+const chromaError = computed(() => {
+  try {
+    void chromaBlock.value
+    return ''
+  } catch (error) {
+    return error instanceof Error ? error.message : `${error}`
+  }
+})
+
 function selectFactor(index: number) {
   modal.fokkerBlockActiveFactorIndex = index
 }
@@ -147,6 +333,26 @@ function projectorString() {
 }
 
 function generate(expand = true) {
+  if (modal.fokkerBlockMethod === 'chromas') {
+    if (chromaError.value || !chromaBlock.value) {
+      return
+    }
+    emit('update:scaleName', chromaBlock.value.name)
+    if (expand) {
+      emit('update:source', chromaBlock.value.source)
+    } else {
+      emit(
+        'update:source',
+        `(* Chromas: ${modal.fokkerBlockChromasString}${
+          modal.fokkerBlockSubgroupString.trim()
+            ? `; subgroup: ${modal.fokkerBlockSubgroupString}`
+            : ''
+        } *)\n${chromaBlock.value.source}`
+      )
+    }
+    return
+  }
+
   const projector = projectorString()
   let source: string
 
@@ -176,7 +382,22 @@ function generate(expand = true) {
       <h2>Generate Fokker block</h2>
     </template>
     <template #body>
-      <div class="control-group">
+      <div class="factor-tabs method-tabs">
+        <button
+          :class="{ active: modal.fokkerBlockMethod === 'product' }"
+          @click="modal.fokkerBlockMethod = 'product'"
+        >
+          MOS product
+        </button>
+        <button
+          :class="{ active: modal.fokkerBlockMethod === 'chromas' }"
+          @click="modal.fokkerBlockMethod = 'chromas'"
+        >
+          Chromas
+        </button>
+      </div>
+
+      <div v-show="modal.fokkerBlockMethod === 'product'" class="control-group">
         <p>
           Build a rank-{{ rank }} Fokker block as a step-pattern product: choose a shared scale
           size, configure two or more MOS factors, rotate each mode or dome, then average matching
@@ -203,7 +424,7 @@ function generate(expand = true) {
         </div>
       </div>
 
-      <div class="factor-tabs">
+      <div v-show="modal.fokkerBlockMethod === 'product'" class="factor-tabs">
         <button
           v-for="(factor, index) in modal.fokkerBlockFactors"
           :key="factor.id"
@@ -215,7 +436,11 @@ function generate(expand = true) {
         <button @click="modal.addFokkerBlockFactor">+</button>
       </div>
 
-      <div v-if="activeFactor" class="control-group factor-panel">
+      <div
+        v-if="activeFactor"
+        v-show="modal.fokkerBlockMethod === 'product'"
+        class="control-group factor-panel"
+      >
         <div class="control">
           <label :for="`fokker-large-${activeFactor.id}`">
             Large steps ({{ inferredSmallSteps(activeFactor) }} small)
@@ -268,12 +493,51 @@ function generate(expand = true) {
         </button>
       </div>
 
-      <div class="control-group">
+      <div v-show="modal.fokkerBlockMethod === 'product'" class="control-group">
         <p>
           Product word: <strong>{{ productWord }}</strong>
         </p>
         <p>Host EDO: {{ hostEdo }}</p>
         <p v-if="preview">Averaged steps: {{ preview }}</p>
+      </div>
+
+      <div v-show="modal.fokkerBlockMethod === 'chromas'" class="control-group">
+        <p>
+          Build a Fokker block from a list of chromas. The optional subgroup determines what counts
+          as an integer lattice point for exotic bases.
+        </p>
+        <div class="control">
+          <label for="fokker-chromas">Chromas</label>
+          <textarea
+            id="fokker-chromas"
+            rows="4"
+            placeholder="25/24, 81/80"
+            v-model="modal.fokkerBlockChromasString"
+          ></textarea>
+        </div>
+        <div class="control">
+          <label for="fokker-subgroup">Subgroup / prime limit (optional)</label>
+          <input
+            id="fokker-subgroup"
+            type="text"
+            placeholder="2.3.5"
+            v-model="modal.fokkerBlockSubgroupString"
+          />
+        </div>
+        <div class="control">
+          <label for="fokker-chroma-equave">Equave</label>
+          <ScaleLineInput
+            id="fokker-chroma-equave"
+            v-model="modal.equaveString"
+            :defaultValue="OCTAVE"
+            @update:value="modal.equave = $event"
+          />
+        </div>
+        <p v-if="chromaError">{{ chromaError }}</p>
+        <template v-else-if="chromaBlock">
+          <p>Scale size: {{ chromaBlock.scaleSize }}</p>
+          <p>Notes: {{ chromaBlock.preview }}</p>
+        </template>
       </div>
     </template>
     <template #footer>
