@@ -39,6 +39,13 @@ describe('Reorder steps', () => {
     const rows = wrapper.findAll('li')
     expect(spans.map((span) => span.attributes('data-step-id'))).toEqual(['1', '0', '2'])
     expect(spans[0].attributes('fill')).toBe(spans[2].attributes('fill'))
+    expect(Number(spans[0].attributes('y'))).toBeLessThan(Number(spans[1].attributes('y')))
+    expect(wrapper.findAll('svg g text').map((tick) => tick.text())).toEqual([
+      '0.0',
+      '500.0',
+      '700.0',
+      '1200.0'
+    ])
     expect(rows[0].attributes('style')).toBe(rows[2].attributes('style'))
 
     await wrapper.get('.modal-footer button').trigger('click')
@@ -71,7 +78,7 @@ describe('Reorder steps', () => {
     const scale = open('9/8\n5/4\n2/1')
     await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
     await wrapper.findAll('.modal-footer button')[2].trigger('click')
-    expect(scale.sourceText).toContain('$ = $[[1, 0, 2]]')
+    expect(scale.sourceText).toContain('£[[1, 0, 2]]')
     expect(scale.error).toBe('')
     expect(
       scale.relativeIntervals.map((interval, i) =>

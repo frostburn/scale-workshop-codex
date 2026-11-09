@@ -47,13 +47,13 @@ const preview = computed(() => {
   const min = Math.min(...positions)
   const max = Math.max(...positions)
   const range = max - min || 1
-  const y = (position: number) => 330 - ((position - min) / range) * 300
+  const y = (position: number) => 30 + ((position - min) / range) * 540
   return {
     spans,
     word: stepString(values),
     hasNegative: spans.some((span) => span.cents < 0),
     y,
-    ticks: Array.from({ length: 5 }, (_, i) => min + ((max - min) * i) / 4)
+    ticks: [...new Set(positions)]
   }
 })
 
@@ -102,9 +102,9 @@ function modify(expand = true) {
   // An empty source displays 12-TET; materialize it before permuting its steps.
   const source = usedDefaultScale ? `${scale.sourceText}\ntet(12)` : scale.sourceText
   const permutation = steps.value.map((step) => step.id).join(', ')
-  const result = `${source}\nunstack()\n$ = $[[${permutation}]]\nstack()`
+  const result = `${source}\nunstack()\n£[[${permutation}]]\nstack()`
   if (expand) {
-    visitor.executeProgram(parseAST(`$ = $[[${permutation}]]\nstack()`))
+    visitor.executeProgram(parseAST(`£[[${permutation}]]\nstack()`))
     scale.sourceText = visitor.expand(defaults)
   } else {
     scale.sourceText = result
@@ -121,7 +121,7 @@ function modify(expand = true) {
       <p>Drag the unstacked steps into a new order, or use the arrow buttons.</p>
       <div class="reorder-preview">
         <div class="step-list">
-          <h3>Steps (bottom to top)</h3>
+          <h3>Steps (top to bottom)</h3>
           <ol
             ref="list"
             aria-label="Unstacked steps"
@@ -136,11 +136,11 @@ function modify(expand = true) {
               :data-id="step.id"
               :class="{ dragging: dragging === step.id }"
               :style="{ borderLeftColor: step.color }"
+              @pointerdown="startDrag($event, step.id)"
             >
               <button
                 class="drag-handle"
                 :aria-label="`Drag step ${index + 1}; use arrow keys to reorder`"
-                @pointerdown="startDrag($event, step.id)"
                 @keydown.up.prevent="move(index, index - 1)"
                 @keydown.down.prevent="move(index, index + 1)"
               >
@@ -148,10 +148,12 @@ function modify(expand = true) {
               </button>
               <span class="step-description">
                 <strong>{{ index + 1 }}. {{ step.letter }}</strong>
-                <span>{{ step.interval.str(visitor.rootContext) }}</span>
-                <small>{{ step.cents.toFixed(scale.centsFractionDigits) }} ¢</small>
+                <span class="step-details">
+                  <span>{{ step.interval.str(visitor.rootContext) }}</span>
+                  <small>{{ step.cents.toFixed(scale.centsFractionDigits) }} ¢</small>
+                </span>
               </span>
-              <span class="move-buttons">
+              <span class="move-buttons" @pointerdown.stop>
                 <button
                   :aria-label="`Move step ${index + 1} up`"
                   :disabled="index === 0"
@@ -172,8 +174,8 @@ function modify(expand = true) {
         </div>
         <figure>
           <figcaption>Scale preview (¢)</figcaption>
-          <svg viewBox="0 0 180 360" role="img" aria-label="Reordered scale ruler">
-            <line x1="80" x2="80" y1="20" y2="340" class="ruler-line" />
+          <svg viewBox="0 0 180 600" role="img" aria-label="Reordered scale ruler">
+            <line x1="80" x2="80" y1="20" y2="580" class="ruler-line" />
             <g v-for="(tick, index) of preview.ticks" :key="index">
               <line
                 x1="76"
@@ -190,7 +192,7 @@ function modify(expand = true) {
                 :data-step-id="span.id"
                 :data-direction="span.cents < 0 ? 'negative' : 'positive'"
                 :x="span.cents < 0 ? 42 : 84"
-                :y="preview.y(Math.max(span.start, span.end))"
+                :y="preview.y(Math.min(span.start, span.end))"
                 width="34"
                 :height="Math.max(1, Math.abs(preview.y(span.start) - preview.y(span.end)))"
                 :fill="span.color"
@@ -201,13 +203,6 @@ function modify(expand = true) {
                   {{ span.cents.toFixed(scale.centsFractionDigits) }} cents
                 </title>
               </rect>
-              <line
-                x1="76"
-                x2="84"
-                :y1="preview.y(span.end)"
-                :y2="preview.y(span.end)"
-                class="ruler-line"
-              />
             </g>
             <text :x="preview.hasNegative ? 38 : 72" :y="preview.y(0) + 4" text-anchor="end">
               1/1
@@ -238,23 +233,37 @@ function modify(expand = true) {
   min-width: 0;
   max-width: 42rem;
   box-sizing: border-box;
+  height: min(54rem, calc(100dvh - 2rem));
+}
+.reorder-steps :deep(.modal-body) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 .reorder-preview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 11rem;
   gap: 1rem;
   margin-top: 1rem;
+  flex: 1;
+  min-height: 12rem;
 }
 h3,
 figcaption {
   font-size: 1rem;
   margin: 0 0 0.5rem;
 }
+.step-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 ol {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 24rem;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 li {
@@ -267,6 +276,10 @@ li {
   border-left: 0.5rem solid;
   border-radius: 3px;
   background: var(--color-background-soft);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  line-height: 1.4;
 }
 li.dragging {
   outline: 2px solid var(--color-accent);
@@ -278,6 +291,7 @@ li.dragging {
   user-select: none;
   padding: 0.25rem;
 }
+.dragging,
 .dragging .drag-handle {
   cursor: grabbing;
 }
@@ -288,20 +302,32 @@ li.dragging {
   min-width: 0;
   flex: 1;
 }
+.step-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
 .move-buttons {
   display: flex;
-  flex-direction: column;
   gap: 0.2rem;
+  cursor: default;
 }
 .move-buttons button {
   padding: 0 0.4rem;
 }
 figure {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  line-height: 1.4;
 }
 svg {
   display: block;
   width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 .ruler-line {
   stroke: var(--color-text);
