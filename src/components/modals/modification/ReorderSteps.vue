@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef, useId } from 'vue'
+import { Interval } from 'sonic-weave/interval'
 import { parseAST } from 'sonic-weave/parser'
 import { stepString } from 'sonic-weave/words'
 import Modal from '@/components/ModalDialog.vue'
@@ -15,6 +16,13 @@ const usedDefaultScale = !visitor.currentScale.length
 if (usedDefaultScale) {
   visitor.currentScale.push(...scale.relativeIntervals)
 }
+const patternPrefix = useId()
+const equaveInterval = new Interval(
+  visitor.currentScale[visitor.currentScale.length - 1].value,
+  'linear'
+)
+const equaveText = equaveInterval.str(visitor.rootContext)
+const equaveLabel = /^\d+$/.test(equaveText) ? `${equaveText}/1` : equaveText
 const originalWord = stepString(visitor.currentScale.map((interval) => interval.value))
 visitor.executeProgram(parseAST('unstack()'))
 const letters = [...new Set(originalWord)].sort()
@@ -48,8 +56,26 @@ const preview = computed(() => {
   const max = Math.max(...positions)
   const range = max - min || 1
   const y = (position: number) => 30 + ((position - min) / range) * 540
+  // Split at every endpoint so no later span can conceal an earlier one.
+  const boundaries = [...new Set(positions)].sort((a, b) => a - b)
+  const segments = boundaries.slice(0, -1).flatMap((start, i) => {
+    const end = boundaries[i + 1]
+    return [false, true].flatMap((negative) => {
+      const members = spans.filter(
+        (span) =>
+          span.cents < 0 === negative &&
+          Math.min(span.start, span.end) < end &&
+          Math.max(span.start, span.end) > start
+      )
+      return members.length
+        ? [{ start, end, negative, members, pattern: `${patternPrefix}-${i}-${negative}` }]
+        : []
+    })
+  })
   return {
     spans,
+    segments,
+    equave: cents,
     word: stepString(values),
     hasNegative: spans.some((span) => span.cents < 0),
     y,
@@ -186,26 +212,71 @@ function modify(expand = true) {
               />
               <text x="125" :y="preview.y(tick) + 4">{{ tick.toFixed(1) }}</text>
             </g>
-            <g v-for="span of preview.spans" :key="span.id">
-              <rect
-                class="step-span"
-                :data-step-id="span.id"
-                :data-direction="span.cents < 0 ? 'negative' : 'positive'"
-                :x="span.cents < 0 ? 42 : 84"
-                :y="preview.y(Math.min(span.start, span.end))"
-                width="34"
-                :height="Math.max(1, Math.abs(preview.y(span.start) - preview.y(span.end)))"
-                :fill="span.color"
-                :fill-opacity="dragging === null || dragging === span.id ? 1 : 0.35"
+            <defs>
+              <pattern
+                v-for="segment of preview.segments.filter((segment) => segment.members.length > 1)"
+                :id="segment.pattern"
+                :key="segment.pattern"
+                patternUnits="userSpaceOnUse"
+                :width="segment.members.length * 6"
+                height="6"
+                patternTransform="rotate(45)"
               >
-                <title>
-                  Step {{ span.index + 1 }}: {{ span.letter }},
-                  {{ span.cents.toFixed(scale.centsFractionDigits) }} cents
-                </title>
-              </rect>
-            </g>
+                <rect
+                  v-for="(member, index) of segment.members"
+                  :key="member.id"
+                  :x="index * 6"
+                  y="0"
+                  width="6"
+                  height="6"
+                  :fill="member.color"
+                  :fill-opacity="dragging === null || dragging === member.id ? 1 : 0.35"
+                />
+              </pattern>
+            </defs>
+            <rect
+              v-for="segment of preview.segments"
+              :key="segment.pattern"
+              class="step-span"
+              :data-step-id="segment.members.map((member) => member.id).join(',')"
+              :data-direction="segment.negative ? 'negative' : 'positive'"
+              :x="segment.negative ? 42 : 84"
+              :y="preview.y(segment.start)"
+              width="34"
+              :height="Math.max(1, preview.y(segment.end) - preview.y(segment.start))"
+              :fill="
+                segment.members.length > 1 ? `url(#${segment.pattern})` : segment.members[0].color
+              "
+              :fill-opacity="
+                segment.members.length > 1 ||
+                dragging === null ||
+                dragging === segment.members[0].id
+                  ? 1
+                  : 0.35
+              "
+            >
+              <title>
+                {{
+                  segment.members
+                    .map(
+                      (member) =>
+                        `Step ${member.index + 1}: ${member.letter}, ${member.cents.toFixed(scale.centsFractionDigits)} cents`
+                    )
+                    .join('; ')
+                }}
+              </title>
+            </rect>
             <text :x="preview.hasNegative ? 38 : 72" :y="preview.y(0) + 4" text-anchor="end">
               1/1
+            </text>
+            <text
+              class="equave-marker"
+              :x="preview.hasNegative ? 38 : 72"
+              :y="preview.y(preview.equave) + 4"
+              text-anchor="end"
+            >
+              <title>Ending equave</title>
+              {{ equaveLabel }}
             </text>
           </svg>
           <small v-if="preview.hasNegative"
