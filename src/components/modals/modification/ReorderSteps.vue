@@ -40,11 +40,11 @@ const list = ref<HTMLOListElement | null>(null)
 const dragging = ref<number | null>(null)
 let pointerId: number | null = null
 
-const preview = computed(() => {
+function makePreview(orderedSteps: typeof steps.value, state: string) {
   let cents = 0
-  let value = steps.value[0].interval.value.pow(0)
+  let value = orderedSteps[0].interval.value.pow(0)
   const values: (typeof value)[] = []
-  const spans = steps.value.map((step, index) => {
+  const spans = orderedSteps.map((step, index) => {
     const start = cents
     cents += step.cents
     value = value.mul(step.interval.value)
@@ -52,10 +52,6 @@ const preview = computed(() => {
     return { ...step, index, start, end: cents }
   })
   const positions = [0, ...spans.map((span) => span.end)]
-  const min = Math.min(...positions)
-  const max = Math.max(...positions)
-  const range = max - min || 1
-  const y = (position: number) => 30 + ((position - min) / range) * 540
   // Split at every endpoint so no later span can conceal an earlier one.
   const boundaries = [...new Set(positions)].sort((a, b) => a - b)
   const segments = boundaries.slice(0, -1).flatMap((start, i) => {
@@ -68,7 +64,7 @@ const preview = computed(() => {
           Math.max(span.start, span.end) > start
       )
       return members.length
-        ? [{ start, end, negative, members, pattern: `${patternPrefix}-${i}-${negative}` }]
+        ? [{ start, end, negative, members, pattern: `${patternPrefix}-${state}-${i}-${negative}` }]
         : []
     })
   })
@@ -78,9 +74,20 @@ const preview = computed(() => {
     equave: cents,
     word: stepString(values),
     hasNegative: spans.some((span) => span.cents < 0),
-    y,
+    state,
     ticks: [...new Set(positions)]
   }
+}
+
+// Keep the opening order fixed while both rulers use the same cents range.
+const before = makePreview(steps.value, 'before')
+const preview = computed(() => makePreview(steps.value, 'after'))
+const ruler = computed(() => {
+  const states = [before, preview.value]
+  const positions = states.flatMap((state) => state.ticks)
+  const min = Math.min(...positions)
+  const range = Math.max(...positions) - min || 1
+  return { states, y: (position: number) => 30 + ((position - min) / range) * 540 }
 })
 
 function move(from: number, to: number) {
@@ -200,84 +207,98 @@ function modify(expand = true) {
         </div>
         <figure>
           <figcaption>Scale preview (¢)</figcaption>
-          <svg viewBox="0 0 180 600" role="img" aria-label="Reordered scale ruler">
-            <line x1="80" x2="80" y1="20" y2="580" class="ruler-line" />
-            <g v-for="(tick, index) of preview.ticks" :key="index">
-              <line
-                x1="76"
-                x2="84"
-                :y1="preview.y(tick)"
-                :y2="preview.y(tick)"
-                class="ruler-line"
-              />
-              <text x="125" :y="preview.y(tick) + 4">{{ tick.toFixed(1) }}</text>
-            </g>
-            <defs>
-              <pattern
-                v-for="segment of preview.segments.filter((segment) => segment.members.length > 1)"
-                :id="segment.pattern"
-                :key="segment.pattern"
-                patternUnits="userSpaceOnUse"
-                :width="segment.members.length * 6"
-                height="6"
-                patternTransform="rotate(45)"
-              >
-                <rect
-                  v-for="(member, index) of segment.members"
-                  :key="member.id"
-                  :x="index * 6"
-                  y="0"
-                  width="6"
+          <svg
+            viewBox="0 0 360 600"
+            role="img"
+            aria-label="Scale ruler before and after reordering"
+          >
+            <g
+              v-for="(state, stateIndex) of ruler.states"
+              :key="state.state"
+              :class="`${state.state}-state`"
+              :transform="`translate(${stateIndex * 180}, 0)`"
+              :aria-label="state.state === 'before' ? 'Before reordering' : 'After reordering'"
+            >
+              <text x="80" y="14" text-anchor="middle" class="ruler-heading">
+                {{ state.state === 'before' ? 'Before' : 'After' }}
+              </text>
+              <line x1="80" x2="80" y1="20" y2="580" class="ruler-line" />
+              <g v-for="(tick, index) of state.ticks" :key="index">
+                <line x1="76" x2="84" :y1="ruler.y(tick)" :y2="ruler.y(tick)" class="ruler-line" />
+                <text x="125" :y="ruler.y(tick) + 4">{{ tick.toFixed(1) }}</text>
+              </g>
+              <defs>
+                <pattern
+                  v-for="segment of state.segments.filter((segment) => segment.members.length > 1)"
+                  :id="segment.pattern"
+                  :key="segment.pattern"
+                  patternUnits="userSpaceOnUse"
+                  :width="segment.members.length * 6"
                   height="6"
-                  :fill="member.color"
-                  :fill-opacity="dragging === null || dragging === member.id ? 1 : 0.35"
-                />
-              </pattern>
-            </defs>
-            <rect
-              v-for="segment of preview.segments"
-              :key="segment.pattern"
-              class="step-span"
-              :data-step-id="segment.members.map((member) => member.id).join(',')"
-              :data-direction="segment.negative ? 'negative' : 'positive'"
-              :x="segment.negative ? 42 : 84"
-              :y="preview.y(segment.start)"
-              width="34"
-              :height="Math.max(1, preview.y(segment.end) - preview.y(segment.start))"
-              :fill="
-                segment.members.length > 1 ? `url(#${segment.pattern})` : segment.members[0].color
-              "
-              :fill-opacity="
-                segment.members.length > 1 ||
-                dragging === null ||
-                dragging === segment.members[0].id
-                  ? 1
-                  : 0.35
-              "
-            >
-              <title>
-                {{
-                  segment.members
-                    .map(
-                      (member) =>
-                        `Step ${member.index + 1}: ${member.letter}, ${member.cents.toFixed(scale.centsFractionDigits)} cents`
-                    )
-                    .join('; ')
-                }}
-              </title>
-            </rect>
-            <text :x="preview.hasNegative ? 38 : 72" :y="preview.y(0) + 4" text-anchor="end">
-              1/1
-            </text>
-            <text
-              class="equave-marker"
-              :x="preview.hasNegative ? 38 : 72"
-              :y="preview.y(preview.equave) + 4"
-              text-anchor="end"
-            >
-              <title>Ending equave</title>
-              {{ equaveLabel }}
-            </text>
+                  patternTransform="rotate(45)"
+                >
+                  <rect
+                    v-for="(member, index) of segment.members"
+                    :key="member.id"
+                    :x="index * 6"
+                    y="0"
+                    width="6"
+                    height="6"
+                    :fill="member.color"
+                    :fill-opacity="dragging === null || dragging === member.id ? 1 : 0.35"
+                  />
+                </pattern>
+              </defs>
+              <rect
+                v-for="segment of state.segments"
+                :key="segment.pattern"
+                :class="['ruler-span', { 'step-span': state.state === 'after' }]"
+                :data-step-id="segment.members.map((member) => member.id).join(',')"
+                :data-direction="segment.negative ? 'negative' : 'positive'"
+                :x="segment.negative ? 42 : 84"
+                :y="ruler.y(segment.start)"
+                width="34"
+                :height="Math.max(1, ruler.y(segment.end) - ruler.y(segment.start))"
+                :fill="
+                  segment.members.length > 1 ? `url(#${segment.pattern})` : segment.members[0].color
+                "
+                :fill-opacity="
+                  segment.members.length > 1 ||
+                  dragging === null ||
+                  dragging === segment.members[0].id
+                    ? 1
+                    : 0.35
+                "
+              >
+                <title>
+                  {{
+                    segment.members
+                      .map(
+                        (member) =>
+                          `Step ${member.index + 1}: ${member.letter}, ${member.cents.toFixed(scale.centsFractionDigits)} cents`
+                      )
+                      .join('; ')
+                  }}
+                </title>
+              </rect>
+              <text
+                class="root-marker"
+                :x="state.hasNegative ? 38 : 72"
+                :y="ruler.y(0) + 4"
+                text-anchor="end"
+              >
+                1/1
+              </text>
+              <text
+                class="equave-marker"
+                :x="state.hasNegative ? 38 : 72"
+                :y="ruler.y(state.equave) + 4"
+                text-anchor="end"
+              >
+                <title>Ending equave</title>
+                {{ equaveLabel }}
+              </text>
+            </g>
           </svg>
           <small v-if="preview.hasNegative"
             >Descending steps on the left; ascending steps on the right.</small
@@ -300,9 +321,9 @@ function modify(expand = true) {
 
 <style scoped>
 .reorder-steps :deep(.modal-container) {
-  width: min(42rem, calc(100vw - 2rem));
+  width: min(50rem, calc(100vw - 2rem));
   min-width: 0;
-  max-width: 42rem;
+  max-width: 50rem;
   box-sizing: border-box;
   height: min(54rem, calc(100dvh - 2rem));
 }
@@ -313,7 +334,7 @@ function modify(expand = true) {
 }
 .reorder-preview {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 11rem;
+  grid-template-columns: minmax(0, 1fr) 20rem;
   gap: 1rem;
   margin-top: 1rem;
   flex: 1;
@@ -407,7 +428,7 @@ text {
   fill: var(--color-text);
   font-size: 11px;
 }
-.step-span {
+.ruler-span {
   stroke: var(--color-background);
   stroke-width: 0.5;
 }
@@ -415,10 +436,23 @@ text {
   overflow-wrap: anywhere;
   margin: 1rem 0;
 }
-@media (max-width: 500px) {
+.ruler-heading {
+  font-weight: bold;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
   .reorder-preview {
-    grid-template-columns: minmax(0, 1fr) 7rem;
+    grid-template-columns: minmax(0, 1fr);
+    flex: none;
     gap: 0.5rem;
+  }
+  .step-list ol {
+    max-height: 14rem;
+    flex: none;
+  }
+  figure svg {
+    height: 28rem;
+    flex: none;
   }
   li {
     gap: 0.25rem;

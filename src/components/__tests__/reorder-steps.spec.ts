@@ -40,7 +40,7 @@ describe('Reorder steps', () => {
     expect(spans.map((span) => span.attributes('data-step-id'))).toEqual(['1', '0', '2'])
     expect(spans[0].attributes('fill')).toBe(spans[2].attributes('fill'))
     expect(Number(spans[0].attributes('y'))).toBeLessThan(Number(spans[1].attributes('y')))
-    expect(wrapper.findAll('svg g text').map((tick) => tick.text())).toEqual([
+    expect(wrapper.findAll('.after-state g text').map((tick) => tick.text())).toEqual([
       '0.0',
       '500.0',
       '700.0',
@@ -88,16 +88,41 @@ describe('Reorder steps', () => {
         span.attributes('data-step-id')!.split(',').length
       )
     }
-    expect(wrapper.get('.equave-marker').text()).toContain('2/1')
-    expect(wrapper.get('.equave-marker').attributes('y')).toBe('574')
+    expect(wrapper.get('.after-state .equave-marker').text()).toContain('2/1')
+    expect(wrapper.get('.after-state .equave-marker').attributes('y')).toBe('574')
     await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
-    expect(wrapper.get('.equave-marker').text()).toContain('2/1')
+    expect(wrapper.get('.after-state .equave-marker').text()).toContain('2/1')
   })
 
   it('labels a non-octave equave with its actual ratio', () => {
     open('3/2\n3/1')
-    expect(wrapper.get('.equave-marker').text()).toContain('3/1')
+    expect(wrapper.get('.after-state .equave-marker').text()).toContain('3/1')
     expect(wrapper.findAll('pattern')).toHaveLength(0)
+  })
+
+  it('keeps the before ruler fixed while comparing both states on one cents range', async () => {
+    open('200.\n100.\n1200.')
+    const beforeTicks = () => wrapper.findAll('.before-state g text').map((tick) => tick.text())
+    const beforeColors = wrapper
+      .findAll('.before-state .ruler-span')
+      .map((span) => span.attributes('fill'))
+    expect(beforeTicks()).toEqual(['0.0', '200.0', '100.0', '1200.0'])
+    await wrapper.get('[aria-label="Move step 2 up"]').trigger('click')
+    expect(beforeTicks()).toEqual(['0.0', '200.0', '100.0', '1200.0'])
+    expect(
+      wrapper.findAll('.before-state .ruler-span').map((span) => span.attributes('fill'))
+    ).toEqual(beforeColors)
+    expect(wrapper.findAll('.after-state g text').map((tick) => tick.text())).toEqual([
+      '0.0',
+      '-100.0',
+      '100.0',
+      '1200.0'
+    ])
+    const roots = wrapper.findAll('.root-marker')
+    expect(roots).toHaveLength(2)
+    expect(roots[0].attributes('y')).toBe(roots[1].attributes('y'))
+    const equaves = wrapper.findAll('.equave-marker')
+    expect(equaves[0].attributes('y')).toBe(equaves[1].attributes('y'))
   })
 
   it('retains exact ratio steps and supports the Raw operation', async () => {
