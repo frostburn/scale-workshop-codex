@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { stepString } from 'sonic-weave/words'
@@ -15,7 +15,10 @@ describe('Reorder steps', () => {
     useSessionIdStore().loading = true
   })
 
-  afterEach(() => wrapper?.unmount())
+  afterEach(() => {
+    wrapper?.unmount()
+    vi.unstubAllGlobals()
+  })
 
   function open(source: string) {
     const scale = useScaleStore()
@@ -119,10 +122,35 @@ describe('Reorder steps', () => {
       '1200.0'
     ])
     const roots = wrapper.findAll('.root-marker')
-    expect(roots).toHaveLength(2)
-    expect(roots[0].attributes('y')).toBe(roots[1].attributes('y'))
+    expect(roots).toHaveLength(1)
+    expect(roots[0].attributes('y')).toBe(
+      wrapper.findAll('.before-state g text')[0].attributes('y')
+    )
     const equaves = wrapper.findAll('.equave-marker')
-    expect(equaves[0].attributes('y')).toBe(equaves[1].attributes('y'))
+    expect(equaves).toHaveLength(1)
+    expect(equaves[0].attributes('y')).toBe(
+      wrapper.findAll('.before-state g text')[3].attributes('y')
+    )
+  })
+
+  it('starts phone dragging only from the grip, leaving cards available for scrolling', async () => {
+    open('200.\n700.\n1200.')
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    const capture = vi.fn()
+    wrapper.get('ol').element.setPointerCapture = capture
+    const press = async (selector: string) => {
+      const event = new MouseEvent('pointerdown', { button: 0, bubbles: true })
+      Object.defineProperty(event, 'pointerId', { value: 1 })
+      wrapper.get(selector).element.dispatchEvent(event)
+      await wrapper.vm.$nextTick()
+    }
+    await press('.step-description')
+    expect(capture).not.toHaveBeenCalled()
+    await press('[aria-label="Move step 1 down"]')
+    expect(capture).not.toHaveBeenCalled()
+    await press('.drag-handle')
+    expect(capture).toHaveBeenCalledWith(1)
+    expect(wrapper.get('li').classes()).toContain('dragging')
   })
 
   it('retains exact ratio steps and supports the Raw operation', async () => {

@@ -100,6 +100,11 @@ function move(from: number, to: number) {
 
 function startDrag(event: PointerEvent, id: number) {
   if (event.button !== 0 || !list.value) return
+  if (
+    window.matchMedia?.('(max-width: 600px)').matches &&
+    !(event.target as Element).closest('.drag-handle')
+  )
+    return
   dragging.value = id
   pointerId = event.pointerId
   list.value.setPointerCapture(event.pointerId)
@@ -208,7 +213,7 @@ function modify(expand = true) {
         <figure>
           <figcaption>Scale preview (¢)</figcaption>
           <svg
-            viewBox="0 0 360 600"
+            viewBox="0 0 328 600"
             role="img"
             aria-label="Scale ruler before and after reordering"
           >
@@ -216,7 +221,7 @@ function modify(expand = true) {
               v-for="(state, stateIndex) of ruler.states"
               :key="state.state"
               :class="`${state.state}-state`"
-              :transform="`translate(${stateIndex * 180}, 0)`"
+              :transform="`translate(${stateIndex === 0 ? -32 : 148}, 0)`"
               :aria-label="state.state === 'before' ? 'Before reordering' : 'After reordering'"
             >
               <text x="80" y="14" text-anchor="middle" class="ruler-heading">
@@ -282,6 +287,7 @@ function modify(expand = true) {
                 </title>
               </rect>
               <text
+                v-if="state.state === 'after'"
                 class="root-marker"
                 :x="state.hasNegative ? 38 : 72"
                 :y="ruler.y(0) + 4"
@@ -290,6 +296,7 @@ function modify(expand = true) {
                 1/1
               </text>
               <text
+                v-if="state.state === 'after'"
                 class="equave-marker"
                 :x="state.hasNegative ? 38 : 72"
                 :y="ruler.y(state.equave) + 4"
@@ -334,7 +341,7 @@ function modify(expand = true) {
 }
 .reorder-preview {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem;
+  grid-template-columns: minmax(0, 1fr) 18rem;
   gap: 1rem;
   margin-top: 1rem;
   flex: 1;
@@ -447,7 +454,8 @@ text {
     gap: 0.5rem;
   }
   .step-list ol {
-    max-height: 14rem;
+    height: min(52dvh, 28rem);
+    max-height: none;
     flex: none;
   }
   figure svg {
@@ -455,7 +463,15 @@ text {
     flex: none;
   }
   li {
+    cursor: default;
+    touch-action: pan-y;
+    user-select: auto;
     gap: 0.25rem;
+  }
+  .drag-handle {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-self: stretch;
   }
 }
 </style>
