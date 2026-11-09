@@ -78,14 +78,14 @@ describe('Reorder steps', () => {
     open('300.\n100.\n400.\n200.\n1200.')
     const mixed = wrapper
       .findAll('.step-span')
-      .filter((span) => span.attributes('fill').startsWith('url('))
+      .filter((span) => span.attributes('fill')!.startsWith('url('))
     expect(mixed.some((span) => span.attributes('data-direction') === 'positive')).toBe(true)
     expect(mixed.some((span) => span.attributes('data-direction') === 'negative')).toBe(true)
     for (const span of mixed) {
-      const id = span.attributes('fill').slice(5, -1)
+      const id = span.attributes('fill')!.slice(5, -1)
       const pattern = wrapper.findAll('pattern').find((pattern) => pattern.attributes('id') === id)!
       expect(pattern.findAll('rect')).toHaveLength(
-        span.attributes('data-step-id').split(',').length
+        span.attributes('data-step-id')!.split(',').length
       )
     }
     expect(wrapper.get('.equave-marker').text()).toContain('2/1')
