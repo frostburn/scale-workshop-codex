@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, useId } from 'vue'
-import { Interval } from 'sonic-weave/interval'
 import { parseAST } from 'sonic-weave/parser'
 import { stepString } from 'sonic-weave/words'
 import Modal from '@/components/ModalDialog.vue'
@@ -16,12 +15,11 @@ const usedDefaultScale = !visitor.currentScale.length
 if (usedDefaultScale) {
   visitor.currentScale.push(...scale.relativeIntervals)
 }
+// Absolute pitches must use the declared unison, just as in computeScale().
+visitor.executeProgram(parseAST('relative(£)'))
 const patternPrefix = useId()
-const equaveInterval = new Interval(
-  visitor.currentScale[visitor.currentScale.length - 1].value,
-  'linear'
-)
-const equaveText = equaveInterval.str(visitor.rootContext)
+const equaveInterval = visitor.currentScale[visitor.currentScale.length - 1]
+const equaveText = equaveInterval.domain === 'linear' ? equaveInterval.str(visitor.rootContext) : ''
 const equaveLabel = /^\d+$/.test(equaveText) ? `${equaveText}/1` : equaveText
 const originalWord = stepString(visitor.currentScale.map((interval) => interval.value))
 visitor.executeProgram(parseAST('unstack()'))
@@ -140,7 +138,7 @@ function modify(expand = true) {
   // An empty source displays 12-TET; materialize it before permuting its steps.
   const source = usedDefaultScale ? `${scale.sourceText}\ntet(12)` : scale.sourceText
   const permutation = steps.value.map((step) => step.id).join(', ')
-  const result = `${source}\nunstack()\n£[[${permutation}]]\nstack()`
+  const result = `${source}\nrelative(£)\nunstack()\n£[[${permutation}]]\nstack()`
   if (expand) {
     visitor.executeProgram(parseAST(`£[[${permutation}]]\nstack()`))
     scale.sourceText = visitor.expand(defaults)
@@ -296,7 +294,7 @@ function modify(expand = true) {
                 1/1
               </text>
               <text
-                v-if="state.state === 'after'"
+                v-if="state.state === 'after' && equaveLabel"
                 class="equave-marker"
                 :x="state.hasNegative ? 38 : 72"
                 :y="ruler.y(state.equave) + 4"

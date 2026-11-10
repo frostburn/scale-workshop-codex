@@ -77,7 +77,7 @@ describe('Reorder steps', () => {
     expect(word()).toBe(expectedWord)
   })
 
-  it('stripes all overlapping spans on both sides and marks the ending equave', async () => {
+  it('stripes all overlapping spans on both sides without a redundant cents equave label', async () => {
     open('300.\n100.\n400.\n200.\n1200.')
     const mixed = wrapper
       .findAll('.step-span')
@@ -91,10 +91,9 @@ describe('Reorder steps', () => {
         span.attributes('data-step-id')!.split(',').length
       )
     }
-    expect(wrapper.get('.after-state .equave-marker').text()).toContain('2/1')
-    expect(wrapper.get('.after-state .equave-marker').attributes('y')).toBe('574')
+    expect(wrapper.find('.equave-marker').exists()).toBe(false)
     await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
-    expect(wrapper.get('.after-state .equave-marker').text()).toContain('2/1')
+    expect(wrapper.find('.equave-marker').exists()).toBe(false)
   })
 
   it('labels a non-octave equave with its actual ratio', () => {
@@ -126,12 +125,43 @@ describe('Reorder steps', () => {
     expect(roots[0].attributes('y')).toBe(
       wrapper.findAll('.before-state g text')[0].attributes('y')
     )
-    const equaves = wrapper.findAll('.equave-marker')
-    expect(equaves).toHaveLength(1)
-    expect(equaves[0].attributes('y')).toBe(
-      wrapper.findAll('.before-state g text')[3].attributes('y')
-    )
+    expect(wrapper.find('.equave-marker').exists()).toBe(false)
   })
+
+  it.each(['rank2(700.750, 4, 0, 1201.234, 1)', 'tet(5)', '200.\n700.\n1200.'])(
+    'omits the redundant equave label for logarithmic scales: %s',
+    (source) => {
+      const scale = open(source)
+      expect(scale.error).toBe('')
+      expect(wrapper.find('.equave-marker').exists()).toBe(false)
+      expect(wrapper.find('.root-marker').exists()).toBe(true)
+    }
+  )
+
+  it.each([0, 2])(
+    'normalizes mixed absolute and relative pitches for button %i',
+    async (button) => {
+      const scale = open('1/1 = 440 Hz\n5/4\n660 Hz\n2/1')
+      const expectedBefore = word()
+      expect(wrapper.get('.step-string code').text()).toBe(expectedBefore)
+      expect(wrapper.findAll('.before-state g text').map((tick) => Number(tick.text()))).toEqual([
+        0,
+        ...scale.relativeIntervals.map((interval) => Number(interval.totalCents().toFixed(1)))
+      ])
+      expect(wrapper.get('.equave-marker').text()).toContain('2/1')
+      await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+      const expectedAfter = wrapper.get('.step-string code').text()
+      await wrapper.findAll('.modal-footer button')[button].trigger('click')
+      expect(scale.error).toBe('')
+      expect(
+        scale.relativeIntervals.map((interval, i) =>
+          interval.value.equals(Interval.fromFraction(['6/5', '3/2', '2/1'][i]).value)
+        )
+      ).toEqual([true, true, true])
+      expect(word()).toBe(expectedAfter)
+      expect(scale.sourceText.includes('relative(£)\nunstack()')).toBe(button === 2)
+    }
+  )
 
   it('starts phone dragging only from the grip, leaving cards available for scrolling', async () => {
     open('200.\n700.\n1200.')
