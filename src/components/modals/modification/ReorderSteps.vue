@@ -157,7 +157,7 @@ function modify(expand = true) {
       <p>Drag the unstacked steps into a new order, or use the arrow buttons.</p>
       <div class="reorder-preview">
         <div class="step-list">
-          <h3>Steps (top to bottom)</h3>
+          <h3>Steps</h3>
           <ol
             ref="list"
             aria-label="Unstacked steps"
