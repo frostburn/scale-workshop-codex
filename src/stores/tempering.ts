@@ -341,10 +341,14 @@ export const useTemperStore = defineStore('temper', () => {
   const state = makeState<'mapping' | 'vals' | 'commas'>('mapping')
   const mappingString = ref('1200., 1897.2143, 2788.8573')
   const convertToEdoSteps = ref(false)
-  const edoAvailable = computed(() => state.valsTemperament.value.rank === 1)
   const [vals] = computedAndError(
     () => parseVals(state.valsString.value, parseBasis(state.subgroupString.value)),
     [PATENT_12]
+  )
+
+  const edoAvailable = computed(
+    () =>
+      !state.valsError.value && vals.value.length === 1 && state.valsTemperament.value.rank === 1
   )
 
   return {
