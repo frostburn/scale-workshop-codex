@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, useId, watch } from 'vue'
-import { parseAST } from 'sonic-weave/parser'
+import { computed, ref, shallowRef, toRaw, useId, watch } from 'vue'
+import { linear, logarithmic } from 'sonic-weave/stdlib'
 import { stepString } from 'sonic-weave/words'
 import Modal from '@/components/ModalDialog.vue'
 import { useScaleStore } from '@/stores/scale'
@@ -9,23 +9,22 @@ defineProps<{ show: boolean }>()
 const emit = defineEmits(['done', 'cancel'])
 const scale = useScaleStore()
 
-// Use the same unstacking operation as the source that will be applied.
-const { visitor, defaults } = scale.getUserScopeVisitor()
-const usedDefaultScale = !visitor.currentScale.length
-if (usedDefaultScale) {
-  visitor.currentScale.push(...scale.relativeIntervals)
-}
-// Absolute pitches must use the declared unison, just as in computeScale().
-visitor.executeProgram(parseAST('relative(£)'))
+// The store has already resolved absolute pitches against the declared unison.
+const intervals = toRaw(scale.relativeIntervals)
 const patternPrefix = useId()
-const equaveInterval = visitor.currentScale[visitor.currentScale.length - 1]
-const equaveText = equaveInterval.domain === 'linear' ? equaveInterval.str(visitor.rootContext) : ''
+const equaveInterval = intervals[intervals.length - 1]
+const equaveText = equaveInterval.domain === 'linear' ? equaveInterval.str() : ''
 const equaveLabel = /^\d+$/.test(equaveText) ? `${equaveText}/1` : equaveText
-const originalWord = stepString(visitor.currentScale.map((interval) => interval.value))
-visitor.executeProgram(parseAST('unstack()'))
+const originalWord = stepString(intervals.map((interval) => interval.value))
+const unstacked = intervals.map((interval, i) => {
+  if (!i) return interval
+  return interval.domain === 'linear'
+    ? interval.div(linear(intervals[i - 1]))
+    : interval.sub(logarithmic(intervals[i - 1]))
+})
 const letters = [...new Set(originalWord)].sort()
 const steps = shallowRef(
-  visitor.currentScale.map((interval, id) => ({
+  unstacked.map((interval, id) => ({
     id,
     interval,
     cents: interval.totalCents(),
@@ -40,13 +39,18 @@ let pointerId: number | null = null
 
 function makePreview(orderedSteps: typeof steps.value, state: string) {
   let cents = 0
-  let value = orderedSteps[0].interval.value.pow(0)
-  const values: (typeof value)[] = []
+  let interval = orderedSteps[0].interval
+  const values: (typeof interval.value)[] = []
   const spans = orderedSteps.map((step, index) => {
     const start = cents
     cents += step.cents
-    value = value.mul(step.interval.value)
-    values.push(value)
+    if (index) {
+      interval =
+        step.interval.domain === 'linear'
+          ? step.interval.mul(linear(interval))
+          : step.interval.add(logarithmic(interval))
+    }
+    values.push(interval.value)
     return { ...step, index, start, end: cents }
   })
   const positions = [0, ...spans.map((span) => span.end)]
@@ -134,7 +138,7 @@ function reverse() {
 type Steps = typeof steps.value
 
 function sameSizes(a: Steps, b: Steps) {
-  return a.every((step, i) => step.interval.value.equals(b[i].interval.value))
+  return a.every((step, i) => step.interval.equals(b[i].interval))
 }
 
 // A symmetrical order of sizes reads the same reversed.
@@ -142,7 +146,7 @@ const canReverse = computed(() => !sameSizes([...steps.value].reverse(), steps.v
 
 // With every step the same size, every order sounds the same.
 const canShuffle = computed(() =>
-  steps.value.some((step) => !step.interval.value.equals(steps.value[0].interval.value))
+  steps.value.some((step) => !step.interval.equals(steps.value[0].interval))
 )
 
 function shuffle() {
@@ -201,15 +205,12 @@ function endDrag() {
 }
 
 function modify(expand = true) {
-  // An empty source displays 12-TET; materialize it before permuting its steps.
-  const source = usedDefaultScale ? `${scale.sourceText}\ntet(12)` : scale.sourceText
+  // Materialize the displayed 12-TET fallback if the source produces no intervals.
   const permutation = steps.value.map((step) => step.id).join(', ')
-  const result = `${source}\nrelative(£)\nunstack()\n£[[${permutation}]]\nstack()`
+  scale.sourceText += `\nif (not length($)) tet(12)\nrelative(£)\nunstack()\n£[[${permutation}]]\nstack()`
   if (expand) {
-    visitor.executeProgram(parseAST(`£[[${permutation}]]\nstack()`))
+    const { visitor, defaults } = scale.getUserScopeVisitor()
     scale.sourceText = visitor.expand(defaults)
-  } else {
-    scale.sourceText = result
   }
   scale.computeScale()
   emit('done')
@@ -257,7 +258,7 @@ function modify(expand = true) {
               <span class="step-description">
                 <strong>{{ index + 1 }}. {{ step.letter }}</strong>
                 <span class="step-details">
-                  <span>{{ step.interval.str(visitor.rootContext) }}</span>
+                  <span>{{ step.interval.str() }}</span>
                   <small>{{ step.cents.toFixed(scale.centsFractionDigits) }} ¢</small>
                 </span>
               </span>

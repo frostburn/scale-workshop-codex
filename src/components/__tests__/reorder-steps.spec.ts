@@ -43,6 +43,24 @@ describe('Reorder steps', () => {
     return wrapper.get('.step-string code').text()
   }
 
+  it('uses the computed scale without evaluating the source when opening or reordering', async () => {
+    const scale = useScaleStore()
+    scale.sourceText = 'random() * 100. + 100.\n700.\n1200.'
+    scale.computeScale()
+    const intervals = scale.relativeIntervals.map((interval) => interval.toJSON())
+    const expectedWord = word()
+    const random = vi.spyOn(Math, 'random')
+    const getVisitor = vi.spyOn(scale, 'getUserScopeVisitor')
+    wrapper = mount(ReorderSteps, { props: { show: true } })
+    expect(previewWord()).toBe(expectedWord)
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    expect(random).not.toHaveBeenCalled()
+    expect(getVisitor).not.toHaveBeenCalled()
+    expect(scale.relativeIntervals.map((interval) => interval.toJSON())).toEqual(intervals)
+    random.mockRestore()
+    getVisitor.mockRestore()
+  })
+
   it('previews reordered steps without changing the scale until OK', async () => {
     const scale = open('200.\n700.\n1200.')
     expect(wrapper.get('.step-string').text()).toBe('stepString: sLL')
@@ -209,6 +227,23 @@ describe('Reorder steps', () => {
     }
   )
 
+  it.each([0, 2])('keeps mixed interval domains consistent for button %i', async (button) => {
+    const scale = open('200.\n3/2\n1200.')
+    const expectedSteps = [1, 2, 0].map((i) => wrapper.findAll('.step-details > span')[i].text())
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    await wrapper.get('[aria-label="Move step 2 down"]').trigger('click')
+    expect(wrapper.findAll('.step-details > span').map((span) => span.text())).toEqual(
+      expectedSteps
+    )
+    const expectedWord = previewWord()
+    await wrapper.findAll('.modal-footer button')[button].trigger('click')
+    expect(scale.error).toBe('')
+    expect(word()).toBe(expectedWord)
+    expect(scale.relativeIntervals[scale.relativeIntervals.length - 1].totalCents()).toBeCloseTo(
+      1200
+    )
+  })
+
   it('starts phone dragging only from the grip, leaving cards available for scrolling', async () => {
     open('200.\n700.\n1200.')
     vi.stubGlobal('matchMedia', () => ({ matches: true }))
@@ -335,10 +370,15 @@ describe('Reorder steps', () => {
     expect(headerButton('Reverse').attributes('disabled')).toBeUndefined()
   })
 
-  it.each([0, 2])(
-    'materializes the displayed default scale when applying button %i',
-    async (button) => {
-      const scale = open('')
+  it.each([
+    [0, ''],
+    [2, ''],
+    [0, '1/1 = 440 Hz'],
+    [2, '1/1 = 440 Hz']
+  ] as const)(
+    'materializes the displayed default scale for button %i and source %s',
+    async (button, source) => {
+      const scale = open(source)
       expect(wrapper.findAll('li')).toHaveLength(12)
       await wrapper.findAll('.modal-footer button')[button].trigger('click')
       expect(scale.error).toBe('')
