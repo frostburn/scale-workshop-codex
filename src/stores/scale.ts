@@ -26,7 +26,7 @@ import {
   unaryBroadcast,
   lstr
 } from 'sonic-weave/stdlib'
-import { Color, Interval } from 'sonic-weave/interval'
+import { Interval } from 'sonic-weave/interval'
 import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
 import {
   APP_TITLE,
@@ -444,12 +444,10 @@ export const useScaleStore = defineStore('scale', () => {
     // Flush pending editor changes before deciding whether the fallback is in use.
     if (computedSourceText !== sourceText.value) computeScale(false)
     if (error.value || !usesDefaultScale) return
-    const lines = INTERVALS_12TET.map((interval, i) => {
-      const note = interval.shallowClone()
-      note.color = new Color(colors.value[i])
-      note.label = labels.value[i]
-      return note.toString()
-    })
+    const noteLabels = defaultLabels(scale.value.baseMidiNote, accidentalPreference.value)
+    const lines = INTERVALS_12TET.map(
+      (_, i) => `${i + 1}\\12 ${JSON.stringify(noteLabels[i])} ${colors.value[i]}`
+    )
     sourceText.value += '\n' + lines.join('\n')
     computedSourceText = sourceText.value
     usesDefaultScale = false

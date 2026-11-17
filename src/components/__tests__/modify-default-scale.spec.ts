@@ -110,6 +110,24 @@ describe('default scale modification', () => {
     expect(JSON.stringify(scale)).toBe(original)
   })
 
+  it.each([
+    ['ASCII', 'C#'],
+    ['single', 'C♯'],
+    ['double', 'C♯']
+  ] as const)('writes readable 12-EDO lines with %s accidentals', (style, sharp) => {
+    const scale = open()
+    scale.accidentalPreference = style
+    scale.materializeDefaultScale()
+    const lines = scale.sourceText.trim().split('\n')
+    expect(lines).toHaveLength(12)
+    expect(lines[0]).toBe(`1\\12 "${sharp}" black`)
+    expect(lines[1]).toBe('2\\12 "D" white')
+    expect(lines[11]).toBe('12\\12 "C" white')
+    scale.computeScale()
+    expect(scale.error).toBe('')
+    expect(scale.labels[0]).toBe(sharp)
+  })
+
   it('materializes for immediate actions', async () => {
     const scale = open()
     const colors = [...scale.colors]
