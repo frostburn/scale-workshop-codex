@@ -1,37 +1,54 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, toRaw, useId, watch } from 'vue'
 import { linear, logarithmic } from 'sonic-weave/stdlib'
+import type { Interval } from 'sonic-weave/interval'
 import { stepString } from 'sonic-weave/words'
 import Modal from '@/components/ModalDialog.vue'
 import { useScaleStore } from '@/stores/scale'
 
-defineProps<{ show: boolean }>()
+const props = defineProps<{ show: boolean }>()
 const emit = defineEmits(['done', 'cancel'])
 const scale = useScaleStore()
 
-// The store has already resolved absolute pitches against the declared unison.
-const intervals = toRaw(scale.relativeIntervals)
+type Step = {
+  id: number
+  interval: Interval
+  cents: number
+  letter: string
+  color: string
+}
+
 const patternPrefix = useId()
-const equaveInterval = intervals[intervals.length - 1]
-const equaveText = equaveInterval.domain === 'linear' ? equaveInterval.str() : ''
-const equaveLabel = /^\d+$/.test(equaveText) ? `${equaveText}/1` : equaveText
-const originalWord = stepString(intervals.map((interval) => interval.value))
-const unstacked = intervals.map((interval, i) => {
-  if (!i) return interval
-  return interval.domain === 'linear'
-    ? interval.div(linear(intervals[i - 1]))
-    : interval.sub(logarithmic(intervals[i - 1]))
-})
-const letters = [...new Set(originalWord)].sort()
-const steps = shallowRef(
-  unstacked.map((interval, id) => ({
-    id,
-    interval,
-    cents: interval.totalCents(),
-    letter: originalWord[id],
-    color: `hsl(${(letters.indexOf(originalWord[id]) * 137.508 + 25) % 360}, 65%, 55%)`
-  }))
-)
+const equaveLabel = ref('')
+const steps = shallowRef<Step[]>([])
+
+function initialize() {
+  endDrag()
+  // The store has already resolved absolute pitches against the declared unison.
+  // SonicWeave's native Set operations require objects without reactive proxies.
+  const intervals = toRaw(scale.relativeIntervals)
+  const equave = intervals[intervals.length - 1]
+  const equaveText = equave.domain === 'linear' ? equave.str() : ''
+  equaveLabel.value = /^\d+$/.test(equaveText) ? `${equaveText}/1` : equaveText
+  const word = stepString(intervals.map((interval) => interval.value))
+  const letters = [...new Set(word)].sort()
+  steps.value = intervals.map((interval, id) => {
+    if (id) {
+      interval =
+        interval.domain === 'linear'
+          ? interval.div(linear(intervals[id - 1]))
+          : interval.sub(logarithmic(intervals[id - 1]))
+    }
+    return {
+      id,
+      interval,
+      cents: interval.totalCents(),
+      letter: word[id],
+      color: `hsl(${(letters.indexOf(word[id]) * 137.508 + 25) % 360}, 65%, 55%)`
+    }
+  })
+  before.value = makePreview(steps.value, 'before')
+}
 
 const list = ref<HTMLOListElement | null>(null)
 const dragging = ref<number | null>(null)
@@ -39,16 +56,18 @@ let pointerId: number | null = null
 
 function makePreview(orderedSteps: typeof steps.value, state: string) {
   let cents = 0
-  let interval = orderedSteps[0].interval
-  const values: (typeof interval.value)[] = []
+  let interval: Interval | undefined
+  const values: Interval['value'][] = []
   const spans = orderedSteps.map((step, index) => {
     const start = cents
     cents += step.cents
-    if (index) {
+    if (interval) {
       interval =
         step.interval.domain === 'linear'
           ? step.interval.mul(linear(interval))
           : step.interval.add(logarithmic(interval))
+    } else {
+      interval = step.interval
     }
     values.push(interval.value)
     return { ...step, index, start, end: cents }
@@ -82,7 +101,14 @@ function makePreview(orderedSteps: typeof steps.value, state: string) {
 }
 
 // Keep the opening order fixed while both rulers use the same cents range.
-const before = makePreview(steps.value, 'before')
+const before = shallowRef(makePreview([], 'before'))
+watch(
+  [() => props.show, () => scale.relativeIntervals],
+  ([show]) => {
+    if (show) initialize()
+  },
+  { immediate: true }
+)
 const preview = computed(() => makePreview(steps.value, 'after'))
 // The ruler is drawn at a fixed width, and its height follows the space the
 // layout gives the SVG, so the rulers run the full height of the step list
@@ -110,7 +136,7 @@ watch(rulerSvg, (element, _, onCleanup) => {
 })
 
 const ruler = computed(() => {
-  const states = [before, preview.value]
+  const states = [before.value, preview.value]
   const positions = states.flatMap((state) => state.ticks)
   const min = Math.min(...positions)
   const range = Math.max(...positions) - min || 1

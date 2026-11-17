@@ -61,6 +61,50 @@ describe('Reorder steps', () => {
     getVisitor.mockRestore()
   })
 
+  it('initializes a retained modal on each opening', async () => {
+    const scale = open('200.\n700.\n1200.')
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    await wrapper.setProps({ show: false })
+    scale.sourceText = '3/2\n3/1'
+    scale.computeScale()
+    await wrapper.setProps({ show: true })
+    expect(wrapper.findAll('li')).toHaveLength(2)
+    expect(previewWord()).toBe(word())
+    expect(wrapper.get('.equave-marker').text()).toContain('3/1')
+    expect(wrapper.findAll('.before-state g text').map((tick) => tick.text())).toEqual(
+      wrapper.findAll('.after-state g text').map((tick) => tick.text())
+    )
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    await wrapper.setProps({ show: false })
+    await wrapper.setProps({ show: true })
+    expect(previewWord()).toBe(word())
+  })
+
+  it('refreshes all preview state when the computed scale changes while open', async () => {
+    const scale = open('9/8\n5/4\n2/1')
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    scale.sourceText = '300.\n1200.'
+    scale.computeScale()
+    await nextTick()
+    expect(wrapper.findAll('li')).toHaveLength(2)
+    expect(previewWord()).toBe(word())
+    expect(wrapper.find('.equave-marker').exists()).toBe(false)
+    expect(wrapper.findAll('.before-state g text').map((tick) => tick.text())).toEqual([
+      '0.0',
+      '300.0',
+      '1200.0'
+    ])
+    expect(wrapper.findAll('.after-state g text').map((tick) => tick.text())).toEqual([
+      '0.0',
+      '300.0',
+      '1200.0'
+    ])
+    await wrapper.get('[aria-label="Move step 1 down"]').trigger('click')
+    await wrapper.get('.modal-footer button').trigger('click')
+    expect(scale.error).toBe('')
+    expect(scale.relativeIntervals.map((interval) => interval.totalCents())).toEqual([900, 1200])
+  })
+
   it('previews reordered steps without changing the scale until OK', async () => {
     const scale = open('200.\n700.\n1200.')
     expect(wrapper.get('.step-string').text()).toBe('stepString: sLL')
