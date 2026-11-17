@@ -52,10 +52,14 @@ function restoreFocus() {
   const target = opener
   opener = null
   if (!target?.isConnected) return
-  // Submenu items may be hidden once the modal takes focus.
-  const fallback = target.closest('.btn-dropdown-group')?.querySelector<HTMLElement>('a.btn')
-  if (target.getClientRects().length) target.focus()
-  else fallback?.focus()
+  const dropdown = target.closest('.btn-dropdown-group')
+  const trigger = dropdown?.querySelector<HTMLElement>('a.btn')
+  if (trigger) {
+    trigger.focus()
+    dropdown?.dispatchEvent(new Event('close-dropdown'))
+  } else if (target.getClientRects().length) {
+    target.focus()
+  }
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -115,7 +119,11 @@ watch(
 
 <template>
   <Transition name="modal">
-    <div v-if="show" :class="{ 'modal-mask': true, right }" @mousedown.self="$emit('cancel')">
+    <div
+      v-if="show"
+      :class="{ 'modal-mask': true, right }"
+      @mousedown.self.prevent="$emit('cancel')"
+    >
       <div class="modal-wrapper">
         <div
           ref="container"

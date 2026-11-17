@@ -4,7 +4,12 @@ import { ref } from 'vue'
 defineProps<{
   title: string
 }>()
-defineEmits(['mouseenter'])
+const emit = defineEmits(['mouseenter'])
+function enter() {
+  dismissed.value = false
+  emit('mouseenter')
+}
+const dismissed = ref(false)
 const element = ref<HTMLLIElement | null>(null)
 function blur() {
   if (!element.value) {
@@ -22,8 +27,15 @@ function blur() {
 defineExpose({ blur })
 </script>
 <template>
-  <li ref="element" class="btn-dropdown-group" @mouseenter="$emit('mouseenter')">
-    <a class="btn" href="#">{{ title }} ▼</a>
+  <li
+    ref="element"
+    class="btn-dropdown-group"
+    :class="{ dismissed }"
+    @mouseenter="enter"
+    @focusin="dismissed = false"
+    @close-dropdown="dismissed = true"
+  >
+    <a class="btn" href="#" @click.prevent="dismissed = false">{{ title }} ▼</a>
     <slot></slot>
   </li>
 </template>
@@ -67,5 +79,8 @@ defineExpose({ blur })
 .btn-dropdown-group ul {
   list-style: none;
   padding-left: unset;
+}
+.btn-dropdown-group.dismissed ul {
+  display: none;
 }
 </style>

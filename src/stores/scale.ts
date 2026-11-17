@@ -26,7 +26,7 @@ import {
   unaryBroadcast,
   lstr
 } from 'sonic-weave/stdlib'
-import { Interval } from 'sonic-weave/interval'
+import { Color, Interval } from 'sonic-weave/interval'
 import { TimeMonzo, TimeReal } from 'sonic-weave/monzo'
 import {
   APP_TITLE,
@@ -128,6 +128,8 @@ export const useScaleStore = defineStore('scale', () => {
   const autoColors = ref<'silver' | 'cents' | 'factors'>('silver')
   const sourceText = ref('')
   const relativeIntervals = ref(INTERVALS_12TET)
+  let computedSourceText: string | undefined
+  let usesDefaultScale = true
   const latticeIntervals = ref(INTERVALS_12TET)
   const latticeEquave = ref<Interval | undefined>(undefined)
   const colors = ref(defaultColors(baseMidiNote.value))
@@ -437,6 +439,22 @@ export const useScaleStore = defineStore('scale', () => {
     }
   }
 
+  /** Make the displayed fallback explicit only when a modification is applied. */
+  function materializeDefaultScale() {
+    // Flush pending editor changes before deciding whether the fallback is in use.
+    if (computedSourceText !== sourceText.value) computeScale(false)
+    if (error.value || !usesDefaultScale) return
+    const lines = INTERVALS_12TET.map((interval, i) => {
+      const note = interval.shallowClone()
+      note.color = new Color(colors.value[i])
+      note.label = labels.value[i]
+      return note.toString()
+    })
+    sourceText.value += '\n' + lines.join('\n')
+    computedSourceText = sourceText.value
+    usesDefaultScale = false
+  }
+
   function computeScale(pushUndo = true) {
     try {
       error.value = ''
@@ -464,6 +482,8 @@ export const useScaleStore = defineStore('scale', () => {
         latticeIntervals.value = relativeIntervals.value
       }
       const ratios = relativeIntervals.value.map((i) => i.value.valueOf())
+      computedSourceText = sourceText.value
+      usesDefaultScale = !ratios.length
       let visitorBaseFrequency = mtof(baseMidiNote.value)
       if (visitor.rootContext!.unisonFrequency) {
         visitorBaseFrequency = visitor.rootContext!.unisonFrequency.valueOf()
@@ -785,6 +805,7 @@ export const useScaleStore = defineStore('scale', () => {
     nameOfEquave,
     // Methods
     getUserScopeVisitor,
+    materializeDefaultScale,
     computeScale,
     getFrequency,
     colorForIndex,

@@ -129,16 +129,19 @@ function expandAndQuit() {
 }
 
 function sort() {
+  scale.materializeDefaultScale()
   scale.sourceText += ';sort()'
   expandAndQuit()
 }
 
 function reduce() {
+  scale.materializeDefaultScale()
   scale.sourceText += ';reduce()'
   expandAndQuit()
 }
 
 function retrovert() {
+  scale.materializeDefaultScale()
   scale.sourceText += ';retrovert()'
   expandAndQuit()
 }

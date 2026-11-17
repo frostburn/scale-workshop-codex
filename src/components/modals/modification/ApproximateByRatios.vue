@@ -109,6 +109,7 @@ function modifyAndAdvance() {
   if (!approximationsWithErrorsAndLimits.value.length) {
     alert('No approximation satisfying criteria found!')
   } else {
+    if (scale.sourceText === approx.originalSource) scale.materializeDefaultScale()
     const fraction = approximationsWithErrorsAndLimits.value[approx.approximationIndex].fraction
     const i = approx.degree - 1
     scale.sourceText += `\n$[${i}] = ${fraction.toFraction()} colorOf($[${i}]) labelOf($[${i}])`
@@ -118,6 +119,7 @@ function modifyAndAdvance() {
 }
 
 function modify(expand = true) {
+  if (scale.sourceText === approx.originalSource) scale.materializeDefaultScale()
   if (expand) {
     const { visitor, defaults } = scale.getUserScopeVisitor()
     scale.sourceText = visitor.expand(defaults)
