@@ -129,7 +129,7 @@ export const useScaleStore = defineStore('scale', () => {
   const sourceText = ref('')
   const relativeIntervals = ref(INTERVALS_12TET)
   let computedSourceText: string | undefined
-  let usesDefaultScale = true
+  const usesDefaultScale = ref(true)
   const latticeIntervals = ref(INTERVALS_12TET)
   const latticeEquave = ref<Interval | undefined>(undefined)
   const colors = ref(defaultColors(baseMidiNote.value))
@@ -443,14 +443,14 @@ export const useScaleStore = defineStore('scale', () => {
   function materializeDefaultScale() {
     // Flush pending editor changes before deciding whether the fallback is in use.
     if (computedSourceText !== sourceText.value) computeScale(false)
-    if (error.value || !usesDefaultScale) return
+    if (error.value || !usesDefaultScale.value) return
     const noteLabels = defaultLabels(scale.value.baseMidiNote, accidentalPreference.value)
     const lines = INTERVALS_12TET.map(
       (_, i) => `${i + 1}\\12 ${JSON.stringify(noteLabels[i])} ${colors.value[i]}`
     )
     sourceText.value += '\n' + lines.join('\n')
     computedSourceText = sourceText.value
-    usesDefaultScale = false
+    usesDefaultScale.value = false
   }
 
   function computeScale(pushUndo = true) {
@@ -481,7 +481,7 @@ export const useScaleStore = defineStore('scale', () => {
       }
       const ratios = relativeIntervals.value.map((i) => i.value.valueOf())
       computedSourceText = sourceText.value
-      usesDefaultScale = !ratios.length
+      usesDefaultScale.value = !ratios.length
       let visitorBaseFrequency = mtof(baseMidiNote.value)
       if (visitor.rootContext!.unisonFrequency) {
         visitorBaseFrequency = visitor.rootContext!.unisonFrequency.valueOf()
