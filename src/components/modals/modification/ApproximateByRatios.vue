@@ -130,7 +130,7 @@ function modify(expand = true) {
 
 function cancel() {
   scale.sourceText = approx.originalSource
-  emit('done')
+  emit('cancel')
 }
 </script>
 

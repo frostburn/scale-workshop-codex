@@ -52,14 +52,10 @@ function restoreFocus() {
   const target = opener
   opener = null
   if (!target?.isConnected) return
-  const dropdown = target.closest('.btn-dropdown-group')
-  const trigger = dropdown?.querySelector<HTMLElement>('a.btn')
-  if (trigger) {
-    trigger.focus()
-    dropdown?.dispatchEvent(new Event('close-dropdown'))
-  } else if (target.getClientRects().length) {
-    target.focus()
-  }
+  // Submenu items may be hidden once the modal takes focus.
+  const fallback = target.closest('.btn-dropdown-group')?.querySelector<HTMLElement>('a.btn')
+  if (target.getClientRects().length) target.focus()
+  else fallback?.focus()
 }
 
 function onKeydown(event: KeyboardEvent) {

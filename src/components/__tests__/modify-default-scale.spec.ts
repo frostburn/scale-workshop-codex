@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import ModifyScale from '@/components/ModifyScale.vue'
+import NewScale from '@/components/NewScale.vue'
 import { useScaleStore } from '@/stores/scale'
 import { useModalStore } from '@/stores/modal'
 import { useSessionIdStore } from '@/stores/session-id'
@@ -77,7 +78,7 @@ describe('default scale modification', () => {
   )
 
   it.each(['Cancel', 'Escape', 'backdrop'])(
-    'cancels through %s without changing the scale and closes the dropdown',
+    'cancels through %s without changing the scale and reports cancellation',
     async (method) => {
       const scale = open('(* empty *)')
       const original = JSON.stringify(scale)
@@ -92,10 +93,8 @@ describe('default scale modification', () => {
       await flushPromises()
       expect(JSON.stringify(scale)).toBe(original)
       expect(document.querySelector('[role="dialog"]')).toBeNull()
-      expect(wrapper.get('.btn-dropdown-group').classes()).toContain('dismissed')
-      expect(document.activeElement).toBe(wrapper.get('a.btn').element)
-      await wrapper.get('a.btn').trigger('click')
-      expect(wrapper.get('.btn-dropdown-group').classes()).not.toContain('dismissed')
+      expect(wrapper.emitted('cancel')).toHaveLength(1)
+      expect(wrapper.emitted('done')).toBeUndefined()
     }
   )
 
@@ -126,6 +125,20 @@ describe('default scale modification', () => {
     scale.computeScale()
     expect(scale.error).toBe('')
     expect(scale.labels[0]).toBe(sharp)
+  })
+
+  it('reports generation dialog cancellation separately from completion', async () => {
+    const scale = useScaleStore()
+    scale.sourceText = 'tet(7)'
+    scale.computeScale()
+    const original = JSON.stringify(scale)
+    wrapper = mount(NewScale, { attachTo: document.body })
+    await select('Equal temperament')
+    await button('Cancel')
+    expect(wrapper.emitted('cancel')).toHaveLength(1)
+    expect(wrapper.emitted('done')).toBeUndefined()
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+    expect(JSON.stringify(scale)).toBe(original)
   })
 
   it('materializes for immediate actions', async () => {
