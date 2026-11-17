@@ -231,9 +231,8 @@ function endDrag() {
 }
 
 function modify(expand = true) {
-  // Materialize the displayed 12-TET fallback if the source produces no intervals.
   const permutation = steps.value.map((step) => step.id).join(', ')
-  scale.sourceText += `\nif (not length($)) tet(12)\nrelative(£)\nunstack()\n£[[${permutation}]]\nstack()`
+  scale.sourceText += `\nrelative(£)\nunstack()\n£[[${permutation}]]\nstack()`
   if (expand) {
     const { visitor, defaults } = scale.getUserScopeVisitor()
     scale.sourceText = visitor.expand(defaults)

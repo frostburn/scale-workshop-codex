@@ -169,7 +169,7 @@ defineExpose({ blur })
 </script>
 <template>
   <DropdownGroup ref="element" title="Modify scale" @mouseenter="$emit('mouseenter')">
-    <ul>
+    <ul @click.capture="scale.materializeDefaultScale()">
       <a href="#" @click="showExpandModal = true"><li>Expand/simplify lines</li></a>
       <a href="#" @click="sort"><li>Sort ascending</li></a>
       <a href="#" @click="reduce"

@@ -413,22 +413,4 @@ describe('Reorder steps', () => {
     expect(previewWord()).toBe('sLLLLsL')
     expect(headerButton('Reverse').attributes('disabled')).toBeUndefined()
   })
-
-  it.each([
-    [0, ''],
-    [2, ''],
-    [0, '1/1 = 440 Hz'],
-    [2, '1/1 = 440 Hz']
-  ] as const)(
-    'materializes the displayed default scale for button %i and source %s',
-    async (button, source) => {
-      const scale = open(source)
-      expect(wrapper.findAll('li')).toHaveLength(12)
-      await wrapper.findAll('.modal-footer button')[button].trigger('click')
-      expect(scale.error).toBe('')
-      expect(scale.sourceText).not.toBe('')
-      expect(scale.relativeIntervals).toHaveLength(12)
-      expect(scale.relativeIntervals[11].valueOf()).toBe(2)
-    }
-  )
 })
