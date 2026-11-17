@@ -128,8 +128,6 @@ export const useScaleStore = defineStore('scale', () => {
   const autoColors = ref<'silver' | 'cents' | 'factors'>('silver')
   const sourceText = ref('')
   const relativeIntervals = ref(INTERVALS_12TET)
-  let computedSourceText: string | undefined
-  let usesDefaultScale = true
   const latticeIntervals = ref(INTERVALS_12TET)
   const latticeEquave = ref<Interval | undefined>(undefined)
   const colors = ref(defaultColors(baseMidiNote.value))
@@ -439,15 +437,6 @@ export const useScaleStore = defineStore('scale', () => {
     }
   }
 
-  /** Materialize the displayed fallback before a Modify scale action runs. */
-  function materializeDefaultScale() {
-    // The editor may still have a debounced evaluation pending.
-    if (computedSourceText !== sourceText.value) computeScale(false)
-    if (error.value || !usesDefaultScale) return
-    sourceText.value += '\ntet(12)'
-    computeScale(false)
-  }
-
   function computeScale(pushUndo = true) {
     try {
       error.value = ''
@@ -475,8 +464,6 @@ export const useScaleStore = defineStore('scale', () => {
         latticeIntervals.value = relativeIntervals.value
       }
       const ratios = relativeIntervals.value.map((i) => i.value.valueOf())
-      usesDefaultScale = !ratios.length
-      computedSourceText = sourceText.value
       let visitorBaseFrequency = mtof(baseMidiNote.value)
       if (visitor.rootContext!.unisonFrequency) {
         visitorBaseFrequency = visitor.rootContext!.unisonFrequency.valueOf()
@@ -798,7 +785,6 @@ export const useScaleStore = defineStore('scale', () => {
     nameOfEquave,
     // Methods
     getUserScopeVisitor,
-    materializeDefaultScale,
     computeScale,
     getFrequency,
     colorForIndex,
