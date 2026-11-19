@@ -1,5 +1,14 @@
 # Change log
 
+## 3.6.0
+  * Feature: Reorder scale steps with a side-by-side ruler preview, drag handles, and Reverse and Shuffle buttons.
+  * Improvement: Use a spectrum measured from a real harmonium recording for the harmonium sound.
+  * Improvement: Label the 22 Shruti preset with swara names.
+  * Improvement: Group each lattice generator input with its up and down controls.
+  * Bug fix: Preserve default scale metadata when editing a scale and close dropdowns when cancelled.
+  * Bug fix: Improve keyboard focus handling and accessibility in shared dialogs.
+  * Maintenance: Update dependencies to address npm audit findings.
+
 ## 3.5.3
   * Enumerate more "reasonable" SV3 JI scales.
   * Minor maintenance.
